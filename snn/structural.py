@@ -6,8 +6,10 @@ Reward-gated: structural changes only when reward exceeds baseline.
 Design:
 - Connection mask (binary adjacency) sits alongside the weight matrix.
 - Pruning: |weight| below threshold for sustained period -> mask=0.
+  Pruning always fires on schedule (use it or lose it).
 - Sprouting: from recently active pre-synaptic neurons to post-synaptic
   neurons, add new connections with small random weights.
+  Sprouting is reward-gated: only when recent reward exceeds baseline.
 - Reward gate: structural updates only fire when recent mean reward
   exceeds a running baseline.  "Survival of the fittest" — connections
   that don't earn reward get dropped; new ones get tried.
@@ -106,7 +108,7 @@ class StructuralPlasticity:
         synapse,
         pre_n,
         post_n,
-        prune_threshold=0.005,
+        prune_threshold=0.02,
         prune_interval=50,
         sprout_interval=50,
         sprout_rate=0.08,
@@ -129,30 +131,78 @@ class StructuralPlasticity:
         self.min_connections = min_connections
         self.beta_act = math.exp(-1.0 / activity_tau) if activity_tau > 0 else 0.0
 
-        # Running statistics
-        self.register_buffer = {}  # for state that needs to move with device
-
         # Running reward baseline
         self.reward_baseline = 0.0
-
-        # Recent mean reward for gating
         self.recent_reward = 0.0
         self.n_rewards = 0
 
-        # Activity traces (low-pass filtered spike counts)
-        self.pre_activity = None  # (pre_n,)
-        self.post_activity = None  # (post_n,)
+        # Activity traces (low-pass filtered spike counts) — initialized on first record
+        self.pre_activity = None
+        self.post_activity = None
 
         # Track which connections are "young" (recently sprouted) — protected from pruning
-        self.connection_age = None  # (post_n, pre_n) — trial number when connection appeared
+        # Initialised in seed_initial_mask or set_full_mask
+        self.connection_age = None
 
         # Connectivity snapshots for reporting
         self.snapshots = []  # list of (trial_num, mask_clone)
 
     def seed_initial_mask(self, n_routes=3, seed=42):
-        """Set the initial connection mask to a deliberately bad routing."""
+        """Set the initial connection mask to a deliberately bad routing.
+
+        Also sets weight values so the bad routes are confidently wrong:
+        - Route 1 connections get strong weights (confidently wrong mapping)
+        - Route 2 connections get moderate weights (diffuse, noisy)
+        - Route 3 connections get very weak weights (inefficient, easily pruned)
+        - Background noise connections get tiny weights
+        """
+        g = _rng(seed)
         mask = seed_bad_routes(self.post_n, self.pre_n, n_routes=n_routes, seed=seed)
         self.synapse.connection_mask.data.copy_(mask)
+        self.synapse.use_mask = True
+
+        # Set weight values based on which route the connection belongs to
+        with torch.no_grad():
+            weight = self.synapse.weight.data
+            # Zero out all weights first
+            weight.zero_()
+
+            # Route 1: shifted/reversed - strong weights (confidently wrong)
+            for i in range(min(self.pre_n, self.post_n)):
+                j = (i + self.post_n // 2) % self.post_n
+                weight[j, i] = torch.randn(1, generator=g).item() * 0.3 + 0.5
+                if j + 1 < self.post_n:
+                    weight[j + 1, i] = torch.randn(1, generator=g).item() * 0.3 + 0.4
+
+            # Route 2: diffuse - moderate weights, mix of positive and negative
+            n_conn = max(1, int(self.post_n * 0.4))
+            for i in range(self.pre_n):
+                idxs = torch.randperm(self.post_n, generator=g)[:n_conn]
+                for j in idxs:
+                    if weight[j, i] == 0.0:
+                        weight[j, i] = torch.randn(1, generator=g).item() * 0.15
+
+            # Route 3: sparse - very weak weights (easily pruned)
+            n_conn = max(1, int(self.pre_n * 0.2))
+            sparse_pre = torch.randperm(self.pre_n, generator=g)[:n_conn]
+            for i in sparse_pre:
+                j = torch.randint(0, self.post_n, (1,), generator=g).item()
+                if weight[j, i] == 0.0:
+                    weight[j, i] = torch.randn(1, generator=g).item() * 0.008
+
+            # Background noise connections - tiny weights
+            for j in range(self.post_n):
+                for i in range(self.pre_n):
+                    if mask[j, i] > 0.5 and weight[j, i] == 0.0:
+                        weight[j, i] = torch.randn(1, generator=g).item() * 0.005
+
+            # Ensure every post-neuron has at least one non-zero weight
+            for j in range(self.post_n):
+                if weight[j, :].abs().sum() == 0:
+                    i = torch.randint(0, self.pre_n, (1,), generator=g).item()
+                    weight[j, i] = torch.randn(1, generator=g).item() * 0.3 + 0.5
+                    mask[j, i] = 1.0
+
         # Initialise age: existing connections are old (don't get youth protection)
         self.connection_age = torch.full_like(mask, 9999, dtype=torch.long)
         self.connection_age[mask > 0.5] = 0
@@ -160,6 +210,7 @@ class StructuralPlasticity:
     def set_full_mask(self):
         """Set fully-connected mask (for arms without structural plasticity)."""
         self.synapse.connection_mask.data.fill_(1.0)
+        self.synapse.use_mask = True
 
     def record_activity(self, pre_spikes, post_spikes):
         """
@@ -169,11 +220,11 @@ class StructuralPlasticity:
         """
         # Flatten batch dimension if present
         if pre_spikes.dim() == 2:
-            pre_mean = pre_spikes.mean(dim=0)  # (pre_n,)
+            pre_mean = pre_spikes.mean(dim=0)
         else:
             pre_mean = pre_spikes
         if post_spikes.dim() == 2:
-            post_mean = post_spikes.mean(dim=0)  # (post_n,)
+            post_mean = post_spikes.mean(dim=0)
         else:
             post_mean = post_spikes
 
@@ -199,43 +250,54 @@ class StructuralPlasticity:
 
     def step(self, trial_num):
         """
-        Apply pruning and sprouting based on schedule.
+        Apply pruning and/or sprouting based on schedule.
 
-        Both operations are reward-gated: they only fire when recent reward
-        exceeds the running baseline by at least reward_threshold.
+        Pruning always fires on schedule (use it or lose it).
+        Sprouting is reward-gated: only when recent reward exceeds baseline.
+        When reward is below baseline, pruning is more aggressive.
 
         Returns dict with changes made, or None if no changes.
         """
         changes = {}
 
-        # Reward gate
         reward_ok = self.recent_reward >= (self.reward_baseline + self.reward_threshold)
 
-        # --- Pruning ---
-        if trial_num > 0 and trial_num % self.prune_interval == 0 and reward_ok:
-            changes["prune"] = self._prune(trial_num)
+        # --- Pruning (always fires on schedule) ---
+        if trial_num > 0 and trial_num % self.prune_interval == 0:
+            pruned = self._prune(trial_num, aggressive=not reward_ok)
+            if pruned is not None:
+                changes["prune"] = pruned
 
-        # --- Sprouting ---
+        # --- Sprouting (reward-gated) ---
         if trial_num > 0 and trial_num % self.sprout_interval == 0 and reward_ok:
-            changes["sprout"] = self._sprout(trial_num)
+            sprouted = self._sprout(trial_num)
+            if sprouted is not None:
+                changes["sprout"] = sprouted
 
         if changes:
-            # Snapshot the connectivity state
             self.snapshots.append((trial_num, self.synapse.connection_mask.data.clone()))
 
         return changes if changes else None
 
-    def _prune(self, trial_num):
+    def _prune(self, trial_num, aggressive=False):
         """
         Remove connections whose |weight| is below threshold.
         Protects young connections (recently sprouted) and ensures
         every post-neuron retains at least min_connections.
+
+        When aggressive=True (reward below baseline), use a higher threshold
+        to prune more connections and encourage exploration.
         """
         mask = self.synapse.connection_mask.data
         weight = self.synapse.weight.data
 
+        if self.connection_age is None:
+            return None
+
+        threshold = self.prune_threshold * (2.0 if aggressive else 1.0)
+
         # Candidates for pruning: existing connections with |weight| < threshold
-        weak = (weight.abs() < self.prune_threshold).float()
+        weak = (weight.abs() < threshold).float()
         young = (self.connection_age > (trial_num - self.prune_interval * 2)).float()
         candidates = mask * weak * (1 - young)
 
@@ -250,17 +312,15 @@ class StructuralPlasticity:
                 # Restore the strongest pruned connection for this post-neuron
                 pruned_here = (candidates[j, :] > 0.5) & (weight[j, :].abs() > 0)
                 if pruned_here.sum() > 0:
-                    # Restore the strongest one
-                    strongest_idx = weight[j, :].abs().argmax()
+                    strongest_idx = weight[j, :].abs().argmax().item()
                     mask[j, strongest_idx] = 1.0
                 else:
                     # Sprout a random connection to meet minimum
                     dead = (mask[j, :] < 0.5).nonzero(as_tuple=True)[0]
                     if len(dead) > 0:
-                        idx = dead[torch.randint(0, len(dead), (1,))]
+                        idx = dead[torch.randint(0, len(dead), (1,))].item()
                         mask[j, idx] = 1.0
                         self.connection_age[j, idx] = trial_num
-                        # Give it a small random weight
                         with torch.no_grad():
                             self.synapse.weight.data[j, idx] = (
                                 torch.randn(1, device=weight.device).item() * 0.01
@@ -278,7 +338,7 @@ class StructuralPlasticity:
         device = weight.device
 
         if self.pre_activity is None or self.post_activity is None:
-            return {"added": 0}
+            return None
 
         # Find inactive (pruned) connections
         inactive = (mask < 0.5).float()
@@ -292,16 +352,16 @@ class StructuralPlasticity:
         # How many new connections to add?
         n_possible = int(inactive.sum().item())
         if n_possible == 0:
-            return {"added": 0}
+            return None
 
         n_to_add = max(1, int(n_possible * self.sprout_rate))
         n_to_add = min(n_to_add, n_possible)
 
         # Sample from highest-score candidates
         flat_scores = sprout_scores.flatten()
-        top_k = min(n_to_add * 3, n_possible)  # sample from top candidates
+        top_k = min(n_to_add * 3, n_possible)
         if top_k <= 0:
-            return {"added": 0}
+            return None
 
         values, indices = torch.topk(flat_scores, top_k)
         # Add some randomness — pick from top candidates
@@ -309,12 +369,12 @@ class StructuralPlasticity:
 
         n_added = 0
         for idx in chosen:
-            j = idx.item() // self.pre_n
-            i = idx.item() % self.pre_n
+            flat_idx = idx.item()
+            j = flat_idx // self.pre_n
+            i = flat_idx % self.pre_n
             if mask[j, i] < 0.5:
                 mask[j, i] = 1.0
                 self.connection_age[j, i] = trial_num
-                # Small random weight for new connection
                 with torch.no_grad():
                     weight[j, i] = torch.randn(1, device=device).item() * 0.005
                 n_added += 1
@@ -328,7 +388,6 @@ class StructuralPlasticity:
         n_connected = mask.sum().item()
         density = n_connected / total if total > 0 else 0.0
 
-        # Per post-neuron connection count
         per_post = mask.sum(dim=1)
         min_per_post = per_post.min().item()
         max_per_post = per_post.max().item()

@@ -234,16 +234,16 @@ class TemporalSequenceTask(Task):
         input_spikes = torch.zeros(batch_size, 4, self.timesteps)
         for b in range(batch_size):
             for ch in range(4):
+                # Generate per-timestep Poisson spikes
+                # noise_rate throughout, signal_rate in middle window for signal channel
+                p = torch.full((self.timesteps,), self.noise_rate * self.dt * 0.001)
                 if ch == signal_channel[b]:
-                    # Signal: high rate in middle window
-                    rate = torch.full((self.timesteps,), self.noise_rate)
                     window_start = self.timesteps // 3
                     window_end = 2 * self.timesteps // 3
-                    rate[window_start:window_end] = self.signal_rate
-                else:
-                    rate = torch.full((self.timesteps,), self.noise_rate)
-                input_spikes[b, ch] = poisson_spikes(rate, 1, self.timesteps,
-                                                      batch_size=1, dt=self.dt * 0.001).squeeze(0)
+                    p[window_start:window_end] = self.signal_rate * self.dt * 0.001
+                # Clamp to valid probability
+                p = p.clamp(0, 1)
+                input_spikes[b, ch] = (torch.rand(self.timesteps, generator=rng_state) < p).float()
 
         return input_spikes, signal_channel
 
@@ -287,10 +287,12 @@ class AssociativeMemoryTask(Task):
         for b in range(batch_size):
             # The active input neuron fires at high rate
             active_idx = pattern_idx[b]
-            rates = torch.full((8,), 5.0)  # background noise
-            rates[active_idx] = 50.0  # signal
-            input_spikes[b] = poisson_spikes(rates, 8, self.timesteps,
-                                              batch_size=1, dt=self.dt * 0.001).squeeze(0)
+            # Generate Poisson per channel: high rate for active, low for others
+            for ch in range(8):
+                rate_hz = 50.0 if ch == active_idx else 5.0
+                p = rate_hz * self.dt * 0.001
+                p = min(p, 1.0)
+                input_spikes[b, ch] = (torch.rand(self.timesteps, generator=rng_state) < p).float()
 
         # Target: same index (identity association for now - map pattern to same output)
         return input_spikes, pattern_idx

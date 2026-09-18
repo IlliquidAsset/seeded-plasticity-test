@@ -23,8 +23,13 @@ Tasks (varying difficulty):
 - temporal_sequence: Signal-in-noise temporal integration (medium-hard)
 - associative_memory: Pattern association (hard)
 
+Structural Plasticity Experiment (v0.2.0):
+- snn/structural.py: Pruning/sprouting mechanism with bad-route seeding
+- snn/struct_experiment.py: 4-arm bench (weight only, structural only, both, frozen)
+- lightning_struct_run.py: Lightning.ai entry point for structural experiment
+
 Author: Amanda Bigoletits for Kendrick Kirk
 Project: AIB Research - Pure SNN Learning
 """
 
-__version__ = "0.1.0"
+__version__ = "0.2.0"
