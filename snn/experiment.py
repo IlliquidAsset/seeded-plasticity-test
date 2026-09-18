@@ -90,12 +90,12 @@ def run_single_experiment(task_name, task_cls, task_kwargs, layers,
     task = task_cls(**task_kwargs)
     task.set_seed(seed + 1)  # Different seed for task generation
 
-    net = PureSNN(layers, dt=1.0, weight_scale=0.1,
-                  tau_m=20.0, tau_syn=5.0)
+    net = PureSNN(layers, dt=1.0, weight_scale=2.0,
+                  tau_m=20.0, tau_syn=10.0)
 
     if plasticity_on:
         net.add_plasticity(lr=lr, tau_elig=20.0,
-                           a_plus=0.008, a_minus=0.006,
+                           a_plus=0.02, a_minus=0.015,
                            tau_plus=20.0, tau_minus=20.0)
 
     # Freeze initial weights for control
@@ -146,7 +146,7 @@ def run_single_experiment(task_name, task_cls, task_kwargs, layers,
     }
 
 
-def run_full_bench(seeds=[42, 123, 256], lr=0.001, n_trials=300, eval_every=25):
+def run_full_bench(seeds=[42, 123, 256], lr=0.005, n_trials=300, eval_every=25):
     """
     Run the full benchmark across all tasks.
     """

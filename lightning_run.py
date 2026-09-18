@@ -34,7 +34,7 @@ def main():
     print("\n--- Phase 2: Full Benchmark ---")
     results = run_full_bench(
         seeds=[42, 123, 256],
-        lr=0.001,
+        lr=0.005,
         n_trials=300,
         eval_every=25,
     )

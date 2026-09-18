@@ -13,7 +13,7 @@ print("=== Smoke Test: Pure SNN Learning ===")
 # Test 1: Freeze mechanism
 print("\n--- Test 1: Freeze Mechanism ---")
 net = PureSNN([16, 2])
-net.add_plasticity(lr=0.001)
+net.add_plasticity(lr=0.005)
 frozen = net.get_frozen_weights()
 init_norm = net.weight_norm()
 print(f"Initial weight norm: {init_norm:.4f}")

@@ -17,7 +17,7 @@ class LIFNeuron(nn.Module):
     Leaky Integrate-and-Fire neuron layer.
     Processes one timestep at a time.
     """
-    def __init__(self, n_neurons, tau_m=20.0, v_thresh=-55.0, v_rest=-70.0, v_reset=-75.0, dt=1.0):
+    def __init__(self, n_neurons, tau_m=20.0, v_thresh=1.0, v_rest=0.0, v_reset=0.0, dt=1.0):
         super().__init__()
         self.n_neurons = n_neurons
         self.tau_m = tau_m
@@ -30,7 +30,7 @@ class LIFNeuron(nn.Module):
     def forward(self, I_syn, v=None):
         """
         One timestep.
-        I_syn: (batch, n_neurons)
+        I_syn: (batch, n_neurons) - postsynaptic current
         v: (batch, n_neurons) or None for reset
 
         Returns: spikes (batch, n_neurons), new v (batch, n_neurons)
@@ -38,9 +38,9 @@ class LIFNeuron(nn.Module):
         if v is None:
             v = torch.full_like(I_syn, self.v_rest)
 
-        # Leaky integrate
+        # Leaky integrate: v decays toward rest, adds current
         v = self.v_rest + self.beta * (v - self.v_rest) + I_syn
-        # Fire
+        # Fire if above threshold
         fired = (v >= self.v_thresh).float()
         # Soft reset
         v = torch.where(fired > 0, torch.full_like(v, self.v_reset), v)
@@ -52,6 +52,9 @@ class Synapse(nn.Module):
     """
     Synaptic connection between two populations.
     Current-based with exponential decay, one timestep at a time.
+
+    Supports optional connection mask for structural plasticity.
+    When use_mask=True, effective weight = weight * connection_mask.
     """
     def __init__(self, pre_n, post_n, weight_scale=0.1, tau_syn=5.0, dt=1.0):
         super().__init__()
@@ -66,6 +69,17 @@ class Synapse(nn.Module):
             torch.randn(post_n, pre_n) * weight_scale / math.sqrt(pre_n)
         )
 
+        # Connection mask for structural plasticity (1.0 = connected)
+        # Initially all ones = fully connected (classic dense mode)
+        self.register_buffer('connection_mask', torch.ones(post_n, pre_n))
+        self.use_mask = False  # toggle to activate masking
+
+    def get_effective_weight(self):
+        """Return weight * mask when masking is active, else plain weight."""
+        if self.use_mask:
+            return self.weight * self.connection_mask
+        return self.weight
+
     def forward(self, pre_spikes, I_syn=None):
         """
         One timestep.
@@ -79,8 +93,9 @@ class Synapse(nn.Module):
 
         # Decay
         I_syn = self.beta_syn * I_syn
-        # Add current from spikes
-        I_syn = I_syn + torch.mm(pre_spikes, self.weight.t())
+        # Add current from spikes, using effective weight (masked if active)
+        effective_w = self.get_effective_weight()
+        I_syn = I_syn + torch.mm(pre_spikes, effective_w.t())
 
         return I_syn
 
