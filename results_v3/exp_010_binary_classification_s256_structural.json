@@ -1,0 +1,143 @@
+{
+  "task": "binary_classification",
+  "weight_plasticity": false,
+  "structural_plasticity": true,
+  "seed": 256,
+  "lr": 1.0,
+  "n_trials": 300,
+  "initial_weight_norm": 0.7430710196495056,
+  "final_weight_norm": 0.7430710196495056,
+  "signed_weight_norm_change": 0.0,
+  "absolute_weight_norm_change": 0.0,
+  "signed_weight_norm_change_pct": 0.0,
+  "weight_norm_change_pct": 0.0,
+  "weights_moved_over_1pct": false,
+  "weights_nan": false,
+  "weights_exploded": false,
+  "max_abs_weight": 0.5277703404426575,
+  "final_accuracy": 0.625,
+  "initial_accuracy": 0.5625,
+  "final_connectivity": {
+    "layer_0": {
+      "stats": {
+        "total_possible": 8,
+        "total_connected": 8,
+        "density": 1.0,
+        "min_per_post": 4,
+        "max_per_post": 4
+      },
+      "jaccard_to_initial": 0.75,
+      "n_snapshots": 5
+    }
+  },
+  "connectivity_changed": true,
+  "found_better_route": false,
+  "accuracy_trace": [
+    [
+      0,
+      0.5625
+    ],
+    [
+      25,
+      0.4375
+    ],
+    [
+      50,
+      0.5
+    ],
+    [
+      75,
+      0.6875
+    ],
+    [
+      100,
+      0.625
+    ],
+    [
+      125,
+      0.6875
+    ],
+    [
+      150,
+      0.6875
+    ],
+    [
+      175,
+      0.625
+    ],
+    [
+      200,
+      0.625
+    ],
+    [
+      225,
+      0.75
+    ],
+    [
+      250,
+      0.625
+    ],
+    [
+      275,
+      0.6875
+    ],
+    [
+      299,
+      0.625
+    ]
+  ],
+  "weight_norm_trace": [
+    [
+      0,
+      0.7430710196495056
+    ],
+    [
+      25,
+      0.7430710196495056
+    ],
+    [
+      50,
+      0.7430710196495056
+    ],
+    [
+      75,
+      0.7430710196495056
+    ],
+    [
+      100,
+      0.7430710196495056
+    ],
+    [
+      125,
+      0.7430710196495056
+    ],
+    [
+      150,
+      0.7430710196495056
+    ],
+    [
+      175,
+      0.7430710196495056
+    ],
+    [
+      200,
+      0.7430710196495056
+    ],
+    [
+      225,
+      0.7430710196495056
+    ],
+    [
+      250,
+      0.7430710196495056
+    ],
+    [
+      275,
+      0.7430710196495056
+    ],
+    [
+      299,
+      0.7430710196495056
+    ]
+  ]
+}

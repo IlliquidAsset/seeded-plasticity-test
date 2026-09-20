@@ -1,0 +1,154 @@
+{
+  "task": "temporal_sequence",
+  "weight_plasticity": false,
+  "structural_plasticity": true,
+  "seed": 256,
+  "lr": 1.0,
+  "n_trials": 300,
+  "initial_weight_norm": 3.092816601964855,
+  "final_weight_norm": 3.092816601964855,
+  "signed_weight_norm_change": 0.0,
+  "absolute_weight_norm_change": 0.0,
+  "signed_weight_norm_change_pct": 0.0,
+  "weight_norm_change_pct": 0.0,
+  "weights_moved_over_1pct": false,
+  "weights_nan": false,
+  "weights_exploded": false,
+  "max_abs_weight": 1.1067770719528198,
+  "final_accuracy": 0.0625,
+  "initial_accuracy": 0.0625,
+  "final_connectivity": {
+    "layer_0": {
+      "stats": {
+        "total_possible": 96,
+        "total_connected": 47,
+        "density": 0.4895833333333333,
+        "min_per_post": 1,
+        "max_per_post": 6
+      },
+      "jaccard_to_initial": 0.9148936170212766,
+      "n_snapshots": 5
+    },
+    "layer_1": {
+      "stats": {
+        "total_possible": 96,
+        "total_connected": 55,
+        "density": 0.5729166666666666,
+        "min_per_post": 4,
+        "max_per_post": 9
+      },
+      "jaccard_to_initial": 0.9454545454545454,
+      "n_snapshots": 5
+    }
+  },
+  "connectivity_changed": true,
+  "found_better_route": false,
+  "accuracy_trace": [
+    [
+      0,
+      0.0625
+    ],
+    [
+      25,
+      0.125
+    ],
+    [
+      50,
+      0.125
+    ],
+    [
+      75,
+      0.0
+    ],
+    [
+      100,
+      0.125
+    ],
+    [
+      125,
+      0.125
+    ],
+    [
+      150,
+      0.0625
+    ],
+    [
+      175,
+      0.125
+    ],
+    [
+      200,
+      0.0625
+    ],
+    [
+      225,
+      0.25
+    ],
+    [
+      250,
+      0.0625
+    ],
+    [
+      275,
+      0.0
+    ],
+    [
+      299,
+      0.0625
+    ]
+  ],
+  "weight_norm_trace": [
+    [
+      0,
+      3.092816601964855
+    ],
+    [
+      25,
+      3.092816601964855
+    ],
+    [
+      50,
+      3.092816601964855
+    ],
+    [
+      75,
+      3.092816601964855
+    ],
+    [
+      100,
+      3.092816601964855
+    ],
+    [
+      125,
+      3.092816601964855
+    ],
+    [
+      150,
+      3.092816601964855
+    ],
+    [
+      175,
+      3.092816601964855
+    ],
+    [
+      200,
+      3.092816601964855
+    ],
+    [
+      225,
+      3.092816601964855
+    ],
+    [
+      250,
+      3.092816601964855
+    ],
+    [
+      275,
+      3.092816601964855
+    ],
+    [
+      299,
+      3.092816601964855
+    ]
+  ]
+}

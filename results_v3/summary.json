@@ -1,0 +1,203 @@
+{
+  "real_margin": 0.1,
+  "tasks": {
+    "binary_classification": {
+      "weight_only": {
+        "accuracies": [
+          0.5625,
+          0.6875,
+          0.4375
+        ],
+        "mean_accuracy": 0.5625,
+        "delta_vs_frozen": 0.0
+      },
+      "structural_only": {
+        "accuracies": [
+          0.625,
+          0.5,
+          0.625
+        ],
+        "mean_accuracy": 0.5833333333333334,
+        "delta_vs_frozen": 0.02083333333333337
+      },
+      "both": {
+        "accuracies": [
+          0.6875,
+          0.5625,
+          0.5625
+        ],
+        "mean_accuracy": 0.6041666666666666,
+        "delta_vs_frozen": 0.04166666666666663
+      },
+      "frozen": {
+        "accuracies": [
+          0.5625,
+          0.6875,
+          0.4375
+        ],
+        "mean_accuracy": 0.5625
+      }
+    },
+    "frequency_discrimination": {
+      "weight_only": {
+        "accuracies": [
+          0.1875,
+          0.5,
+          0.4375
+        ],
+        "mean_accuracy": 0.375,
+        "delta_vs_frozen": 0.0
+      },
+      "structural_only": {
+        "accuracies": [
+          0.1875,
+          0.375,
+          0.4375
+        ],
+        "mean_accuracy": 0.3333333333333333,
+        "delta_vs_frozen": -0.041666666666666685
+      },
+      "both": {
+        "accuracies": [
+          0.1875,
+          0.4375,
+          0.4375
+        ],
+        "mean_accuracy": 0.3541666666666667,
+        "delta_vs_frozen": -0.020833333333333315
+      },
+      "frozen": {
+        "accuracies": [
+          0.1875,
+          0.5,
+          0.4375
+        ],
+        "mean_accuracy": 0.375
+      }
+    },
+    "temporal_xor": {
+      "weight_only": {
+        "accuracies": [
+          0.5625,
+          0.5625,
+          0.5
+        ],
+        "mean_accuracy": 0.5416666666666666,
+        "delta_vs_frozen": 0.0
+      },
+      "structural_only": {
+        "accuracies": [
+          0.5625,
+          0.5625,
+          0.5
+        ],
+        "mean_accuracy": 0.5416666666666666,
+        "delta_vs_frozen": 0.0
+      },
+      "both": {
+        "accuracies": [
+          0.5625,
+          0.5625,
+          0.5
+        ],
+        "mean_accuracy": 0.5416666666666666,
+        "delta_vs_frozen": 0.0
+      },
+      "frozen": {
+        "accuracies": [
+          0.5625,
+          0.5625,
+          0.5
+        ],
+        "mean_accuracy": 0.5416666666666666
+      }
+    },
+    "temporal_sequence": {
+      "weight_only": {
+        "accuracies": [
+          0.0,
+          0.0625,
+          0.0625
+        ],
+        "mean_accuracy": 0.041666666666666664,
+        "delta_vs_frozen": 0.0
+      },
+      "structural_only": {
+        "accuracies": [
+          0.0625,
+          0.0,
+          0.0625
+        ],
+        "mean_accuracy": 0.041666666666666664,
+        "delta_vs_frozen": 0.0
+      },
+      "both": {
+        "accuracies": [
+          0.0,
+          0.0625,
+          0.0
+        ],
+        "mean_accuracy": 0.020833333333333332,
+        "delta_vs_frozen": -0.020833333333333332
+      },
+      "frozen": {
+        "accuracies": [
+          0.0,
+          0.0625,
+          0.0625
+        ],
+        "mean_accuracy": 0.041666666666666664
+      }
+    },
+    "associative_memory": {
+      "weight_only": {
+        "accuracies": [
+          0.125,
+          0.125,
+          0.125
+        ],
+        "mean_accuracy": 0.125,
+        "delta_vs_frozen": 0.0
+      },
+      "structural_only": {
+        "accuracies": [
+          0.4375,
+          0.0625,
+          0.0625
+        ],
+        "mean_accuracy": 0.1875,
+        "delta_vs_frozen": 0.0625
+      },
+      "both": {
+        "accuracies": [
+          0.125,
+          0.125,
+          0.125
+        ],
+        "mean_accuracy": 0.125,
+        "delta_vs_frozen": 0.0
+      },
+      "frozen": {
+        "accuracies": [
+          0.125,
+          0.125,
+          0.125
+        ],
+        "mean_accuracy": 0.125
+      }
+    }
+  },
+  "weight_movement": {
+    "weight_only": {
+      "mean_absolute_norm_change": 0.00392391970921499,
+      "mean_percentage_change": 0.9607733535798848,
+      "passes_1pct": false
+    },
+    "both": {
+      "mean_absolute_norm_change": 0.4292585672613407,
+      "mean_percentage_change": 20.48821535479425,
+      "passes_1pct": true
+    }
+  },
+  "verdict": "INCONCLUSIVE"
+}

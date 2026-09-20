@@ -1,0 +1,131 @@
+{
+  "task": "associative_memory",
+  "weight_plasticity": false,
+  "structural_plasticity": false,
+  "seed": 256,
+  "lr": 1.0,
+  "n_trials": 300,
+  "initial_weight_norm": 0.4137319728955287,
+  "final_weight_norm": 0.4137319728955287,
+  "signed_weight_norm_change": 0.0,
+  "absolute_weight_norm_change": 0.0,
+  "signed_weight_norm_change_pct": 0.0,
+  "weight_norm_change_pct": 0.0,
+  "weights_moved_over_1pct": false,
+  "weights_nan": false,
+  "weights_exploded": false,
+  "max_abs_weight": 0.10560768097639084,
+  "final_accuracy": 0.125,
+  "initial_accuracy": 0.1875,
+  "final_connectivity": {},
+  "connectivity_changed": false,
+  "found_better_route": false,
+  "accuracy_trace": [
+    [
+      0,
+      0.1875
+    ],
+    [
+      25,
+      0.1875
+    ],
+    [
+      50,
+      0.25
+    ],
+    [
+      75,
+      0.375
+    ],
+    [
+      100,
+      0.0625
+    ],
+    [
+      125,
+      0.1875
+    ],
+    [
+      150,
+      0.0
+    ],
+    [
+      175,
+      0.1875
+    ],
+    [
+      200,
+      0.1875
+    ],
+    [
+      225,
+      0.125
+    ],
+    [
+      250,
+      0.1875
+    ],
+    [
+      275,
+      0.0625
+    ],
+    [
+      299,
+      0.125
+    ]
+  ],
+  "weight_norm_trace": [
+    [
+      0,
+      0.4137319728955287
+    ],
+    [
+      25,
+      0.4137319728955287
+    ],
+    [
+      50,
+      0.4137319728955287
+    ],
+    [
+      75,
+      0.4137319728955287
+    ],
+    [
+      100,
+      0.4137319728955287
+    ],
+    [
+      125,
+      0.4137319728955287
+    ],
+    [
+      150,
+      0.4137319728955287
+    ],
+    [
+      175,
+      0.4137319728955287
+    ],
+    [
+      200,
+      0.4137319728955287
+    ],
+    [
+      225,
+      0.4137319728955287
+    ],
+    [
+      250,
+      0.4137319728955287
+    ],
+    [
+      275,
+      0.4137319728955287
+    ],
+    [
+      299,
+      0.4137319728955287
+    ]
+  ]
+}

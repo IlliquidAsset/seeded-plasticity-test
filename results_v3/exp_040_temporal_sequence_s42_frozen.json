@@ -1,0 +1,131 @@
+{
+  "task": "temporal_sequence",
+  "weight_plasticity": false,
+  "structural_plasticity": false,
+  "seed": 42,
+  "lr": 1.0,
+  "n_trials": 300,
+  "initial_weight_norm": 0.4477711672527057,
+  "final_weight_norm": 0.4477711672527057,
+  "signed_weight_norm_change": 0.0,
+  "absolute_weight_norm_change": 0.0,
+  "signed_weight_norm_change_pct": 0.0,
+  "weight_norm_change_pct": 0.0,
+  "weights_moved_over_1pct": false,
+  "weights_nan": false,
+  "weights_exploded": false,
+  "max_abs_weight": 0.07842082530260086,
+  "final_accuracy": 0.0,
+  "initial_accuracy": 0.1875,
+  "final_connectivity": {},
+  "connectivity_changed": false,
+  "found_better_route": false,
+  "accuracy_trace": [
+    [
+      0,
+      0.1875
+    ],
+    [
+      25,
+      0.125
+    ],
+    [
+      50,
+      0.0625
+    ],
+    [
+      75,
+      0.0
+    ],
+    [
+      100,
+      0.125
+    ],
+    [
+      125,
+      0.0625
+    ],
+    [
+      150,
+      0.125
+    ],
+    [
+      175,
+      0.125
+    ],
+    [
+      200,
+      0.25
+    ],
+    [
+      225,
+      0.1875
+    ],
+    [
+      250,
+      0.0625
+    ],
+    [
+      275,
+      0.1875
+    ],
+    [
+      299,
+      0.0
+    ]
+  ],
+  "weight_norm_trace": [
+    [
+      0,
+      0.4477711672527057
+    ],
+    [
+      25,
+      0.4477711672527057
+    ],
+    [
+      50,
+      0.4477711672527057
+    ],
+    [
+      75,
+      0.4477711672527057
+    ],
+    [
+      100,
+      0.4477711672527057
+    ],
+    [
+      125,
+      0.4477711672527057
+    ],
+    [
+      150,
+      0.4477711672527057
+    ],
+    [
+      175,
+      0.4477711672527057
+    ],
+    [
+      200,
+      0.4477711672527057
+    ],
+    [
+      225,
+      0.4477711672527057
+    ],
+    [
+      250,
+      0.4477711672527057
+    ],
+    [
+      275,
+      0.4477711672527057
+    ],
+    [
+      299,
+      0.4477711672527057
+    ]
+  ]
+}

@@ -1,0 +1,131 @@
+{
+  "task": "binary_classification",
+  "weight_plasticity": true,
+  "structural_plasticity": false,
+  "seed": 123,
+  "lr": 1.0,
+  "n_trials": 300,
+  "initial_weight_norm": 0.08962884545326233,
+  "final_weight_norm": 0.08962884545326233,
+  "signed_weight_norm_change": 0.0,
+  "absolute_weight_norm_change": 0.0,
+  "signed_weight_norm_change_pct": 0.0,
+  "weight_norm_change_pct": 0.0,
+  "weights_moved_over_1pct": false,
+  "weights_nan": false,
+  "weights_exploded": false,
+  "max_abs_weight": 0.059846218675374985,
+  "final_accuracy": 0.6875,
+  "initial_accuracy": 0.625,
+  "final_connectivity": {},
+  "connectivity_changed": false,
+  "found_better_route": false,
+  "accuracy_trace": [
+    [
+      0,
+      0.625
+    ],
+    [
+      25,
+      0.3125
+    ],
+    [
+      50,
+      0.5
+    ],
+    [
+      75,
+      0.4375
+    ],
+    [
+      100,
+      0.375
+    ],
+    [
+      125,
+      0.4375
+    ],
+    [
+      150,
+      0.625
+    ],
+    [
+      175,
+      0.375
+    ],
+    [
+      200,
+      0.375
+    ],
+    [
+      225,
+      0.5625
+    ],
+    [
+      250,
+      0.4375
+    ],
+    [
+      275,
+      0.5
+    ],
+    [
+      299,
+      0.6875
+    ]
+  ],
+  "weight_norm_trace": [
+    [
+      0,
+      0.08962884545326233
+    ],
+    [
+      25,
+      0.08962884545326233
+    ],
+    [
+      50,
+      0.08962884545326233
+    ],
+    [
+      75,
+      0.08962884545326233
+    ],
+    [
+      100,
+      0.08962884545326233
+    ],
+    [
+      125,
+      0.08962884545326233
+    ],
+    [
+      150,
+      0.08962884545326233
+    ],
+    [
+      175,
+      0.08962884545326233
+    ],
+    [
+      200,
+      0.08962884545326233
+    ],
+    [
+      225,
+      0.08962884545326233
+    ],
+    [
+      250,
+      0.08962884545326233
+    ],
+    [
+      275,
+      0.08962884545326233
+    ],
+    [
+      299,
+      0.08962884545326233
+    ]
+  ]
+}

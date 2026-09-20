@@ -1,0 +1,154 @@
+{
+  "task": "temporal_xor",
+  "weight_plasticity": true,
+  "structural_plasticity": true,
+  "seed": 42,
+  "lr": 1.0,
+  "n_trials": 300,
+  "initial_weight_norm": 1.6872445696052634,
+  "final_weight_norm": 1.6794943025037417,
+  "signed_weight_norm_change": -0.007750267101521713,
+  "absolute_weight_norm_change": 0.007750267101521713,
+  "signed_weight_norm_change_pct": -0.4593446167282621,
+  "weight_norm_change_pct": 0.4593446167282621,
+  "weights_moved_over_1pct": false,
+  "weights_nan": false,
+  "weights_exploded": false,
+  "max_abs_weight": 1.1031665802001953,
+  "final_accuracy": 0.5625,
+  "initial_accuracy": 0.375,
+  "final_connectivity": {
+    "layer_0": {
+      "stats": {
+        "total_possible": 16,
+        "total_connected": 12,
+        "density": 0.75,
+        "min_per_post": 1,
+        "max_per_post": 2
+      },
+      "jaccard_to_initial": 0.9166666666666666,
+      "n_snapshots": 5
+    },
+    "layer_1": {
+      "stats": {
+        "total_possible": 16,
+        "total_connected": 10,
+        "density": 0.625,
+        "min_per_post": 3,
+        "max_per_post": 7
+      },
+      "jaccard_to_initial": 1.0,
+      "n_snapshots": 5
+    }
+  },
+  "connectivity_changed": true,
+  "found_better_route": true,
+  "accuracy_trace": [
+    [
+      0,
+      0.375
+    ],
+    [
+      25,
+      0.375
+    ],
+    [
+      50,
+      0.75
+    ],
+    [
+      75,
+      0.25
+    ],
+    [
+      100,
+      0.4375
+    ],
+    [
+      125,
+      0.625
+    ],
+    [
+      150,
+      0.625
+    ],
+    [
+      175,
+      0.4375
+    ],
+    [
+      200,
+      0.5
+    ],
+    [
+      225,
+      0.375
+    ],
+    [
+      250,
+      0.6875
+    ],
+    [
+      275,
+      0.25
+    ],
+    [
+      299,
+      0.5625
+    ]
+  ],
+  "weight_norm_trace": [
+    [
+      0,
+      1.684593651289812
+    ],
+    [
+      25,
+      1.6954577415469259
+    ],
+    [
+      50,
+      1.7231276631359398
+    ],
+    [
+      75,
+      1.7107689472174272
+    ],
+    [
+      100,
+      1.7059092779867662
+    ],
+    [
+      125,
+      1.690269099187331
+    ],
+    [
+      150,
+      1.6974431592579653
+    ],
+    [
+      175,
+      1.6771383252935643
+    ],
+    [
+      200,
+      1.6908310534718274
+    ],
+    [
+      225,
+      1.7027346267577776
+    ],
+    [
+      250,
+      1.6993268299427986
+    ],
+    [
+      275,
+      1.6757322690651961
+    ],
+    [
+      299,
+      1.6794943025037417
+    ]
+  ]
+}

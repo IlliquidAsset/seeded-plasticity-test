@@ -1,0 +1,143 @@
+{
+  "task": "binary_classification",
+  "weight_plasticity": true,
+  "structural_plasticity": true,
+  "seed": 42,
+  "lr": 1.0,
+  "n_trials": 300,
+  "initial_weight_norm": 0.9533469676971436,
+  "final_weight_norm": 1.271822214126587,
+  "signed_weight_norm_change": 0.31847524642944336,
+  "absolute_weight_norm_change": 0.31847524642944336,
+  "signed_weight_norm_change_pct": 33.40601661520317,
+  "weight_norm_change_pct": 33.40601661520317,
+  "weights_moved_over_1pct": true,
+  "weights_nan": false,
+  "weights_exploded": false,
+  "max_abs_weight": 0.8369694352149963,
+  "final_accuracy": 0.6875,
+  "initial_accuracy": 0.5625,
+  "final_connectivity": {
+    "layer_0": {
+      "stats": {
+        "total_possible": 8,
+        "total_connected": 8,
+        "density": 1.0,
+        "min_per_post": 4,
+        "max_per_post": 4
+      },
+      "jaccard_to_initial": 0.75,
+      "n_snapshots": 5
+    }
+  },
+  "connectivity_changed": true,
+  "found_better_route": true,
+  "accuracy_trace": [
+    [
+      0,
+      0.5625
+    ],
+    [
+      25,
+      0.5
+    ],
+    [
+      50,
+      0.5
+    ],
+    [
+      75,
+      0.5625
+    ],
+    [
+      100,
+      0.75
+    ],
+    [
+      125,
+      0.6875
+    ],
+    [
+      150,
+      0.6875
+    ],
+    [
+      175,
+      0.4375
+    ],
+    [
+      200,
+      0.4375
+    ],
+    [
+      225,
+      0.5
+    ],
+    [
+      250,
+      0.625
+    ],
+    [
+      275,
+      0.75
+    ],
+    [
+      299,
+      0.6875
+    ]
+  ],
+  "weight_norm_trace": [
+    [
+      0,
+      0.9538455605506897
+    ],
+    [
+      25,
+      0.9698255062103271
+    ],
+    [
+      50,
+      0.993424117565155
+    ],
+    [
+      75,
+      1.032815933227539
+    ],
+    [
+      100,
+      1.0562230348587036
+    ],
+    [
+      125,
+      1.0763280391693115
+    ],
+    [
+      150,
+      1.0979864597320557
+    ],
+    [
+      175,
+      1.107228398323059
+    ],
+    [
+      200,
+      1.1252905130386353
+    ],
+    [
+      225,
+      1.1533249616622925
+    ],
+    [
+      250,
+      1.1935392618179321
+    ],
+    [
+      275,
+      1.2417765855789185
+    ],
+    [
+      299,
+      1.271822214126587
+    ]
+  ]
+}
