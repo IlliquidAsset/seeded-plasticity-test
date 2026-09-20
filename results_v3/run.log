@@ -609,3 +609,12 @@ INCONCLUSIVE - does any plasticity arm beat frozen by >= 0.10?
 Results saved to /Users/kendrick/Projects/pure-snn-learning/results_v3/struct_results_v3.json
 
 --- Phase 6: Commit and push ---
+[v0.3.0-calibrated 755b97e] bench: record v0.3.0 calibrated results
+ 65 files changed, 1254 insertions(+), 1241 deletions(-)
+To https://github.com/IlliquidAsset/seeded-plasticity-test.git
+   c5cc0ac..755b97e  v0.3.0-calibrated -> v0.3.0-calibrated
+branch 'v0.3.0-calibrated' set up to track 'origin/v0.3.0-calibrated'.
+To https://github.com/IlliquidAsset/seeded-plasticity-test.git
+   c5cc0ac..755b97e  HEAD -> main
+
+EXPERIMENT COMPLETE
