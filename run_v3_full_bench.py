@@ -174,7 +174,7 @@ def main():
     # on the most active hard task until the calibration becomes measurable.
     chosen_lr, lr_sweep = calibrate_lr(
         configs,
-        lr_sweep=[0.001, 0.01, 0.05, 0.1, 0.5, 1.0],
+        lr_sweep=[0.001, 0.01, 0.05, 0.1, 0.5, 1.0, 2.0],
         task_name="associative_memory",
         seed=42,
         n_trials=100,
