@@ -75,10 +75,11 @@ class BinaryClassificationTask(Task):
     Single-layer solution possible (rate-based).
     Difficulty: Easy
     """
-    def __init__(self, n_input=16, timesteps=100, dt=1.0):
+    def __init__(self, n_input=16, timesteps=100, dt=1.0,
+                 low_rate=10.0, high_rate=40.0):
         super().__init__("binary_classification", n_input, 2, timesteps, dt)
-        self.low_rate = 10.0   # Hz
-        self.high_rate = 40.0  # Hz
+        self.low_rate = float(low_rate)
+        self.high_rate = float(high_rate)
 
     def generate_batch(self, batch_size):
         if self.rng is None:
@@ -126,9 +127,11 @@ class TemporalXORTask(Task):
     Requires non-linear separation -> needs hidden layer.
     Difficulty: Medium
     """
-    def __init__(self, n_hidden=16, timesteps=100, dt=1.0):
+    def __init__(self, n_hidden=16, timesteps=100, dt=1.0,
+                 background_noise_rate=0.0):
         super().__init__("temporal_xor", 2, 2, timesteps, dt)
         self.n_hidden = n_hidden
+        self.background_noise_rate = float(background_noise_rate)
 
     def generate_batch(self, batch_size):
         if self.rng is None:
@@ -153,6 +156,13 @@ class TemporalXORTask(Task):
             input_spikes[b_idx, 1] = poisson_spikes(rate_b, 1, self.timesteps,
                                                      batch_size=1, dt=self.dt * 0.001).squeeze(0)
 
+        if self.background_noise_rate > 0:
+            noise_p = min(self.background_noise_rate * self.dt * 0.001, 1.0)
+            noise = torch.rand(
+                input_spikes.shape, generator=rng_state
+            ) < noise_p
+            input_spikes = torch.logical_or(input_spikes.bool(), noise).float()
+
         return input_spikes, xor
 
     def compute_reward(self, output_spikes, target):
@@ -175,9 +185,10 @@ class FrequencyDiscriminationTask(Task):
     Output: 3 neurons, one per class
     Difficulty: Easy-Medium (more classes)
     """
-    def __init__(self, timesteps=100, dt=1.0):
-        super().__init__("frequency_discrimination", 8, 3, timesteps, dt)
-        self.rates = [10.0, 30.0, 60.0]  # Hz
+    def __init__(self, n_input=8, timesteps=100, dt=1.0, rates=None):
+        rates = [10.0, 30.0, 60.0] if rates is None else rates
+        super().__init__("frequency_discrimination", n_input, len(rates), timesteps, dt)
+        self.rates = [float(rate) for rate in rates]
 
     def generate_batch(self, batch_size):
         if self.rng is None:
@@ -185,7 +196,7 @@ class FrequencyDiscriminationTask(Task):
         else:
             rng_state = self.rng
 
-        classes = torch.randint(0, 3, (batch_size,), generator=rng_state)
+        classes = torch.randint(0, self.n_output, (batch_size,), generator=rng_state)
 
         input_spikes = torch.zeros(batch_size, self.n_input, self.timesteps)
         for b in range(batch_size):
@@ -217,10 +228,12 @@ class TemporalSequenceTask(Task):
     Requires integrating over time.
     Difficulty: Medium-Hard
     """
-    def __init__(self, timesteps=100, dt=1.0):
-        super().__init__("temporal_sequence", 4, 4, timesteps, dt)
+    def __init__(self, n_channels=4, timesteps=100, dt=1.0,
+                 signal_window_fraction=1 / 3):
+        super().__init__("temporal_sequence", n_channels, n_channels, timesteps, dt)
         self.signal_rate = 50.0
         self.noise_rate = 5.0
+        self.signal_window_fraction = float(signal_window_fraction)
 
     def generate_batch(self, batch_size):
         if self.rng is None:
@@ -229,17 +242,18 @@ class TemporalSequenceTask(Task):
             rng_state = self.rng
 
         # Which channel has the signal?
-        signal_channel = torch.randint(0, 4, (batch_size,), generator=rng_state)
+        signal_channel = torch.randint(0, self.n_input, (batch_size,), generator=rng_state)
 
-        input_spikes = torch.zeros(batch_size, 4, self.timesteps)
+        input_spikes = torch.zeros(batch_size, self.n_input, self.timesteps)
+        window_length = max(1, round(self.timesteps * self.signal_window_fraction))
+        window_start = (self.timesteps - window_length) // 2
+        window_end = window_start + window_length
         for b in range(batch_size):
-            for ch in range(4):
+            for ch in range(self.n_input):
                 # Generate per-timestep Poisson spikes
-                # noise_rate throughout, signal_rate in middle window for signal channel
+                # noise_rate throughout, signal_rate in a centered short window
                 p = torch.full((self.timesteps,), self.noise_rate * self.dt * 0.001)
                 if ch == signal_channel[b]:
-                    window_start = self.timesteps // 3
-                    window_end = 2 * self.timesteps // 3
                     p[window_start:window_end] = self.signal_rate * self.dt * 0.001
                 # Clamp to valid probability
                 p = p.clamp(0, 1)
@@ -269,10 +283,10 @@ class AssociativeMemoryTask(Task):
     Requires hidden layer for pattern separation.
     Difficulty: Hard
     """
-    def __init__(self, timesteps=100, dt=1.0):
-        super().__init__("associative_memory", 8, 8, timesteps, dt)
+    def __init__(self, n_patterns=8, timesteps=100, dt=1.0):
+        super().__init__("associative_memory", n_patterns, n_patterns, timesteps, dt)
         # Create orthogonal patterns (one-hot)
-        self.patterns = torch.eye(8)
+        self.patterns = torch.eye(n_patterns)
 
     def generate_batch(self, batch_size):
         if self.rng is None:
@@ -281,14 +295,14 @@ class AssociativeMemoryTask(Task):
             rng_state = self.rng
 
         # Pick a pattern
-        pattern_idx = torch.randint(0, 8, (batch_size,), generator=rng_state)
+        pattern_idx = torch.randint(0, self.n_input, (batch_size,), generator=rng_state)
 
-        input_spikes = torch.zeros(batch_size, 8, self.timesteps)
+        input_spikes = torch.zeros(batch_size, self.n_input, self.timesteps)
         for b in range(batch_size):
             # The active input neuron fires at high rate
             active_idx = pattern_idx[b]
             # Generate Poisson per channel: high rate for active, low for others
-            for ch in range(8):
+            for ch in range(self.n_input):
                 rate_hz = 50.0 if ch == active_idx else 5.0
                 p = rate_hz * self.dt * 0.001
                 p = min(p, 1.0)
@@ -351,5 +365,62 @@ def get_task_configs():
             "kwargs": {"timesteps": 100},
             "layers": [8, 24, 8],  # input -> hidden -> output (harder)
             "description": "Associate input patterns to output targets",
+        },
+    }
+
+
+def get_hard_task_configs():
+    """Return the calibrated v0.3.0 task configurations.
+
+    These deliberately reduce input evidence and network capacity so an
+    untrained frozen network remains within ten percentage points of chance.
+    """
+    return {
+        "binary_classification": {
+            "cls": BinaryClassificationTask,
+            "kwargs": {
+                "n_input": 4,
+                "timesteps": 50,
+                "low_rate": 12.0,
+                "high_rate": 18.0,
+            },
+            "layers": [4, 2],
+            "description": "Tight-rate binary classification",
+        },
+        "frequency_discrimination": {
+            "cls": FrequencyDiscriminationTask,
+            "kwargs": {
+                "n_input": 4,
+                "timesteps": 50,
+                "rates": [10.0, 14.0, 18.0],
+            },
+            "layers": [4, 8, 3],
+            "description": "Tight 3-class frequency discrimination",
+        },
+        "temporal_xor": {
+            "cls": TemporalXORTask,
+            "kwargs": {
+                "n_hidden": 8,
+                "timesteps": 50,
+                "background_noise_rate": 5.0,
+            },
+            "layers": [2, 8, 2],
+            "description": "Temporal XOR with background input noise",
+        },
+        "temporal_sequence": {
+            "cls": TemporalSequenceTask,
+            "kwargs": {
+                "n_channels": 8,
+                "timesteps": 50,
+                "signal_window_fraction": 0.16,
+            },
+            "layers": [8, 12, 8],
+            "description": "8-channel sequence with a short signal window",
+        },
+        "associative_memory": {
+            "cls": AssociativeMemoryTask,
+            "kwargs": {"n_patterns": 6, "timesteps": 50},
+            "layers": [6, 16, 6],
+            "description": "Six-pattern associative memory",
         },
     }
