@@ -3,7 +3,7 @@
   "weight_plasticity": false,
   "structural_plasticity": true,
   "seed": 256,
-  "lr": 1.0,
+  "lr": 2.0,
   "n_trials": 300,
   "initial_weight_norm": 1.8785899002011153,
   "final_weight_norm": 1.8785899002011153,

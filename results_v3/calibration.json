@@ -1,6 +1,6 @@
 {
   "version": "0.3.0",
-  "started": "2026-09-20 15:44:28",
+  "started": "2026-09-20 15:50:06",
   "freeze_ok": true,
   "floor_ok": true,
   "frozen_means": {
@@ -11,7 +11,7 @@
     "associative_memory": 0.16895833333333332
   },
   "floor_failures": {},
-  "chosen_lr": 1.0,
+  "chosen_lr": 2.0,
   "lr_sweep": [
     {
       "lr": 0.001,
@@ -74,6 +74,17 @@
       "final_weight_norm": 0.46372963305408393,
       "signed_weight_norm_change_pct": -1.886612333332318,
       "weight_norm_change_pct": 1.886612333332318,
+      "max_abs_weight": 0.09007584303617477,
+      "weights_nan": false,
+      "weights_exploded": false,
+      "stable": true
+    },
+    {
+      "lr": 2.0,
+      "initial_weight_norm": 0.4726466429123495,
+      "final_weight_norm": 0.45818374692902175,
+      "signed_weight_norm_change_pct": -3.0599806854038776,
+      "weight_norm_change_pct": 3.0599806854038776,
       "max_abs_weight": 0.09007584303617477,
       "weights_nan": false,
       "weights_exploded": false,

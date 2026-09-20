@@ -1,15 +1,15 @@
 ========================================================================
 STRUCTURAL PLASTICITY EXPERIMENT v0.3.0 — CALIBRATED FULL BENCH
 5 hard tasks × 3 seeds × 4 arms × 300 trials = 60 experiments
-Started: 2026-09-20 15:44:28
+Started: 2026-09-20 15:50:06
 ========================================================================
 
 --- Phase 1: Freeze mechanism verification ---
 ============================================================
 FREEZE MECHANISM VERIFICATION (Structural)
 ============================================================
-Initial weight norm: 0.433018
-Weight norm after update: 0.435704
+Initial weight norm: 0.478813
+Weight norm after update: 0.483136
 Freeze check (should FAIL): False
 Freeze check after restore (should PASS): True
 Mask freeze check (should PASS): True
@@ -43,8 +43,9 @@ WEIGHT-PLASTICITY LR CALIBRATION (associative_memory, seed=42)
      0.1       0.472647       0.471557       -0.231%     0.0901       YES
      0.5       0.472647       0.467758       -1.034%     0.0901       YES
        1       0.472647       0.463730       -1.887%     0.0901       YES
+       2       0.472647       0.458184       -3.060%     0.0901       YES
 ----------------------------------------------------------------------------------------
-Chosen LR: 1 — highest candidate with finite weights and max |weight| <= 5.0
+Chosen LR: 2 — highest candidate with finite weights and max |weight| <= 5.0
 ========================================================================================
 
 --- Phase 4: Full four-arm benchmark ---
@@ -145,11 +146,11 @@ TASK: frequency_discrimination - Tight 3-class frequency discrimination
       Jaccard to initial: 0.867
   Seed 123, ARM 3: Both together:
   [Saved during run: exp_019_frequency_discrimination_s123_both.json]
-    Final accuracy: 0.438
-      layer_0: {'total_possible': 32, 'total_connected': 22, 'density': 0.6875, 'min_per_post': 1, 'max_per_post': 4}
-      Jaccard to initial: 0.909
-      layer_1: {'total_possible': 24, 'total_connected': 15, 'density': 0.625, 'min_per_post': 4, 'max_per_post': 6}
-      Jaccard to initial: 0.867
+    Final accuracy: 0.500
+      layer_0: {'total_possible': 32, 'total_connected': 23, 'density': 0.71875, 'min_per_post': 1, 'max_per_post': 4}
+      Jaccard to initial: 0.870
+      layer_1: {'total_possible': 24, 'total_connected': 16, 'density': 0.6666666666666666, 'min_per_post': 4, 'max_per_post': 7}
+      Jaccard to initial: 0.812
   Seed 123, ARM 4: Frozen control:
   [Saved during run: exp_020_frequency_discrimination_s123_frozen.json]
     Final accuracy: 0.500
@@ -264,10 +265,10 @@ TASK: temporal_sequence - 8-channel sequence with a short signal window
   Seed 42, ARM 3: Both together:
   [Saved during run: exp_039_temporal_sequence_s42_both.json]
     Final accuracy: 0.000
-      layer_0: {'total_possible': 96, 'total_connected': 52, 'density': 0.5416666666666666, 'min_per_post': 1, 'max_per_post': 8}
-      Jaccard to initial: 0.865
-      layer_1: {'total_possible': 96, 'total_connected': 52, 'density': 0.5416666666666666, 'min_per_post': 5, 'max_per_post': 8}
-      Jaccard to initial: 0.865
+      layer_0: {'total_possible': 96, 'total_connected': 55, 'density': 0.5729166666666666, 'min_per_post': 1, 'max_per_post': 8}
+      Jaccard to initial: 0.818
+      layer_1: {'total_possible': 96, 'total_connected': 55, 'density': 0.5729166666666666, 'min_per_post': 5, 'max_per_post': 10}
+      Jaccard to initial: 0.818
   Seed 42, ARM 4: Frozen control:
   [Saved during run: exp_040_temporal_sequence_s42_frozen.json]
     Final accuracy: 0.000
@@ -286,10 +287,10 @@ TASK: temporal_sequence - 8-channel sequence with a short signal window
   Seed 123, ARM 3: Both together:
   [Saved during run: exp_043_temporal_sequence_s123_both.json]
     Final accuracy: 0.062
-      layer_0: {'total_possible': 96, 'total_connected': 51, 'density': 0.53125, 'min_per_post': 2, 'max_per_post': 8}
-      Jaccard to initial: 0.941
-      layer_1: {'total_possible': 96, 'total_connected': 51, 'density': 0.53125, 'min_per_post': 5, 'max_per_post': 8}
-      Jaccard to initial: 0.941
+      layer_0: {'total_possible': 96, 'total_connected': 54, 'density': 0.5625, 'min_per_post': 2, 'max_per_post': 8}
+      Jaccard to initial: 0.889
+      layer_1: {'total_possible': 96, 'total_connected': 54, 'density': 0.5625, 'min_per_post': 5, 'max_per_post': 9}
+      Jaccard to initial: 0.889
   Seed 123, ARM 4: Frozen control:
   [Saved during run: exp_044_temporal_sequence_s123_frozen.json]
     Final accuracy: 0.062
@@ -308,10 +309,10 @@ TASK: temporal_sequence - 8-channel sequence with a short signal window
   Seed 256, ARM 3: Both together:
   [Saved during run: exp_047_temporal_sequence_s256_both.json]
     Final accuracy: 0.000
-      layer_0: {'total_possible': 96, 'total_connected': 50, 'density': 0.5208333333333334, 'min_per_post': 1, 'max_per_post': 8}
-      Jaccard to initial: 0.860
-      layer_1: {'total_possible': 96, 'total_connected': 58, 'density': 0.6041666666666666, 'min_per_post': 4, 'max_per_post': 10}
-      Jaccard to initial: 0.897
+      layer_0: {'total_possible': 96, 'total_connected': 53, 'density': 0.5520833333333334, 'min_per_post': 1, 'max_per_post': 8}
+      Jaccard to initial: 0.811
+      layer_1: {'total_possible': 96, 'total_connected': 61, 'density': 0.6354166666666666, 'min_per_post': 4, 'max_per_post': 11}
+      Jaccard to initial: 0.852
   Seed 256, ARM 4: Frozen control:
   [Saved during run: exp_048_temporal_sequence_s256_frozen.json]
     Final accuracy: 0.062
@@ -334,7 +335,7 @@ TASK: associative_memory - Six-pattern associative memory
   Seed 42, ARM 3: Both together:
   [Saved during run: exp_051_associative_memory_s42_both.json]
     Final accuracy: 0.125
-      layer_0: {'total_possible': 96, 'total_connected': 52, 'density': 0.5416666666666666, 'min_per_post': 1, 'max_per_post': 5}
+      layer_0: {'total_possible': 96, 'total_connected': 52, 'density': 0.5416666666666666, 'min_per_post': 1, 'max_per_post': 6}
       Jaccard to initial: 0.942
       layer_1: {'total_possible': 96, 'total_connected': 47, 'density': 0.4895833333333333, 'min_per_post': 5, 'max_per_post': 12}
       Jaccard to initial: 0.915
@@ -378,10 +379,10 @@ TASK: associative_memory - Six-pattern associative memory
   Seed 256, ARM 3: Both together:
   [Saved during run: exp_059_associative_memory_s256_both.json]
     Final accuracy: 0.125
-      layer_0: {'total_possible': 96, 'total_connected': 49, 'density': 0.5104166666666666, 'min_per_post': 1, 'max_per_post': 5}
-      Jaccard to initial: 1.000
-      layer_1: {'total_possible': 96, 'total_connected': 45, 'density': 0.46875, 'min_per_post': 5, 'max_per_post': 12}
-      Jaccard to initial: 1.000
+      layer_0: {'total_possible': 96, 'total_connected': 52, 'density': 0.5416666666666666, 'min_per_post': 1, 'max_per_post': 5}
+      Jaccard to initial: 0.942
+      layer_1: {'total_possible': 96, 'total_connected': 49, 'density': 0.5104166666666666, 'min_per_post': 6, 'max_per_post': 12}
+      Jaccard to initial: 0.918
   Seed 256, ARM 4: Frozen control:
   [Saved during run: exp_060_associative_memory_s256_frozen.json]
     Final accuracy: 0.125
@@ -443,16 +444,16 @@ STRUCTURAL PLASTICITY VERDICT
         layer_0: Jaccard=0.944, density=0.5625
         layer_1: Jaccard=0.923, density=0.5417
   Both together:
-    Accuracies: ['0.188', '0.438', '0.438']
-    Mean accuracy: 0.354
+    Accuracies: ['0.188', '0.500', '0.438']
+    Mean accuracy: 0.375
     Found better route: 2/3 seeds
     Connectivity changed: 3/3 seeds
       Seed 42: better_route=NO, connectivity_changed=YES
         layer_0: Jaccard=0.905, density=0.6562
         layer_1: Jaccard=0.833, density=0.5000
       Seed 123: better_route=YES, connectivity_changed=YES
-        layer_0: Jaccard=0.909, density=0.6875
-        layer_1: Jaccard=0.867, density=0.6250
+        layer_0: Jaccard=0.870, density=0.7188
+        layer_1: Jaccard=0.812, density=0.6667
       Seed 256: better_route=YES, connectivity_changed=YES
         layer_0: Jaccard=0.944, density=0.5625
         layer_1: Jaccard=0.923, density=0.5417
@@ -520,14 +521,14 @@ STRUCTURAL PLASTICITY VERDICT
     Found better route: 0/3 seeds
     Connectivity changed: 3/3 seeds
       Seed 42: better_route=NO, connectivity_changed=YES
-        layer_0: Jaccard=0.865, density=0.5417
-        layer_1: Jaccard=0.865, density=0.5417
+        layer_0: Jaccard=0.818, density=0.5729
+        layer_1: Jaccard=0.818, density=0.5729
       Seed 123: better_route=NO, connectivity_changed=YES
-        layer_0: Jaccard=0.941, density=0.5312
-        layer_1: Jaccard=0.941, density=0.5312
+        layer_0: Jaccard=0.889, density=0.5625
+        layer_1: Jaccard=0.889, density=0.5625
       Seed 256: better_route=NO, connectivity_changed=YES
-        layer_0: Jaccard=0.860, density=0.5208
-        layer_1: Jaccard=0.897, density=0.6042
+        layer_0: Jaccard=0.811, density=0.5521
+        layer_1: Jaccard=0.852, density=0.6354
   Frozen control:
     Accuracies: ['0.000', '0.062', '0.062']
     Mean accuracy: 0.042
@@ -554,16 +555,16 @@ STRUCTURAL PLASTICITY VERDICT
     Accuracies: ['0.125', '0.125', '0.125']
     Mean accuracy: 0.125
     Found better route: 0/3 seeds
-    Connectivity changed: 1/3 seeds
+    Connectivity changed: 2/3 seeds
       Seed 42: better_route=NO, connectivity_changed=YES
         layer_0: Jaccard=0.942, density=0.5417
         layer_1: Jaccard=0.915, density=0.4896
       Seed 123: better_route=NO, connectivity_changed=NO
         layer_0: Jaccard=1.000, density=0.4792
         layer_1: Jaccard=1.000, density=0.4896
-      Seed 256: better_route=NO, connectivity_changed=NO
-        layer_0: Jaccard=1.000, density=0.5104
-        layer_1: Jaccard=1.000, density=0.4688
+      Seed 256: better_route=NO, connectivity_changed=YES
+        layer_0: Jaccard=0.942, density=0.5417
+        layer_1: Jaccard=0.918, density=0.5104
   Frozen control:
     Accuracies: ['0.125', '0.125', '0.125']
     Mean accuracy: 0.125
@@ -572,8 +573,8 @@ STRUCTURAL PLASTICITY VERDICT
 ============================================================
 WEIGHT MOVEMENT
 ============================================================
-weight_only: mean absolute norm change=0.003924, mean percentage change=0.961% (FAIL: <= 1%)
-both: mean absolute norm change=0.429259, mean percentage change=20.488% (PASS: > 1%)
+weight_only: mean absolute norm change=0.005720, mean percentage change=1.422% (PASS: > 1%)
+both: mean absolute norm change=0.585745, mean percentage change=32.676% (PASS: > 1%)
 
 ============================================================
 PLASTICITY VS FROZEN (10-POINT REAL MARGIN)
@@ -585,7 +586,7 @@ binary_classification: frozen=0.562
 frequency_discrimination: frozen=0.375
   weight_only: mean=0.375, delta=+0.000
   structural_only: mean=0.333, delta=-0.042
-  both: mean=0.354, delta=-0.021
+  both: mean=0.375, delta=+0.000
 temporal_xor: frozen=0.542
   weight_only: mean=0.542, delta=+0.000
   structural_only: mean=0.542, delta=+0.000

@@ -60,11 +60,11 @@
       "both": {
         "accuracies": [
           0.1875,
-          0.4375,
+          0.5,
           0.4375
         ],
-        "mean_accuracy": 0.3541666666666667,
-        "delta_vs_frozen": -0.020833333333333315
+        "mean_accuracy": 0.375,
+        "delta_vs_frozen": 0.0
       },
       "frozen": {
         "accuracies": [
@@ -189,13 +189,13 @@
   },
   "weight_movement": {
     "weight_only": {
-      "mean_absolute_norm_change": 0.00392391970921499,
-      "mean_percentage_change": 0.9607733535798848,
-      "passes_1pct": false
+      "mean_absolute_norm_change": 0.005720389177559641,
+      "mean_percentage_change": 1.4215664956686866,
+      "passes_1pct": true
     },
     "both": {
-      "mean_absolute_norm_change": 0.4292585672613407,
-      "mean_percentage_change": 20.48821535479425,
+      "mean_absolute_norm_change": 0.5857451340829343,
+      "mean_percentage_change": 32.67554000394033,
       "passes_1pct": true
     }
   },

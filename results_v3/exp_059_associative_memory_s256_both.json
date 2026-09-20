@@ -3,14 +3,14 @@
   "weight_plasticity": true,
   "structural_plasticity": true,
   "seed": 256,
-  "lr": 1.0,
+  "lr": 2.0,
   "n_trials": 300,
   "initial_weight_norm": 2.7465920300866835,
-  "final_weight_norm": 1.9147335801614656,
-  "signed_weight_norm_change": -0.831858449925218,
-  "absolute_weight_norm_change": 0.831858449925218,
-  "signed_weight_norm_change_pct": -30.286931616085848,
-  "weight_norm_change_pct": 30.286931616085848,
+  "final_weight_norm": 1.8431970413422771,
+  "signed_weight_norm_change": -0.9033949887444064,
+  "absolute_weight_norm_change": 0.9033949887444064,
+  "signed_weight_norm_change_pct": -32.89148802765203,
+  "weight_norm_change_pct": 32.89148802765203,
   "weights_moved_over_1pct": true,
   "weights_nan": false,
   "weights_exploded": false,
@@ -21,27 +21,27 @@
     "layer_0": {
       "stats": {
         "total_possible": 96,
-        "total_connected": 49,
-        "density": 0.5104166666666666,
+        "total_connected": 52,
+        "density": 0.5416666666666666,
         "min_per_post": 1,
         "max_per_post": 5
       },
-      "jaccard_to_initial": 1.0,
+      "jaccard_to_initial": 0.9423076923076923,
       "n_snapshots": 5
     },
     "layer_1": {
       "stats": {
         "total_possible": 96,
-        "total_connected": 45,
-        "density": 0.46875,
-        "min_per_post": 5,
+        "total_connected": 49,
+        "density": 0.5104166666666666,
+        "min_per_post": 6,
         "max_per_post": 12
       },
-      "jaccard_to_initial": 1.0,
+      "jaccard_to_initial": 0.9183673469387755,
       "n_snapshots": 5
     }
   },
-  "connectivity_changed": false,
+  "connectivity_changed": true,
   "found_better_route": false,
   "accuracy_trace": [
     [
@@ -58,11 +58,11 @@
     ],
     [
       75,
-      0.1875
+      0.25
     ],
     [
       100,
-      0.0
+      0.0625
     ],
     [
       125,
@@ -78,15 +78,15 @@
     ],
     [
       200,
-      0.0
+      0.125
     ],
     [
       225,
-      0.0
+      0.125
     ],
     [
       250,
-      0.0625
+      0.1875
     ],
     [
       275,
@@ -100,55 +100,55 @@
   "weight_norm_trace": [
     [
       0,
-      2.7383988018761896
+      2.730249337229356
     ],
     [
       25,
-      2.563290855993627
+      2.4214022334453253
     ],
     [
       50,
-      2.4152529087489962
+      2.201062159804034
     ],
     [
       75,
-      2.297172451680928
+      2.0771875276895284
     ],
     [
       100,
-      2.1977058754858136
+      1.9951991583716717
     ],
     [
       125,
-      2.109638036131986
+      1.9351530940201676
     ],
     [
       150,
-      2.0565110216743614
+      1.9084601139855204
     ],
     [
       175,
-      2.0193268009628023
+      1.8936070952374697
     ],
     [
       200,
-      1.9879708237655056
+      1.8836389410643806
     ],
     [
       225,
-      1.9618943396966875
+      1.8753229539967553
     ],
     [
       250,
-      1.9418831449083322
+      1.8494112985658189
     ],
     [
       275,
-      1.9263953801781688
+      1.8454190847932248
     ],
     [
       299,
-      1.9147335801614656
+      1.8431970413422771
     ]
   ]
 }

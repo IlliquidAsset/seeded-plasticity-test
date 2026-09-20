@@ -3,14 +3,14 @@
   "weight_plasticity": true,
   "structural_plasticity": false,
   "seed": 42,
-  "lr": 1.0,
+  "lr": 2.0,
   "n_trials": 300,
   "initial_weight_norm": 0.4477711672527057,
-  "final_weight_norm": 0.4474732240734142,
-  "signed_weight_norm_change": -0.0002979431792914933,
-  "absolute_weight_norm_change": 0.0002979431792914933,
-  "signed_weight_norm_change_pct": -0.06653916131302509,
-  "weight_norm_change_pct": 0.06653916131302509,
+  "final_weight_norm": 0.44717652987758244,
+  "signed_weight_norm_change": -0.0005946373751232747,
+  "absolute_weight_norm_change": 0.0005946373751232747,
+  "signed_weight_norm_change_pct": -0.1327993891995469,
+  "weight_norm_change_pct": 0.1327993891995469,
   "weights_moved_over_1pct": false,
   "weights_nan": false,
   "weights_exploded": false,
@@ -93,39 +93,39 @@
     ],
     [
       100,
-      0.4477048348377316
+      0.44763879086700686
     ],
     [
       125,
-      0.44765567213664154
+      0.447540642239735
     ],
     [
       150,
-      0.44765567213664154
+      0.447540642239735
     ],
     [
       175,
-      0.4475676912625398
+      0.44736507120149216
     ],
     [
       200,
-      0.4474732240734142
+      0.44717652987758244
     ],
     [
       225,
-      0.4474732240734142
+      0.44717652987758244
     ],
     [
       250,
-      0.4474732240734142
+      0.44717652987758244
     ],
     [
       275,
-      0.4474732240734142
+      0.44717652987758244
     ],
     [
       299,
-      0.4474732240734142
+      0.44717652987758244
     ]
   ]
 }
