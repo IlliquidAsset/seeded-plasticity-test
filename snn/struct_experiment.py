@@ -25,7 +25,7 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from snn.core import PureSNN
-from snn.tasks import get_task_configs
+from snn.tasks import get_task_configs, get_hard_task_configs
 from snn.structural import StructuralPlasticity
 
 
@@ -143,9 +143,10 @@ def run_struct_experiment(
             syn.use_mask = True
             syn.connection_mask.data.fill_(1.0)
 
-    # Freeze initial state for control
+    # Freeze initial state for control and weight-movement reporting
     frozen_weights = net.get_frozen_weights()
     frozen_masks = [syn.connection_mask.data.clone() for syn in net.synapses]
+    initial_weight_norm = net.weight_norm()
 
     # Training loop
     batch_size = 16
@@ -255,6 +256,24 @@ def run_struct_experiment(
     final_accuracy = accuracies[-1][1] if accuracies else 0.0
     initial_accuracy = accuracies[0][1] if accuracies else 0.0
 
+    final_weight_norm = net.weight_norm()
+    signed_weight_norm_change = final_weight_norm - initial_weight_norm
+    absolute_weight_norm_change = abs(signed_weight_norm_change)
+    weight_norm_change_pct = (
+        absolute_weight_norm_change / initial_weight_norm * 100.0
+        if initial_weight_norm else 0.0
+    )
+    signed_weight_norm_change_pct = (
+        signed_weight_norm_change / initial_weight_norm * 100.0
+        if initial_weight_norm else 0.0
+    )
+    weights_nan = any(
+        not torch.isfinite(syn.weight.data).all().item() for syn in net.synapses
+    )
+    max_abs_weight = max(
+        syn.weight.data.abs().max().item() for syn in net.synapses
+    )
+
     return {
         "task": task_name,
         "weight_plasticity": weight_plasticity,
@@ -262,6 +281,16 @@ def run_struct_experiment(
         "seed": seed,
         "lr": lr,
         "n_trials": n_trials,
+        "initial_weight_norm": initial_weight_norm,
+        "final_weight_norm": final_weight_norm,
+        "signed_weight_norm_change": signed_weight_norm_change,
+        "absolute_weight_norm_change": absolute_weight_norm_change,
+        "signed_weight_norm_change_pct": signed_weight_norm_change_pct,
+        "weight_norm_change_pct": weight_norm_change_pct,
+        "weights_moved_over_1pct": weight_norm_change_pct > 1.0,
+        "weights_nan": weights_nan,
+        "weights_exploded": max_abs_weight > 5.0,
+        "max_abs_weight": max_abs_weight,
         "final_accuracy": final_accuracy,
         "initial_accuracy": initial_accuracy,
         "accuracy_trace": accuracies,
@@ -273,12 +302,138 @@ def run_struct_experiment(
     }
 
 
+def verify_frozen_floor(
+    task_configs, seeds=[42, 123, 256], n_trials=100, details_out=None
+):
+    """Verify frozen controls stay no more than 10 points above chance."""
+    failures = {}
+    means = {}
+
+    print("\n" + "=" * 76)
+    print("FROZEN-AT-FLOOR PRECHECK")
+    print("=" * 76)
+    print(f"{'Task':30s} {'Frozen mean':>12s} {'Chance':>10s} {'Limit':>10s} {'Status':>9s}")
+    print("-" * 76)
+
+    for task_name, config in task_configs.items():
+        seed_means = []
+        for seed in seeds:
+            result = run_struct_experiment(
+                task_name,
+                config["cls"],
+                config["kwargs"],
+                config["layers"],
+                seed=seed,
+                n_trials=n_trials,
+                eval_every=1,
+                weight_plasticity=False,
+                structural_plasticity=False,
+            )
+            trace = result["accuracy_trace"]
+            seed_means.append(sum(acc for _, acc in trace) / len(trace))
+
+        mean_accuracy = sum(seed_means) / len(seed_means)
+        chance = 1.0 / config["layers"][-1]
+        limit = chance + 0.10
+        means[task_name] = mean_accuracy
+        status = "PASS" if mean_accuracy <= limit else "FAIL"
+        if status == "FAIL":
+            failures[task_name] = mean_accuracy
+        print(
+            f"{task_name:30s} {mean_accuracy:12.3f} {chance:10.3f} "
+            f"{limit:10.3f} {status:>9s}"
+        )
+
+    print("=" * 76)
+    if failures:
+        details = ", ".join(f"{name}={mean:.3f}" for name, mean in failures.items())
+        print(f"FROZEN FLOOR GATE: FAILED — harden these tasks: {details}")
+    else:
+        print("FROZEN FLOOR GATE: PASSED")
+    if details_out is not None:
+        details_out.update(means)
+    return not failures, failures
+
+
+def calibrate_lr(
+    task_configs=None,
+    lr_sweep=[0.001, 0.01, 0.05, 0.1],
+    task_name="binary_classification",
+    seed=42,
+    n_trials=100,
+):
+    """Sweep weight-only learning rates and choose the highest stable value."""
+    if task_configs is None:
+        task_configs = get_hard_task_configs()
+    if task_name not in task_configs:
+        raise KeyError(f"Unknown calibration task: {task_name}")
+
+    config = task_configs[task_name]
+    sweep_results = []
+    print("\n" + "=" * 88)
+    print(f"WEIGHT-PLASTICITY LR CALIBRATION ({task_name}, seed={seed})")
+    print("=" * 88)
+    print(
+        f"{'LR':>8s} {'Initial norm':>14s} {'Final norm':>14s} "
+        f"{'Signed move':>13s} {'Max |w|':>10s} {'Stable':>9s}"
+    )
+    print("-" * 88)
+
+    for lr in lr_sweep:
+        result = run_struct_experiment(
+            task_name,
+            config["cls"],
+            config["kwargs"],
+            config["layers"],
+            seed=seed,
+            lr=lr,
+            n_trials=n_trials,
+            eval_every=max(1, n_trials // 4),
+            weight_plasticity=True,
+            structural_plasticity=False,
+        )
+        stable = not result["weights_nan"] and not result["weights_exploded"]
+        calibration = {
+            "lr": lr,
+            "initial_weight_norm": result["initial_weight_norm"],
+            "final_weight_norm": result["final_weight_norm"],
+            "signed_weight_norm_change_pct": result["signed_weight_norm_change_pct"],
+            "weight_norm_change_pct": result["weight_norm_change_pct"],
+            "max_abs_weight": result["max_abs_weight"],
+            "weights_nan": result["weights_nan"],
+            "weights_exploded": result["weights_exploded"],
+            "stable": stable,
+        }
+        sweep_results.append(calibration)
+        print(
+            f"{lr:8.3g} {result['initial_weight_norm']:14.6f} "
+            f"{result['final_weight_norm']:14.6f} "
+            f"{result['signed_weight_norm_change_pct']:12.3f}% "
+            f"{result['max_abs_weight']:10.4f} "
+            f"{('YES' if stable else 'NO'):>9s}"
+        )
+
+    stable_lrs = [item["lr"] for item in sweep_results if item["stable"]]
+    if not stable_lrs:
+        raise RuntimeError("LR calibration failed: every candidate was unstable")
+    chosen_lr = max(stable_lrs)
+    print("-" * 88)
+    print(
+        f"Chosen LR: {chosen_lr:g} — highest candidate with finite weights "
+        "and max |weight| <= 5.0"
+    )
+    print("=" * 88)
+    return chosen_lr, sweep_results
+
+
 def run_struct_bench(
     seeds=[42, 123, 256],
     lr=0.001,
     n_trials=300,
     eval_every=25,
     tasks_to_run=None,
+    task_configs=None,
+    result_callback=None,
 ):
     """
     Run the full 4-arm structural plasticity benchmark.
@@ -286,8 +441,14 @@ def run_struct_bench(
     Args:
         tasks_to_run: list of task keys to include (None = all)
     """
-    task_configs = get_task_configs()
+    if task_configs is None:
+        task_configs = get_task_configs()
     results = []
+
+    def record(result):
+        results.append(result)
+        if result_callback is not None:
+            result_callback(result, len(results))
 
     for task_key, config in task_configs.items():
         if tasks_to_run is not None and task_key not in tasks_to_run:
@@ -305,7 +466,7 @@ def run_struct_bench(
                 seed=seed, lr=lr, n_trials=n_trials, eval_every=eval_every,
                 weight_plasticity=True, structural_plasticity=False,
             )
-            results.append(r1)
+            record(r1)
             print(f"    Final accuracy: {r1['final_accuracy']:.3f}")
 
             # ARM 2: Structural plasticity only
@@ -315,7 +476,7 @@ def run_struct_bench(
                 seed=seed, lr=lr, n_trials=n_trials, eval_every=eval_every,
                 weight_plasticity=False, structural_plasticity=True,
             )
-            results.append(r2)
+            record(r2)
             print(f"    Final accuracy: {r2['final_accuracy']:.3f}")
             if r2.get("final_connectivity"):
                 for lidx, ldata in r2["final_connectivity"].items():
@@ -329,7 +490,7 @@ def run_struct_bench(
                 seed=seed, lr=lr, n_trials=n_trials, eval_every=eval_every,
                 weight_plasticity=True, structural_plasticity=True,
             )
-            results.append(r3)
+            record(r3)
             print(f"    Final accuracy: {r3['final_accuracy']:.3f}")
             if r3.get("final_connectivity"):
                 for lidx, ldata in r3["final_connectivity"].items():
@@ -343,11 +504,74 @@ def run_struct_bench(
                 seed=seed, lr=lr, n_trials=n_trials, eval_every=eval_every,
                 weight_plasticity=False, structural_plasticity=False,
             )
-            results.append(r4)
+            record(r4)
             print(f"    Final accuracy: {r4['final_accuracy']:.3f}")
             print(f"    Freeze check - no change expected: acc={r4['final_accuracy']:.3f}")
 
     return results
+
+
+def summarize_struct_results(results, real_margin=0.10):
+    """Aggregate arm accuracies, weight movement, and frozen comparisons."""
+    arm_names = {
+        (True, False): "weight_only",
+        (False, True): "structural_only",
+        (True, True): "both",
+        (False, False): "frozen",
+    }
+    grouped = {}
+    for result in results:
+        task = grouped.setdefault(result["task"], {})
+        arm = arm_names[(result["weight_plasticity"], result["structural_plasticity"])]
+        task.setdefault(arm, []).append(result)
+
+    task_summary = {}
+    deltas = []
+    for task_name, arms in grouped.items():
+        task_summary[task_name] = {}
+        for arm_name, runs in arms.items():
+            accuracies = [run["final_accuracy"] for run in runs]
+            task_summary[task_name][arm_name] = {
+                "accuracies": accuracies,
+                "mean_accuracy": sum(accuracies) / len(accuracies),
+            }
+        frozen = task_summary[task_name].get("frozen")
+        if frozen:
+            frozen_mean = frozen["mean_accuracy"]
+            for arm_name in ("weight_only", "structural_only", "both"):
+                if arm_name in task_summary[task_name]:
+                    delta = task_summary[task_name][arm_name]["mean_accuracy"] - frozen_mean
+                    task_summary[task_name][arm_name]["delta_vs_frozen"] = delta
+                    deltas.append(delta)
+
+    weight_movement = {}
+    for arm_name in ("weight_only", "both"):
+        runs = [
+            run for arms in grouped.values() for run in arms.get(arm_name, [])
+        ]
+        if not runs:
+            continue
+        mean_abs = sum(run["absolute_weight_norm_change"] for run in runs) / len(runs)
+        mean_pct = sum(run["weight_norm_change_pct"] for run in runs) / len(runs)
+        weight_movement[arm_name] = {
+            "mean_absolute_norm_change": mean_abs,
+            "mean_percentage_change": mean_pct,
+            "passes_1pct": mean_pct > 1.0,
+        }
+
+    if any(delta >= real_margin for delta in deltas):
+        verdict = "YES"
+    elif deltas and all(delta <= 0 for delta in deltas):
+        verdict = "NO"
+    else:
+        verdict = "INCONCLUSIVE"
+
+    return {
+        "real_margin": real_margin,
+        "tasks": task_summary,
+        "weight_movement": weight_movement,
+        "verdict": verdict,
+    }
 
 
 def print_struct_verdict(results):
@@ -405,31 +629,36 @@ def print_struct_verdict(results):
                             dens = ldata.get("stats", {}).get("density", 0)
                             print(f"        {lidx}: Jaccard={js:.3f}, density={dens:.4f}")
 
-    # Overall verdict
+    summary = summarize_struct_results(results)
     print(f"\n\n{'=' * 60}")
+    print("WEIGHT MOVEMENT")
+    print("=" * 60)
+    for arm_name, movement in summary["weight_movement"].items():
+        status = "PASS" if movement["passes_1pct"] else "FAIL"
+        print(
+            f"{arm_name}: mean absolute norm change="
+            f"{movement['mean_absolute_norm_change']:.6f}, "
+            f"mean percentage change={movement['mean_percentage_change']:.3f}% "
+            f"({status}: {'>' if movement['passes_1pct'] else '<='} 1%)"
+        )
+
+    print(f"\n{'=' * 60}")
+    print("PLASTICITY VS FROZEN (10-POINT REAL MARGIN)")
+    print("=" * 60)
+    for task_name, arms in summary["tasks"].items():
+        frozen_mean = arms.get("frozen", {}).get("mean_accuracy", float("nan"))
+        print(f"{task_name}: frozen={frozen_mean:.3f}")
+        for arm_name in ("weight_only", "structural_only", "both"):
+            if arm_name in arms:
+                print(
+                    f"  {arm_name}: mean={arms[arm_name]['mean_accuracy']:.3f}, "
+                    f"delta={arms[arm_name].get('delta_vs_frozen', float('nan')):+.3f}"
+                )
+
+    print(f"\n{'=' * 60}")
     print("OVERALL VERDICT")
     print("=" * 60)
-
-    any_structural_learning = False
-    for task_key, data in by_task.items():
-        for arm_key in ("arm2", "arm3"):
-            runs = data[arm_key]
-            if not runs:
-                continue
-            for r in runs:
-                if r.get("found_better_route", False):
-                    any_structural_learning = True
-                    break
-
-    if any_structural_learning:
-        print("YES - the network can find a better route through structural plasticity.")
-        print("Structural plasticity (alone or with weight plasticity) discovered")
-        print("connectivity patterns that outperform the initial bad seeding.")
-    else:
-        print("INCONCLUSIVE - insufficient evidence that structural plasticity")
-        print("discovered better routes than the initial bad seeding.")
-        print("This may indicate: (a) pruning/sprouting parameters need tuning,")
-        print("(b) the task difficulty is mismatched, or (c) the mechanism needs revision.")
+    print(f"{summary['verdict']} - does any plasticity arm beat frozen by >= 0.10?")
     print("=" * 60)
 
 
