@@ -217,7 +217,7 @@ def run_replication():
     rep1 = _run_instrumented_experiment(
         task_name="binary_classification",
         task_config=get_task_configs()["binary_classification"],
-        seeds=[42, 123, 256],
+        seeds=[42, 123, 256, 7, 19, 88, 314, 555, 777, 1024],
         lr=0.005,
         n_trials=300,
         weight_scale=2.0,
@@ -232,7 +232,7 @@ def run_replication():
     rep2 = _run_instrumented_experiment(
         task_name="temporal_xor",
         task_config=get_task_configs()["temporal_xor"],
-        seeds=[42, 123, 256],
+        seeds=[42, 123, 256, 7, 19, 88, 314, 555, 777, 1024],
         lr=0.005,
         n_trials=300,
         weight_scale=2.0,
@@ -248,7 +248,7 @@ def run_replication():
     rep3 = _run_instrumented_experiment(
         task_name="binary_classification",
         task_config=get_hard_task_configs()["binary_classification"],
-        seeds=[42, 123, 256],
+        seeds=[42, 123, 256, 7, 19, 88, 314, 555, 777, 1024],
         lr=0.005,
         n_trials=300,
         weight_scale=2.0,
@@ -263,7 +263,7 @@ def run_replication():
     rep4 = _run_instrumented_experiment(
         task_name="temporal_xor",
         task_config=get_hard_task_configs()["temporal_xor"],
-        seeds=[42, 123, 256],
+        seeds=[42, 123, 256, 7, 19, 88, 314, 555, 777, 1024],
         lr=0.005,
         n_trials=300,
         weight_scale=2.0,
@@ -278,7 +278,7 @@ def run_replication():
     rep5 = _run_instrumented_experiment(
         task_name="temporal_sequence",
         task_config=get_hard_task_configs()["temporal_sequence"],
-        seeds=[42, 123, 256],
+        seeds=[42, 123, 256, 7, 19, 88, 314, 555, 777, 1024],
         lr=0.005,
         n_trials=300,
         weight_scale=2.0,

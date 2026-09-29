@@ -164,8 +164,11 @@ class RSTDPPlasticity:
         """
         if reward.dim() == 0:
             reward = reward.unsqueeze(0)
-        # Average over batch
-        delta_w = self.lr * reward.mean() * self.eligibility.mean(dim=0)
+        # CORRECT per-sample R-STDP: delta_w = lr * mean(R_n * e_n) over batch.
+        # NOT lr * mean(R) * mean(e), which cancels when rewards balance.
+        # reward: (batch,), eligibility: (batch, post, pre)
+        r_expanded = reward.reshape(-1, 1, 1)  # (batch, 1, 1)
+        delta_w = self.lr * (r_expanded * self.eligibility).mean(dim=0)
         with torch.no_grad():
             self.synapse.weight.data.add_(delta_w)
             # Keep weights bounded
