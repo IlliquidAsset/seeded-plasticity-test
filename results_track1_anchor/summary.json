@@ -1,0 +1,395 @@
+{
+  "outcome": "NULL",
+  "gate_criterion": ">=2/3 seeds show rate({1,1}) < rate({0,1})",
+  "gate_hits": 0,
+  "total_seeds": 3,
+  "parameters": {
+    "task": "TemporalXORPaperTask",
+    "layers": [
+      2,
+      20,
+      2
+    ],
+    "tau_elig_ms": 25.0,
+    "tau_plus_ms": 20.0,
+    "tau_minus_ms": 20.0,
+    "a_plus": 0.02,
+    "a_minus": 0.015,
+    "lr": 0.005,
+    "n_trials": 200,
+    "batch_size": 16,
+    "weight_scale": 2.0,
+    "tau_syn_ms": 10.0,
+    "tau_m_ms": 20.0
+  },
+  "commit_sha": "fe5e67695705c0f2e3b1e52d194e5f1ee0b5b9e1",
+  "command": "python3 run_track1_anchor.py",
+  "wall_time_seconds": 167.87520599365234,
+  "per_seed": [
+    {
+      "seed": 42,
+      "plasticity_on": true,
+      "final_accuracy": 0.8125,
+      "accuracy_trace": [
+        [
+          0,
+          0.75
+        ],
+        [
+          25,
+          0.625
+        ],
+        [
+          50,
+          0.6875
+        ],
+        [
+          75,
+          0.9375
+        ],
+        [
+          100,
+          0.75
+        ],
+        [
+          125,
+          0.625
+        ],
+        [
+          150,
+          0.8125
+        ],
+        [
+          175,
+          0.8125
+        ],
+        [
+          199,
+          0.8125
+        ]
+      ],
+      "rate_11": {
+        "per_neuron": [
+          0.0,
+          992.75
+        ],
+        "total_hz": 992.75
+      },
+      "rate_01": {
+        "per_neuron": [
+          0.5,
+          977.75
+        ],
+        "total_hz": 978.25
+      },
+      "liveness": {
+        "n_trials_recorded": 200,
+        "mean_abs_eligibility": 0.06993608673103154,
+        "eligibility_at_reward_pct_of_peak": 6.752510197865226,
+        "reward_weight_corr": -0.00544238439348533
+      }
+    },
+    {
+      "seed": 123,
+      "plasticity_on": true,
+      "final_accuracy": 0.1875,
+      "accuracy_trace": [
+        [
+          0,
+          0.25
+        ],
+        [
+          25,
+          0.125
+        ],
+        [
+          50,
+          0.25
+        ],
+        [
+          75,
+          0.3125
+        ],
+        [
+          100,
+          0.125
+        ],
+        [
+          125,
+          0.375
+        ],
+        [
+          150,
+          0.3125
+        ],
+        [
+          175,
+          0.125
+        ],
+        [
+          199,
+          0.1875
+        ]
+      ],
+      "rate_11": {
+        "per_neuron": [
+          0.75,
+          9.0
+        ],
+        "total_hz": 9.75
+      },
+      "rate_01": {
+        "per_neuron": [
+          0.0,
+          0.0
+        ],
+        "total_hz": 0.0
+      },
+      "liveness": {
+        "n_trials_recorded": 200,
+        "mean_abs_eligibility": 0.0624363599717617,
+        "eligibility_at_reward_pct_of_peak": 6.316840948500485,
+        "reward_weight_corr": -0.013932792315517608
+      }
+    },
+    {
+      "seed": 256,
+      "plasticity_on": true,
+      "final_accuracy": 0.5,
+      "accuracy_trace": [
+        [
+          0,
+          0.375
+        ],
+        [
+          25,
+          0.4375
+        ],
+        [
+          50,
+          0.375
+        ],
+        [
+          75,
+          0.4375
+        ],
+        [
+          100,
+          0.4375
+        ],
+        [
+          125,
+          0.625
+        ],
+        [
+          150,
+          0.1875
+        ],
+        [
+          175,
+          0.5625
+        ],
+        [
+          199,
+          0.5
+        ]
+      ],
+      "rate_11": {
+        "per_neuron": [
+          846.75,
+          0.0
+        ],
+        "total_hz": 846.75
+      },
+      "rate_01": {
+        "per_neuron": [
+          966.25,
+          0.0
+        ],
+        "total_hz": 966.25
+      },
+      "liveness": {
+        "n_trials_recorded": 200,
+        "mean_abs_eligibility": 0.03870086257345975,
+        "eligibility_at_reward_pct_of_peak": 3.9537034809384233,
+        "reward_weight_corr": -0.09000540885099274
+      }
+    }
+  ],
+  "frozen_per_seed": [
+    {
+      "seed": 42,
+      "plasticity_on": false,
+      "final_accuracy": 0.8125,
+      "accuracy_trace": [
+        [
+          0,
+          0.75
+        ],
+        [
+          25,
+          0.625
+        ],
+        [
+          50,
+          0.6875
+        ],
+        [
+          75,
+          0.9375
+        ],
+        [
+          100,
+          0.75
+        ],
+        [
+          125,
+          0.625
+        ],
+        [
+          150,
+          0.8125
+        ],
+        [
+          175,
+          0.8125
+        ],
+        [
+          199,
+          0.8125
+        ]
+      ],
+      "rate_11": {
+        "per_neuron": [
+          0.0,
+          970.75
+        ],
+        "total_hz": 970.75
+      },
+      "rate_01": {
+        "per_neuron": [
+          0.25,
+          618.75
+        ],
+        "total_hz": 619.0
+      },
+      "liveness": {}
+    },
+    {
+      "seed": 123,
+      "plasticity_on": false,
+      "final_accuracy": 0.375,
+      "accuracy_trace": [
+        [
+          0,
+          0.25
+        ],
+        [
+          25,
+          0.25
+        ],
+        [
+          50,
+          0.375
+        ],
+        [
+          75,
+          0.375
+        ],
+        [
+          100,
+          0.3125
+        ],
+        [
+          125,
+          0.4375
+        ],
+        [
+          150,
+          0.4375
+        ],
+        [
+          175,
+          0.25
+        ],
+        [
+          199,
+          0.375
+        ]
+      ],
+      "rate_11": {
+        "per_neuron": [
+          49.25,
+          945.25
+        ],
+        "total_hz": 994.5
+      },
+      "rate_01": {
+        "per_neuron": [
+          0.0,
+          18.25
+        ],
+        "total_hz": 18.25
+      },
+      "liveness": {}
+    },
+    {
+      "seed": 256,
+      "plasticity_on": false,
+      "final_accuracy": 0.5,
+      "accuracy_trace": [
+        [
+          0,
+          0.375
+        ],
+        [
+          25,
+          0.4375
+        ],
+        [
+          50,
+          0.375
+        ],
+        [
+          75,
+          0.4375
+        ],
+        [
+          100,
+          0.4375
+        ],
+        [
+          125,
+          0.625
+        ],
+        [
+          150,
+          0.1875
+        ],
+        [
+          175,
+          0.5625
+        ],
+        [
+          199,
+          0.5
+        ]
+      ],
+      "rate_11": {
+        "per_neuron": [
+          742.75,
+          0.0
+        ],
+        "total_hz": 742.75
+      },
+      "rate_01": {
+        "per_neuron": [
+          979.25,
+          0.0
+        ],
+        "total_hz": 979.25
+      },
+      "liveness": {}
+    }
+  ]
+}
