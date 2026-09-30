@@ -30,6 +30,10 @@ REPO_DIR = Path(__file__).resolve().parent
 RESULTS_DIR = REPO_DIR / "results_track1_anchor"
 RESULTS_DIR.mkdir(exist_ok=True)
 
+# Note: this script requires PyTorch.  On the local Mac Mini it was executed
+# with ~/.hermes/hermes-agent/venv/bin/python3.11, which already provides
+# torch 2.2.2.  The system /usr/local/bin/python3 does not have torch installed.
+
 
 # Florian 2007, section 4.1 / 4.3 (temporally coded XOR):
 # tau_+ = tau_- = 20 ms, tau_z (eligibility trace) = 25 ms.
