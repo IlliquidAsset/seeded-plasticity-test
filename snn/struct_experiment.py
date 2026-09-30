@@ -27,6 +27,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from snn.core import PureSNN
 from snn.tasks import get_task_configs, get_hard_task_configs
 from snn.structural import StructuralPlasticity
+from snn.instrumentation import InstrumentedRSTDP
 
 
 def verify_freeze_mechanism():
@@ -110,14 +111,21 @@ def run_struct_experiment(
     task = task_cls(**task_kwargs)
     task.set_seed(seed + 1)
 
-    net = PureSNN(layers, dt=1.0, weight_scale=0.1,
-                  tau_m=20.0, tau_syn=5.0)
+    # Revision C: use alive network parameters (non-dead diagnosis defaults)
+    net = PureSNN(layers, dt=1.0, weight_scale=2.0,
+                  tau_m=20.0, tau_syn=10.0)
 
     # Attach plasticity rules if weight plasticity is on
     if weight_plasticity:
-        net.add_plasticity(lr=lr, tau_elig=20.0,
-                           a_plus=0.008, a_minus=0.006,
-                           tau_plus=20.0, tau_minus=20.0)
+        net.plasticities = []
+        for syn in net.synapses:
+            p = InstrumentedRSTDP(
+                syn, lr=lr, tau_elig=1000.0,
+                a_plus=0.008, a_minus=0.006,
+                tau_plus=20.0, tau_minus=20.0,
+                record=True,
+            )
+            net.plasticities.append(p)
 
     # Attach structural plasticity per layer
     struct_plasticities = []
@@ -274,6 +282,10 @@ def run_struct_experiment(
         syn.weight.data.abs().max().item() for syn in net.synapses
     )
 
+    liveness = {}
+    if weight_plasticity and net.plasticities:
+        liveness = net.plasticities[0].get_liveness_metrics()
+
     return {
         "task": task_name,
         "weight_plasticity": weight_plasticity,
@@ -299,6 +311,7 @@ def run_struct_experiment(
         "final_connectivity": final_connectivity,
         "connectivity_changed": connectivity_changed,
         "found_better_route": final_accuracy > initial_accuracy + 0.1,
+        "liveness": liveness,
     }
 
 
@@ -441,6 +454,10 @@ def run_struct_bench(
     Args:
         tasks_to_run: list of task keys to include (None = all)
     """
+    # Revision E: freeze verification is built into the bench runner.
+    if not verify_freeze_mechanism():
+        raise RuntimeError("Freeze mechanism verification failed; aborting bench.")
+
     if task_configs is None:
         task_configs = get_task_configs()
     results = []

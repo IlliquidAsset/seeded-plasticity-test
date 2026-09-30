@@ -315,7 +315,7 @@ def _run_instrumented_experiment(
         net.plasticities = []
         for syn in net.synapses:
             p = InstrumentedRSTDP(
-                syn, lr=lr, tau_elig=20.0,
+                syn, lr=lr, tau_elig=1000.0,
                 a_plus=0.02, a_minus=0.015,
                 tau_plus=20.0, tau_minus=20.0,
                 record=True,

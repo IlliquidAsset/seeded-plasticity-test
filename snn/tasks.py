@@ -176,6 +176,66 @@ class TemporalXORTask(Task):
         return spike_counts.argmax(dim=-1)
 
 
+# ========== Task 2b: Paper-faithful Temporal XOR (Florian 2007) ==========
+
+class TemporalXORPaperTask(Task):
+    """
+    Paper-faithful temporal-coded XOR from Florian (2007).
+
+    Each bit is encoded as a fixed 500 ms spike train with exactly 50 spikes
+    distributed uniformly at random, giving all inputs the same 100 Hz average
+    rate.  The target is the XOR of the two bits.
+
+    Reference: Florian 2007, section 4.3 "Solving the XOR Problem: Temporally
+    Coded Input" — "The input signals 0 and 1 were coded by two distinct spike
+    trains of 500 ms in length, randomly generated ... by distributing uniformly
+    50 spikes within this interval."
+    """
+
+    def __init__(self, timesteps=500, dt=1.0):
+        super().__init__("temporal_xor_paper", 2, 2, timesteps, dt)
+        if timesteps < 50:
+            raise ValueError("temporal_xor_paper needs at least 50 timesteps")
+
+    def _make_spike_train(self, batch_size):
+        """Return a (batch, 1, timesteps) binary tensor with exactly 50 spikes."""
+        # Place 50 spikes uniformly over the trial for each sample.
+        spikes = torch.zeros(batch_size, 1, self.timesteps)
+        for b in range(batch_size):
+            indices = torch.randperm(self.timesteps, generator=self.rng)[:50]
+            spikes[b, 0, indices] = 1.0
+        return spikes
+
+    def generate_batch(self, batch_size):
+        if self.rng is None:
+            rng_state = None
+        else:
+            rng_state = self.rng
+
+        a = torch.randint(0, 2, (batch_size,), generator=rng_state).float()
+        b = torch.randint(0, 2, (batch_size,), generator=rng_state).float()
+        xor = (a != b).long()
+
+        input_spikes = torch.zeros(batch_size, 2, self.timesteps)
+        for b_idx in range(batch_size):
+            if a[b_idx] > 0.5:
+                input_spikes[b_idx, 0] = self._make_spike_train(1).squeeze(0)
+            if b[b_idx] > 0.5:
+                input_spikes[b_idx, 1] = self._make_spike_train(1).squeeze(0)
+
+        return input_spikes, xor
+
+    def compute_reward(self, output_spikes, target):
+        spike_counts = output_spikes.sum(dim=-1)
+        decisions = spike_counts.argmax(dim=-1)
+        reward = torch.where(decisions == target, 1.0, -1.0)
+        return reward
+
+    def decode_output(self, output_spikes):
+        spike_counts = output_spikes.sum(dim=-1)
+        return spike_counts.argmax(dim=-1)
+
+
 # ========== Task 3: Frequency Discrimination (3-class) ==========
 
 class FrequencyDiscriminationTask(Task):

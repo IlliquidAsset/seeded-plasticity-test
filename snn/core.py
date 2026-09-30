@@ -108,7 +108,7 @@ class RSTDPPlasticity:
     Δw_ij = η * R * e_ij
     e_ij = eligibility trace (low-pass filtered STDP signal)
     """
-    def __init__(self, synapse, lr=0.001, tau_elig=20.0, dt=1.0,
+    def __init__(self, synapse, lr=0.001, tau_elig=1000.0, dt=1.0,
                  a_plus=0.01, a_minus=0.01, tau_plus=20.0, tau_minus=20.0):
         self.synapse = synapse
         self.lr = lr
@@ -164,8 +164,10 @@ class RSTDPPlasticity:
         """
         if reward.dim() == 0:
             reward = reward.unsqueeze(0)
-        # Average over batch
-        delta_w = self.lr * reward.mean() * self.eligibility.mean(dim=0)
+        # Per-sample reward x eligibility, then average over the batch.
+        # reward: (batch,) -> (batch, 1, 1); eligibility: (batch, post, pre)
+        r_expanded = reward.reshape(-1, 1, 1)
+        delta_w = self.lr * (r_expanded * self.eligibility).mean(dim=0)
         with torch.no_grad():
             self.synapse.weight.data.add_(delta_w)
             # Keep weights bounded
@@ -203,7 +205,7 @@ class PureSNN(nn.Module):
         # Plasticity rules (attached after construction)
         self.plasticities = []
 
-    def add_plasticity(self, lr=0.001, tau_elig=20.0,
+    def add_plasticity(self, lr=0.001, tau_elig=1000.0,
                        a_plus=0.01, a_minus=0.01,
                        tau_plus=20.0, tau_minus=20.0):
         """Attach R-STDP plasticity to all synapses."""

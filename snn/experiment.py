@@ -20,6 +20,25 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from snn.core import PureSNN
 from snn.tasks import get_task_configs, ALL_TASKS
+from snn.instrumentation import InstrumentedRSTDP
+
+
+class RewardRunningMean:
+    """Subtract an exponential/cumulative running mean from rewards."""
+
+    def __init__(self, alpha=0.99):
+        self.alpha = alpha
+        self.mean = 0.0
+        self.count = 0
+
+    def __call__(self, reward):
+        """Return reward - running_mean and update the running mean."""
+        mean_reward = reward.mean().item()
+        self.count += 1
+        # Cumulative running mean
+        self.mean += (mean_reward - self.mean) / self.count
+        return reward - self.mean
+
 
 
 def verify_freeze_mechanism():
@@ -80,7 +99,7 @@ def verify_freeze_mechanism():
 
 def run_single_experiment(task_name, task_cls, task_kwargs, layers,
                           seed=42, lr=0.001, n_trials=200, eval_every=20,
-                          plasticity_on=True):
+                          plasticity_on=True, reward_minus_running_mean=False):
     """
     Run one experiment on one task.
 
@@ -94,9 +113,19 @@ def run_single_experiment(task_name, task_cls, task_kwargs, layers,
                   tau_m=20.0, tau_syn=10.0)
 
     if plasticity_on:
-        net.add_plasticity(lr=lr, tau_elig=20.0,
-                           a_plus=0.02, a_minus=0.015,
-                           tau_plus=20.0, tau_minus=20.0)
+        # Attach instrumented plasticity so every run emits liveness metrics.
+        net.plasticities = []
+        for syn in net.synapses:
+            p = InstrumentedRSTDP(
+                syn, lr=lr, tau_elig=1000.0,
+                a_plus=0.02, a_minus=0.015,
+                tau_plus=20.0, tau_minus=20.0,
+                record=True,
+            )
+            net.plasticities.append(p)
+        reward_centerer = RewardRunningMean() if reward_minus_running_mean else None
+    else:
+        reward_centerer = None
 
     # Freeze initial weights for control
     frozen = net.get_frozen_weights()
@@ -118,8 +147,11 @@ def run_single_experiment(task_name, task_cls, task_kwargs, layers,
 
         # Apply reward if plasticity is on
         if plasticity_on and net.plasticities:
+            reward_to_apply = reward
+            if reward_centerer is not None:
+                reward_to_apply = reward_centerer(reward_to_apply)
             for p in net.plasticities:
-                p.apply_reward(reward)
+                p.apply_reward(reward_to_apply)
         elif not plasticity_on:
             # Restore frozen weights (ensure no drift)
             net.restore_frozen_weights(frozen)
@@ -132,6 +164,11 @@ def run_single_experiment(task_name, task_cls, task_kwargs, layers,
                 accuracies.append((trial, accuracy))
                 weight_norms.append((trial, net.weight_norm()))
 
+    # Collect liveness metrics from the first plastic layer
+    liveness = {}
+    if plasticity_on and net.plasticities:
+        liveness = net.plasticities[0].get_liveness_metrics()
+
     return {
         "task": task_name,
         "plasticity": plasticity_on,
@@ -143,13 +180,19 @@ def run_single_experiment(task_name, task_cls, task_kwargs, layers,
         "weight_norm_trace": weight_norms,
         "initial_weight_norm": weight_norms[0][1] if weight_norms else 0.0,
         "final_weight_norm": weight_norms[-1][1] if weight_norms else 0.0,
+        "liveness": liveness,
     }
 
 
-def run_full_bench(seeds=[42, 123, 256], lr=0.005, n_trials=300, eval_every=25):
+def run_full_bench(seeds=[42, 123, 256], lr=0.005, n_trials=300, eval_every=25,
+                   reward_minus_running_mean=False):
     """
     Run the full benchmark across all tasks.
     """
+    # Revision E: freeze verification is built into the bench runner.
+    if not verify_freeze_mechanism():
+        raise RuntimeError("Freeze mechanism verification failed; aborting bench.")
+
     task_configs = get_task_configs()
     results = []
 
@@ -165,6 +208,7 @@ def run_full_bench(seeds=[42, 123, 256], lr=0.005, n_trials=300, eval_every=25):
                 task_key, config["cls"], config["kwargs"], config["layers"],
                 seed=seed, lr=lr, n_trials=n_trials, eval_every=eval_every,
                 plasticity_on=True,
+                reward_minus_running_mean=reward_minus_running_mean,
             )
             results.append(r_on)
             print(f"    Initial weight norm: {r_on['initial_weight_norm']:.4f}")
