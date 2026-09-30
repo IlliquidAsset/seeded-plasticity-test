@@ -30,7 +30,11 @@ from ladder.florian_check import run_equation_checks
 ROOT = Path(__file__).resolve().parent
 OUT = ROOT / "results_florian_anchor"
 SUMMARY = OUT / "summary.json"
-COMMAND = "python run_florian_anchor.py --seeds 20 --epochs 200 --workers 6"
+
+
+def command_from_args(args) -> str:
+    """Record the command actually executed, derived from the parsed arguments."""
+    return f"python run_florian_anchor.py --seeds {args.seeds} --epochs {args.epochs} --workers {args.workers}"
 
 
 def _sha():
@@ -202,7 +206,7 @@ def main():
         "status": "RUNNING",
         "code_commit": _sha(),
         "code_dirty": _dirty(),
-        "command": COMMAND if (args.seeds, args.epochs) == (20, 200) else f"python run_florian_anchor.py --seeds {args.seeds} --epochs {args.epochs} --workers {args.workers}",
+        "command": command_from_args(args),
         "host": "Mac Mini",
         "engine": "independent NumPy reference implementation of Florian 2007 (ladder/florian.py); not snn/core.py",
         "difference_table": "docs/FLORIAN_DIFFERENCE_TABLE.md",

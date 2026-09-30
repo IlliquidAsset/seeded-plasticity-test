@@ -1,7 +1,8 @@
 {
   "code_commit": "b1824502f417c7187d3ba958675a3d3009552782",
   "code_dirty": false,
-  "command": "python run_florian_anchor.py --seeds 20 --epochs 200 --workers 6",
+  "command": "python run_florian_anchor.py --seeds 20 --epochs 200 --workers 5",
+  "command_provenance_repair": "Provenance repair, not a rerun: this file was produced by the single run `~/.hermes/hermes-agent/venv/bin/python3.11 run_florian_anchor.py --seeds 20 --epochs 200 --workers 5` (exit 0) at code commit b1824502. The script originally wrote a hard-coded command string claiming `--workers 6`; that string was corrected here by hand, and the script now derives it from the parsed arguments. All run data are unchanged. Worker count sets only process-pool concurrency; each job is seeded independently, so it does not affect results.",
   "difference_table": "docs/FLORIAN_DIFFERENCE_TABLE.md",
   "engine": "independent NumPy reference implementation of Florian 2007 (ladder/florian.py); not snn/core.py",
   "equation_check": {

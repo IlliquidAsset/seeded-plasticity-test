@@ -2,7 +2,9 @@
 
 Generated: 2026-09-30T16:19:34.662501+00:00
 Code commit: `b1824502f417c7187d3ba958675a3d3009552782` (working tree dirty for ladder/anchor: False)
-Command: `python run_florian_anchor.py --seeds 20 --epochs 200 --workers 6`
+Command: `python run_florian_anchor.py --seeds 20 --epochs 200 --workers 5`
+
+Provenance repair (not a rerun): the run that produced these results was `~/.hermes/hermes-agent/venv/bin/python3.11 run_florian_anchor.py --seeds 20 --epochs 200 --workers 5`. The first version of this report said `--workers 6` because the script wrote a hard-coded string. The line was corrected by hand, and the script now builds the command from its parsed arguments. No results changed; the worker count only sets how many processes run in parallel.
 Engine: independent NumPy reference implementation of Florian 2007 (ladder/florian.py); not snn/core.py
 
 ## Claim boundary

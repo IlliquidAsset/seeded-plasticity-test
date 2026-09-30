@@ -23,7 +23,7 @@ Results come from code commit `b182450`, 10 seeds, `python run_ladder.py` (909 s
 
 ## Florian 2007, rerun with a paired "no learning" twin
 
-Every seed now runs twice with identical inputs and starting weights: once learning, once frozen. Commit `b182450`, `python run_florian_anchor.py --seeds 20 --epochs 200 --workers 6`, 160 runs, 705 s. This is our own NumPy rebuild of the paper's equations. It is **not** the repository's network code.
+Every seed now runs twice with identical inputs and starting weights: once learning, once frozen. Commit `b182450`, `python run_florian_anchor.py --seeds 20 --epochs 200 --workers 5`, 160 runs, 705 s. (Provenance repair: an earlier version of this line said `--workers 6`, copied from a hard-coded string in the script. The run actually used 5 workers. Nothing was rerun, and the worker count does not affect results.) This is our own NumPy rebuild of the paper's equations. It is **not** the repository's network code.
 
 | Task | Rule | Learning twin passes | Frozen twin passes | Paper | Learning moved the gate the right way |
 |---|---|---:|---:|---:|---:|

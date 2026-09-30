@@ -3,6 +3,16 @@ import numpy as np
 from ladder.florian import FlorianConfig, FlorianNetwork, PATTERNS, run_experiment
 
 
+def test_recorded_command_is_derived_from_parsed_args():
+    from argparse import Namespace
+
+    from run_florian_anchor import command_from_args
+
+    cmd = command_from_args(Namespace(seeds=20, epochs=200, workers=5))
+    assert cmd == "python run_florian_anchor.py --seeds 20 --epochs 200 --workers 5"
+    assert "--workers 7" in command_from_args(Namespace(seeds=3, epochs=4, workers=7))
+
+
 def test_florian_paper_constants():
     assert FlorianConfig("rate", "mstdp").sizes == (60, 60, 1)
     assert FlorianConfig("temporal", "mstdpet").sizes == (2, 20, 1)
