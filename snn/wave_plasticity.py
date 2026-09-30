@@ -49,7 +49,7 @@ class WaveGatedPlasticity(RSTDPPlasticity):
     Reward-modulated STDP with a theta-wave gate on a slow eligibility trace.
 
     Inherits RSTDPPlasticity without modifying the base class.  Maintains:
-      - e_fast: the inherited eligibility trace (tau = tau_elig, default 1000 ms)
+      - e_fast: the inherited eligibility trace (tau = tau_elig, default 20 ms)
       - e_slow: a second eligibility trace with tau = tau_elig_slow (500 ms)
 
     At reward time the slow trace is gated by max(0, cos(phi_reward)) and the
@@ -60,7 +60,7 @@ class WaveGatedPlasticity(RSTDPPlasticity):
         self,
         synapse,
         lr=0.001,
-        tau_elig=1000.0,
+        tau_elig=20.0,
         dt=1.0,
         a_plus=0.01,
         a_minus=0.01,

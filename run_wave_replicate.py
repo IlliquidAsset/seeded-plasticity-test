@@ -52,7 +52,8 @@ LR = 0.005
 WEIGHT_SCALE = 2.0
 TAU_SYN = 10.0
 TAU_M = 20.0
-TAU_ELIG = 1000.0
+TAU_ELIG_FAST = 20.0
+TAU_ELIG_ONLY = 1000.0
 TAU_ELIG_SLOW = 500.0
 A_PLUS = 0.01
 A_MINUS = 0.01
@@ -102,7 +103,6 @@ def _attach_plasticity(net, arm, seed):
     for syn in net.synapses:
         common = dict(
             lr=LR,
-            tau_elig=TAU_ELIG,
             dt=net.dt,
             a_plus=A_PLUS,
             a_minus=A_MINUS,
@@ -111,10 +111,11 @@ def _attach_plasticity(net, arm, seed):
             record=True,
         )
         if arm == "eligibility-timescale-only":
-            p = InstrumentedRSTDP(syn, **common)
+            p = InstrumentedRSTDP(syn, tau_elig=TAU_ELIG_ONLY, **common)
         elif arm == "wave-coherent":
             p = WaveGatedPlasticity(
                 syn,
+                tau_elig=TAU_ELIG_FAST,
                 tau_elig_slow=TAU_ELIG_SLOW,
                 frequency=FREQUENCY,
                 phi_0=0.0,
@@ -124,6 +125,7 @@ def _attach_plasticity(net, arm, seed):
         elif arm == "phase-scrambled":
             p = WaveGatedPlasticity(
                 syn,
+                tau_elig=TAU_ELIG_FAST,
                 tau_elig_slow=TAU_ELIG_SLOW,
                 frequency=FREQUENCY,
                 phi_0=0.0,
@@ -407,7 +409,12 @@ def run_track3(selected_tasks=None, selected_arms=None, selected_seeds=None):
             "weight_scale": WEIGHT_SCALE,
             "tau_syn_ms": TAU_SYN,
             "tau_m_ms": TAU_M,
-            "tau_elig_ms": TAU_ELIG,
+            "tau_elig_by_arm_ms": {
+                "wave-coherent_fast": TAU_ELIG_FAST,
+                "phase-scrambled_fast": TAU_ELIG_FAST,
+                "eligibility-timescale-only": TAU_ELIG_ONLY,
+                "frozen": None,
+            },
             "tau_elig_slow_ms": TAU_ELIG_SLOW,
             "a_plus": A_PLUS,
             "a_minus": A_MINUS,

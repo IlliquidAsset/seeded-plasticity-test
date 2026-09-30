@@ -13,8 +13,14 @@ Covers the frozen spec requirements:
 import math
 import torch
 
-from snn.core import RSTDPPlasticity, Synapse
+from snn.core import PureSNN, RSTDPPlasticity, Synapse
+from snn.instrumentation import InstrumentedRSTDP
 from snn.wave_plasticity import WaveGatedPlasticity, PhaseOscillator
+from run_wave_replicate import (
+    TAU_ELIG_FAST,
+    TAU_ELIG_ONLY,
+    _attach_plasticity,
+)
 
 
 # ---------------------------------------------------------------------------
@@ -107,6 +113,40 @@ def test_slow_trace_decay_constant():
     p = WaveGatedPlasticity(syn, tau_elig_slow=500.0, record=False)
     expected_beta = math.exp(-1.0 / 500.0)
     assert math.isclose(p.beta_elig_slow, expected_beta, rel_tol=1e-6)
+
+
+def test_default_fast_trace_uses_frozen_20_ms_tau():
+    """The inherited fast trace defaults to the frozen 20 ms constant."""
+    syn = Synapse(2, 3, weight_scale=0.1, tau_syn=5.0)
+    p = WaveGatedPlasticity(syn, record=False)
+    assert math.isclose(p.beta_elig, math.exp(-1.0 / 20.0), rel_tol=1e-6)
+
+
+def test_runner_uses_distinct_fast_and_timescale_only_taus():
+    """Wave arms use 20 ms fast traces; the no-wave control uses 1000 ms."""
+    wave_net = PureSNN([2, 3], weight_scale=0.1)
+    _attach_plasticity(wave_net, "wave-coherent", seed=42)
+    wave_rule = wave_net.plasticities[0]
+    assert isinstance(wave_rule, WaveGatedPlasticity)
+    assert math.isclose(
+        wave_rule.beta_elig, math.exp(-1.0 / TAU_ELIG_FAST), rel_tol=1e-6
+    )
+
+    scrambled_net = PureSNN([2, 3], weight_scale=0.1)
+    _attach_plasticity(scrambled_net, "phase-scrambled", seed=42)
+    scrambled_rule = scrambled_net.plasticities[0]
+    assert isinstance(scrambled_rule, WaveGatedPlasticity)
+    assert math.isclose(
+        scrambled_rule.beta_elig, math.exp(-1.0 / TAU_ELIG_FAST), rel_tol=1e-6
+    )
+
+    control_net = PureSNN([2, 3], weight_scale=0.1)
+    _attach_plasticity(control_net, "eligibility-timescale-only", seed=42)
+    control_rule = control_net.plasticities[0]
+    assert isinstance(control_rule, InstrumentedRSTDP)
+    assert math.isclose(
+        control_rule.beta_elig, math.exp(-1.0 / TAU_ELIG_ONLY), rel_tol=1e-6
+    )
 
 
 def test_slow_trace_is_slower_than_fast():
