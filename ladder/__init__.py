@@ -1,4 +1,4 @@
-"""Tiny, deterministic R-STDP mechanism ladder."""
+"""Tiny R-STDP mechanism ladder: rung 0 trace mechanics, rungs 1-3 executed circuits."""
 
 from .experiments import (
     DELAYS_MS,

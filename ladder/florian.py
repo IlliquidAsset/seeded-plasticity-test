@@ -26,6 +26,9 @@ class FlorianConfig:
     tau_m_ms: float = 20.0
     tau_stdp_ms: float = 20.0
     tau_elig_ms: float = 25.0
+    # False = paired frozen/no-reward control: identical RNG stream, inputs,
+    # order, and initial weights, but no weight change is ever applied.
+    plastic: bool = True
 
     @property
     def sizes(self) -> Tuple[int, int, int]:
@@ -101,6 +104,7 @@ class FlorianNetwork:
         self.z_scale = 1.0
         self.total_output_spikes = 0
         self.total_abs_weight_change = 0.0
+        self.plastic = config.plastic
 
     @property
     def trace_beta(self) -> float:
@@ -160,7 +164,7 @@ class FlorianNetwork:
             self.z_scale = 1.0
 
     def _apply_reward(self, input_spikes: np.ndarray, reward: float):
-        if reward == 0.0:
+        if reward == 0.0 or not self.plastic:
             return
         gamma = self.config.gamma_mv
         old1 = self.w1.copy()
@@ -234,15 +238,86 @@ class FlorianNetwork:
         }
 
 
-def run_experiment(task: str, rule: str, seed: int, epochs: int = 200) -> Dict[str, object]:
-    config = FlorianConfig(task=task, rule=rule, epochs=epochs)
-    result = FlorianNetwork(config, seed).run()
+def gate_margin_hz(rates: Dict[str, float]) -> float:
+    """Florian's gate as a signed margin: success iff margin > 0."""
+    return min(rates["01"], rates["10"]) - rates["11"]
+
+
+def present_frozen(net: FlorianNetwork, rng: np.random.Generator, symbol_trains=None) -> Dict[str, float]:
+    """Present the four patterns once, in an rng-shuffled order, with plasticity off.
+
+    Uses ``rng`` for order and (rate task) Poisson draws, so the training RNG
+    stream is untouched and a trained net and its frozen twin see identical
+    evaluation input.  ``symbol_trains`` optionally swaps in new temporal codes.
+    State (membranes, traces) continues from wherever the network is.
+    """
+    saved_plastic, saved_rng, saved_symbols = net.plastic, net.rng, net.symbol_trains
+    net.plastic, net.rng = False, rng
+    if symbol_trains is not None:
+        net.symbol_trains = symbol_trains
+    try:
+        order = list(PATTERNS)
+        rng.shuffle(order)
+        counts = {}
+        for pattern in order:
+            target = int(pattern[0] != pattern[1])
+            counts[pattern] = sum(net.step(net.input_for(pattern, t), target) for t in range(net.config.pattern_ms))
+            net._materialize_eligibility()
+    finally:
+        net.plastic, net.rng, net.symbol_trains = saved_plastic, saved_rng, saved_symbols
+    return {f"{a}{b}": 2.0 * counts[(a, b)] for a, b in PATTERNS}
+
+
+def new_symbol_pair(rng: np.random.Generator, pattern_ms: int = 500) -> np.ndarray:
+    trains = np.zeros((2, pattern_ms))
+    for symbol in (0, 1):
+        trains[symbol, rng.choice(pattern_ms, size=50, replace=False)] = 1.0
+    return trains
+
+
+def post_training_checks(net: FlorianNetwork, seed: int, n_eval: int = 10) -> Dict[str, object]:
+    """Frozen post-learning evaluation.
+
+    ``retest``: the training code (temporal: same symbols; rate: fresh Poisson
+    draws) presented ``n_eval`` times with synapses fixed (paper section 4.2:
+    "performance remained constant ... if the reward signal was removed and
+    the synapses were fixed").
+    ``generalization`` (temporal only): ``n_eval`` newly generated symbol pairs
+    (paper section 4.3: "for any pair of random input signals similarly
+    generated").  The evaluation RNG is seeded from (seed, purpose, k) only,
+    so a trained network and its frozen twin see the same evaluation inputs.
+    """
+    out: Dict[str, object] = {}
+    retest = [present_frozen(net, np.random.default_rng([seed, 101, k])) for k in range(n_eval)]
+    out["retest_rates_hz"] = retest
+    out["retest_pass_count"] = int(sum(gate_margin_hz(r) > 0 for r in retest))
+    out["retest_median_margin_hz"] = float(np.median([gate_margin_hz(r) for r in retest]))
+    if net.config.task == "temporal":
+        gen = []
+        for k in range(n_eval):
+            symbols = new_symbol_pair(np.random.default_rng([seed, 202, k]), net.config.pattern_ms)
+            gen.append(present_frozen(net, np.random.default_rng([seed, 203, k]), symbols))
+        out["generalization_rates_hz"] = gen
+        out["generalization_pass_count"] = int(sum(gate_margin_hz(r) > 0 for r in gen))
+        out["generalization_median_margin_hz"] = float(np.median([gate_margin_hz(r) for r in gen]))
+    out["n_eval"] = n_eval
+    return out
+
+
+def run_experiment(task: str, rule: str, seed: int, epochs: int = 200, plastic: bool = True, n_eval: int = 10) -> Dict[str, object]:
+    config = FlorianConfig(task=task, rule=rule, epochs=epochs, plastic=plastic)
+    net = FlorianNetwork(config, seed)
+    result = net.run()
+    checks = post_training_checks(net, seed, n_eval) if n_eval else {}
     return {
         "task": task,
         "rule": rule,
         "seed": seed,
         "epochs": epochs,
+        "plastic": plastic,
         "gamma_mv": config.gamma_mv,
         "published_success_pct": config.published_success_pct,
+        "gate_margin_hz": gate_margin_hz(result["last_epoch_rates_hz"]),
         **result,
+        **checks,
     }
