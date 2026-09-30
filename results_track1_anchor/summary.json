@@ -22,7 +22,7 @@
     "tau_syn_ms": 10.0,
     "tau_m_ms": 20.0
   },
-  "commit_sha": "fe5e67695705c0f2e3b1e52d194e5f1ee0b5b9e1",
+  "commit_sha": "28f86e69512f652a69e52622b68d561b546ae943",
   "command": "python3 run_track1_anchor.py",
   "wall_time_seconds": 167.87520599365234,
   "per_seed": [
