@@ -1,0 +1,223 @@
+{
+  "arm": "F0",
+  "bootstrap": [
+    {
+      "formula": "m(acc[F0, A_pre])",
+      "id": 0,
+      "point_estimate": 0.50009,
+      "resamples": 100000,
+      "seed_sequence_entropy": [
+        20261001,
+        7,
+        0
+      ],
+      "two_sided_95": [
+        0.4969950000000001,
+        0.503175
+      ],
+      "used_by": "6.2 validity"
+    },
+    {
+      "formula": "m(acc[F0, B_pre])",
+      "id": 1,
+      "point_estimate": 0.5011349999999999,
+      "resamples": 100000,
+      "seed_sequence_entropy": [
+        20261001,
+        7,
+        1
+      ],
+      "two_sided_95": [
+        0.49762499999999993,
+        0.50451
+      ],
+      "used_by": "6.2 validity"
+    },
+    {
+      "formula": "m(acc[F0, B_post])",
+      "id": 2,
+      "point_estimate": 0.500105,
+      "resamples": 100000,
+      "seed_sequence_entropy": [
+        20261001,
+        7,
+        2
+      ],
+      "two_sided_95": [
+        0.49571499999999996,
+        0.5047549999999998
+      ],
+      "used_by": "6.2 validity"
+    },
+    {
+      "formula": "m(acc[F0, A_post])",
+      "id": 3,
+      "point_estimate": 0.5010899999999998,
+      "resamples": 100000,
+      "seed_sequence_entropy": [
+        20261001,
+        7,
+        3
+      ],
+      "two_sided_95": [
+        0.49784500000000004,
+        0.504275
+      ],
+      "used_by": "6.2 validity"
+    }
+  ],
+  "code_commit": "14522b5c1496e38fce32656baceb8f0afd3d3b52",
+  "conditions": {
+    "ci95_contains_0.50": {
+      "A_post": true,
+      "A_pre": true,
+      "B_post": true,
+      "B_pre": true
+    },
+    "mean_in_[0.45,0.55]": {
+      "A_post": true,
+      "A_pre": true,
+      "B_post": true,
+      "B_pre": true
+    },
+    "rows_complete_20": true,
+    "schema_complete_all_rows": true,
+    "weights_bitwise_constant_20of20": true
+  },
+  "decision": "PASS",
+  "means": {
+    "A_post": 0.5010899999999998,
+    "A_pre": 0.50009,
+    "B_post": 0.500105,
+    "B_pre": 0.5011349999999999
+  },
+  "per_seed_accuracy": {
+    "A_post": [
+      0.5139,
+      0.4944,
+      0.5022,
+      0.5036,
+      0.4951,
+      0.4947,
+      0.5038,
+      0.5069,
+      0.5104,
+      0.4973,
+      0.5103,
+      0.5114,
+      0.4954,
+      0.4913,
+      0.4998,
+      0.5033,
+      0.5048,
+      0.5033,
+      0.4949,
+      0.485
+    ],
+    "A_pre": [
+      0.5069,
+      0.4968,
+      0.5035,
+      0.5016,
+      0.4978,
+      0.4979,
+      0.5029,
+      0.4967,
+      0.5149,
+      0.5047,
+      0.5081,
+      0.5113,
+      0.4886,
+      0.4953,
+      0.5039,
+      0.4957,
+      0.4959,
+      0.5002,
+      0.4937,
+      0.4854
+    ],
+    "B_post": [
+      0.5096,
+      0.5108,
+      0.4974,
+      0.5072,
+      0.4973,
+      0.5018,
+      0.5019,
+      0.5034,
+      0.5278,
+      0.4967,
+      0.5067,
+      0.5111,
+      0.482,
+      0.4911,
+      0.4963,
+      0.5003,
+      0.485,
+      0.4862,
+      0.4943,
+      0.4952
+    ],
+    "B_pre": [
+      0.5023,
+      0.5022,
+      0.5071,
+      0.5076,
+      0.4956,
+      0.4816,
+      0.508,
+      0.5062,
+      0.5052,
+      0.5084,
+      0.5089,
+      0.5172,
+      0.4944,
+      0.4985,
+      0.4904,
+      0.4959,
+      0.498,
+      0.5029,
+      0.5003,
+      0.492
+    ]
+  },
+  "run": {
+    "finished_at": "2026-10-01T09:50:22.340703+00:00",
+    "interruptions": 0,
+    "jobs": 20,
+    "max_worker_processes_observed": 6,
+    "peak_rss_single_process_bytes": 195883008,
+    "peak_rss_total_bytes": 1159700480,
+    "retries": 0,
+    "rows_error": 0,
+    "rows_ok": 20,
+    "rss_exceeded": false,
+    "rss_limit_bytes": 8589934592,
+    "started_at": "2026-10-01T09:39:43.008974+00:00",
+    "wall_seconds": 639.3316957950592,
+    "workers": 5
+  },
+  "seeds": [
+    1000,
+    1001,
+    1002,
+    1003,
+    1004,
+    1005,
+    1006,
+    1007,
+    1008,
+    1009,
+    1010,
+    1011,
+    1012,
+    1013,
+    1014,
+    1015,
+    1016,
+    1017,
+    1018,
+    1019
+  ],
+  "spec_sha256_at_run": "695cfaa4a23c31d31b22891eb611ac70ec5cdfdb092bef4245fc5ad6853131cd"
+}
