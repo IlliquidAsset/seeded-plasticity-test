@@ -7,6 +7,16 @@ Host: Kendricks-Mac-mini.local (i386, 6 logical CPUs); Python 3.11.15, NumPy 1.2
 Maintained tests: pytest -q tests -> 187 passed at d04fbd9 (2026-10-01, Mac Mini)
 Wall time: 3317 s (0.92 h) with 5 workers; peak RSS (coordinator+workers) 1.16 GiB; interruptions 0; retries 0; rows ok 100/100
 
+## Post-review amendment (review round 1, Nora, card t_26c046ac) — RESULT PACKAGE INCOMPLETE; PROCESS CARD FAIL
+
+Frozen spec §8 requires "min/max final weight and bound hits" recorded "separately for A and B and for every seed/arm". The implementation (`snn/stage2.py` at `d04fbd9`) captured the A-end weights (`w_shift`) but serialized only one post-B endpoint per row (`final_w1_min/max`, `final_w2_min/max`, `final_bound_hits`). The A-end min/max/bound-hit values were therefore not recorded as §8 requires. This omission is predeclared instrumentation missing from the package, so the result package is **INCOMPLETE** and this process card is **FAIL**.
+
+- Exact extent: in 91/100 rows `max_abs_dW_B == 0.0`, which means the A-end weights equal the final weights bitwise, and the A-end values equal the recorded `final_*` values. In 9/100 rows the B phase changed the weights, and the A-end values cannot be recovered from the package: P seeds 2, 11, 14, 18; SC seed 2; NS seeds 0, 11, 14, 18.
+- Not repaired by replay: re-running experimental seeds 0..19 would be a prohibited post-hoc rerun. Any repeat needs a new, frozen, and reviewed spec.
+- Gate scoring is unchanged and preserved as recorded below. The missing values feed no §10 gate quantity. The §8/Gate 0 weight-bounds invariant was checked every 1,000 steps and at the end of each phase, including the A-end state: 201 samples per phase, and `out_of_bounds_detected` is false in all 100 rows × 2 phases. The A-end weights were therefore verified to be inside their bounds. Their min/max values and bound-hit counts were not serialized. Gate 4 item 7 lists parameters, thresholds, seeds, checkpoints and metrics, and none of these differs. The instrumentation omission is recorded here as a separate process failure and does not count as a Gate 4 pass of §8.
+- Scientific verdict (unchanged): `INVALID_OR_MECHANISM_FAIL` + `NO_A_COMPETENCE`. Nora independently recomputed it: G0 FAIL, G1 FAIL, G2 FAIL, G3 FAIL, G4 PASS.
+- Original generated report: commit `1418436`, sha256 `823a0ab788b1828fd94173ab147c51163d1afaac0dd3faa74a93f15db0fd8963`. Only this amendment block was added. `SHA256SUMS` was updated for the two amended Markdown files, and every other file hash is unchanged.
+
 ## Verdict: INVALID_OR_MECHANISM_FAIL: 6.2_frozen_from_start_ci95_contains_0.50, 6.3_freeze_at_shift_B_differential_point_ge_0.10, 6.3_freeze_at_shift_B_differential_lower_gt_0, 6.4_scrambled_B_post_differential_point_ge_0.10, 6.4_scrambled_B_post_differential_lower_gt_0, 6.5_sfa_off_dW_gt0_A_and_B, 6.5_sfa_off_sign_of_life_A, 6.5_sfa_off_sign_of_life_B, 8_primary_sign_of_life_B
 
 All applicable section 10 labels: `INVALID_OR_MECHANISM_FAIL: 6.2_frozen_from_start_ci95_contains_0.50, 6.3_freeze_at_shift_B_differential_point_ge_0.10, 6.3_freeze_at_shift_B_differential_lower_gt_0, 6.4_scrambled_B_post_differential_point_ge_0.10, 6.4_scrambled_B_post_differential_lower_gt_0, 6.5_sfa_off_dW_gt0_A_and_B, 6.5_sfa_off_sign_of_life_A, 6.5_sfa_off_sign_of_life_B, 8_primary_sign_of_life_B`; `NO_A_COMPETENCE`

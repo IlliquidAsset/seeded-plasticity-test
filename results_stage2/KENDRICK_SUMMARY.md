@@ -2,6 +2,12 @@
 
 ## Result: Stage 2 FAILED. The network never learned rule A, so nothing could be retained.
 
+## Correction after review (Nora, round 1): the result package is INCOMPLETE and this card's process FAILED
+
+The spec required min/max weights and bound-hit counts at the end of phase A and again at the end of phase B, for every run. The code saved only the end-of-B values. In 91 of 100 runs the weights did not change during B, so the end-of-A values are identical to the saved ones. In 9 runs (P seeds 2, 11, 14, 18; SC seed 2; NS seeds 0, 11, 14, 18) the end-of-A values are lost. Weights were checked to stay inside their bounds at the end of A in every run. Re-running experimental seeds to recover the lost values is forbidden, so this gap is recorded as a process failure.
+
+None of the missing values feeds any gate. The science verdict below is unchanged, and Nora recomputed it independently.
+
 Scored exactly per spec section 10 (spec `ef85a15`, unchanged; code `d04fbd9`, pushed before any experimental seed ran):
 
 | Gate | Result | What it means |
@@ -24,7 +30,7 @@ The network learned to stop predicting "1": its output went silent, so it guesse
 
 - Before training, the frozen network fires and predicts "1" about 16% of the time (median prediction-one fraction 0.16).
 - The learning rule was clearly active during A. In all 20 seeds, reward and the output-weight change were strongly linked (median correlation 0.86), and A sign-of-life passed.
-- Training pushed the output down. A-phase punishments outnumbered rewards (median 340 vs 227). By the end of A, the trained network predicted "1" essentially never: the prediction-one fraction was exactly 0 at A_pre in 19 of 20 seeds.
+- Training pushed the output down. A-phase punishments outnumbered rewards (median 340.5 vs 227). By the end of A, the trained network predicted "1" essentially never: the prediction-one fraction was exactly 0 at A_pre in 19 of 20 seeds.
 - In B, 16 of 20 seeds produced zero output spikes over all 200,000 steps, so zero reward events. Reward requires a spike (Florian's rule; ladder Rung 1 found the same thing: "reward for silence yields exactly zero update"). Silence is therefore a trap the rule cannot climb out of. B sign-of-life failed (4/20 seeds had any weight change).
 - With SFA off, the network went silent the same way. SFA neither caused the collapse nor prevented it. That arm also failed its own validity check: one seed had only 33 rewarded spikes in A, below the 100 minimum.
 - Frozen-from-start control: its mean B accuracy was 0.5066. The 95% interval [0.50004, 0.51342] just misses 0.50 at the low end. By the spec's own rule, that is a separate validity failure, and it means the nominal 50% chance model was not exact for this fixture. The cause is that the untrained network's spikes happen to be slightly better than chance on held-out B. This does not change the outcome: the primary arm sits at chance on every checkpoint.
