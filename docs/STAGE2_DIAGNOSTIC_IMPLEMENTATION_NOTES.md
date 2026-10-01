@@ -52,7 +52,53 @@ non-diagnostic shakedown, and the section 3.2 identity probe.
    Progress lines expose status and resource use only, never accuracy.
 7. The source code permits shorter lengths only in construction functions used
    by tests. The approved full runner fixes seeds 2000..2019 and all lengths to
-   module constants.
+   module constants, and the package validators reject any other length.
+
+## Review round 2 corrections (Nora, comment on t_53bf2d59)
+
+1. Outcome exposure (spec section 8). `run_pool` keeps seed rows in coordinator
+   memory only. The sole file written while a stage runs is
+   `<stage>.progress.jsonl`, whose records carry exactly `PROGRESS_FIELDS`
+   (stage, index, total, seed, condition, status, elapsed, RSS) and never an
+   outcome. Rows are written only after the whole stage is present and the
+   strict validator has run; an invalid stage is written as
+   `<stage>.invalid_redacted.jsonl` with every outcome-bearing key removed.
+   Before D1 starts the runner writes a fail-closed `branch_outcome.json`
+   (`STOP_INVALID`, incomplete) so a hard kill leaves no outcome and no
+   ambiguous verdict. Tests: `test_r2_01` to `test_r2_04`, `test_r2_17`.
+2. D1 fail-open. `validate_d1_row` / `validate_d1_package` enforce the spec
+   0.4 and 4.6 invariants: exact seed set, no duplicates, row counts
+   (198,000 / 10,000 / 2,000 warm-up / 60 features), coordinator identity
+   match, distinct train/test input and feature hashes, frozen weights,
+   convergence and iteration count below `max_iter`, exact decoder
+   configuration, finite values, accuracy as a count over 10,000 rows,
+   normalization and coefficient hashes recomputed from stored arrays, and
+   distinct A and positive-control labels. `summarize_d1` runs the validator
+   first; any finding returns `INVALID` with no accuracy statistic, and a call
+   without coordinator identities is itself invalid. The same fail-closed
+   pattern now applies to D2, D3, and D4 through `validate_condition_row` /
+   `validate_condition_package`. Tests: `test_r2_05` to `test_r2_09`,
+   `test_r2_11` to `test_r2_15`.
+3. Early-stop packages. Every predeclared stop branch, and any exception, now
+   exits through `finalize_package`, which writes `summary.json` (provenance,
+   effective parameters, collision probe, run metadata, statuses, stage
+   records, ordered section 10 branch outcome, plain-language supported and
+   not-supported lists, claim boundary, D1 claim text, no-oracle statement),
+   `branch_outcome.json`, and the SHA-256 manifest. The branch table is
+   encoded in full and in order (`BRANCH_TABLE`). Tests: `test_r2_10`,
+   `test_r2_11` to `test_r2_16`.
+4. Section 13 fields. `effective_parameters()` reads network, neuron, and
+   plasticity values back from a constructed network and serializes every
+   D1-D4 constant, including the D4 drive block (176 sources, 8 per target,
+   25 Hz, +2.0 mV, train indices 0..199,999 and evaluation indices
+   200,000..211,999) and all readout thresholds. The runner compares it with
+   `expected_parameters_from_spec()`, transcribed independently from the spec
+   text, and refuses a diagnostic run on any mismatch. D1 rows and the D1
+   stage record carry per-seed training-normalization and coefficient
+   SHA-256 values. Tests: `test_r2_18` to `test_r2_21`.
+
+All readout thresholds are unchanged spec values; they are now read from one
+`THRESHOLDS` table that the preflight checks against the spec transcription.
 
 ## Rollback
 

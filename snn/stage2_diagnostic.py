@@ -52,6 +52,47 @@ DRIVE_P = 1.0 - math.exp(-DRIVE_RATE_HZ / 1000.0)
 D1_WARMUP = 2_000
 D1_TRAIN_ROWS = 198_000
 D1_TEST_ROWS = 10_000
+D1_FEATURE_DIM = 60
+TRACE20_DECAY = math.exp(-1.0 / 20.0)
+TRACE25_DECAY = math.exp(-1.0 / 25.0)
+D1_MAX_ITER = 2000
+D1_FEATURE_MAP = "phi_t = concat(count20_t, trace20_t, trace25_t) of hidden spikes h_t present before x_t is integrated"
+D1_DECODER_CONFIG: Dict[str, object] = {
+    "penalty": "l2",
+    "C": 1.0,
+    "fit_intercept": True,
+    "solver": "lbfgs",
+    "tol": 1e-8,
+    "max_iter": D1_MAX_ITER,
+    "class_weight": None,
+}
+D1_BLOCK_LENGTH = 100
+D1_BLOCK_RESAMPLES = 10_000
+EVAL_SCORED = EVAL_LEN - EVAL_WARMUP
+D1_DECODERS = ("A", "positive_prior")
+
+# Predeclared numeric readout constants (spec sections 4.6, 5.3, 6.3, 7.5).
+# Every readout reads these. run_stage2_diagnostic.expected_parameters_from_spec
+# transcribes them independently from the spec text and the runner refuses a
+# mismatch before any diagnostic transition.
+THRESHOLDS: Dict[str, float] = {
+    "d1_pass_median_accuracy": 0.70,
+    "d1_pass_min_lower_bounds_gt_half": 15,
+    "d1_lower_bound_reference": 0.50,
+    "d1_fail_median_below": 0.55,
+    "d2_onset_ratio": 0.50,
+    "d2_lead_steps": 5_000,
+    "d2_localized_min_seeds": 14,
+    "d3_chance": 0.50,
+    "d3_pass_median_accuracy": 0.70,
+    "d3_pass_lower_bound_gt": 0.55,
+    "d4_chance": 0.50,
+    "d4_hidden_rate_ratio_min": 0.50,
+    "d4_silent_end_max": 0.80,
+    "d4_pass_median_accuracy": 0.70,
+    "d4_pass_median_delta": 0.05,
+    "d4_pass_delta_lower_gt": 0.0,
+}
 
 
 def rng(entropy: Sequence[int]) -> np.random.Generator:
@@ -181,6 +222,106 @@ def build_network(w1: np.ndarray, w2: np.ndarray, beta_a: float = BETA_A) -> Sta
     return base  # type: ignore[return-value]
 
 
+def effective_parameters() -> Dict[str, object]:
+    """Section 13 effective parameter block, read from a constructed network.
+
+    Network/plasticity values are read back from live objects (not copied from
+    source constants), so a construction drift is visible in the package. No
+    transition is simulated; the weights are the fixed non-diagnostic fixture.
+    """
+    net = build_network(*initial_weights(4242))
+    hidden, output = net.neurons[0], net.neurons[1]
+    p1, p2 = net.plasticities
+    return {
+        "spec_commit": SPEC_COMMIT,
+        "spec_sha256": SPEC_SHA256,
+        "stage2_spec_sha256": FROZEN_STAGE2_SHA256,
+        "layer_sizes": list(net.layer_sizes),
+        "dt_ms": float(net.dt),
+        "hidden_neuron": type(hidden).__name__,
+        "output_neuron": type(output).__name__,
+        "tau_m_ms": [float(hidden.tau_m), float(output.tau_m)],
+        "v_rest_mv": [float(hidden.v_rest), float(output.v_rest)],
+        "v_reset_mv": [float(hidden.v_reset), float(output.v_reset)],
+        "v_thresh_mv": [float(hidden.v_thresh), float(output.v_thresh)],
+        "tau_syn_ms": [float(s.tau_syn) for s in net.synapses],
+        "hidden_tau_a_ms": float(hidden.tau_a),
+        "hidden_beta_a_mv": float(hidden.beta_a),
+        "w1_init": "U(-10,10) mV, [20261001, seed, 30, 1] first draw",
+        "w2_O1_init": "U(0,10) mV, [20261001, seed, 30, 1] second draw",
+        "w2_O0_init": "U(0,10) mV, [20261001, seed, 30, 21]",
+        "w1_bounds_mv": [float(p1.w_min), float(p1.w_max)],
+        "w2_bounds_mv": [float(p2.w_min), float(p2.w_max)],
+        "plasticity_credit": [p1.credit, p2.credit],
+        "gamma_mv": [float(p1.lr), float(p2.lr)],
+        "tau_plus_ms": [float(p1.tau_plus), float(p2.tau_plus)],
+        "tau_minus_ms": [float(p1.tau_minus), float(p2.tau_minus)],
+        "tau_elig_ms": [float(p1.tau_elig), float(p2.tau_elig)],
+        "a_plus": [float(p1.a_plus), float(p2.a_plus)],
+        "a_minus": [float(p1.a_minus), float(p2.a_minus)],
+        "reward": "r_t = (2*y_t - 1) * (z1_t - z0_t), one global scalar, next transition",
+        "readout": "O1 alone -> 1; O0 alone -> 0; tie -> paired fair tie-coin",
+        "noise_p": float(NOISE_P),
+        "training_steps": PHASE_STEPS,
+        "eval_len": EVAL_LEN,
+        "eval_warmup": EVAL_WARMUP,
+        "eval_scored": EVAL_SCORED,
+        "seeds": list(DIAGNOSTIC_SEEDS),
+        "namespace": NAMESPACE,
+        "root_entropy": ROOT_ENTROPY,
+        "d1": {
+            "warmup_rows": D1_WARMUP,
+            "train_rows": D1_TRAIN_ROWS,
+            "test_rows": D1_TEST_ROWS,
+            "feature_dim": D1_FEATURE_DIM,
+            "feature_map": D1_FEATURE_MAP,
+            "trace20_decay": TRACE20_DECAY,
+            "trace25_decay": TRACE25_DECAY,
+            "count_window_steps": 20,
+            "decoder": dict(D1_DECODER_CONFIG),
+            "standardization": "training mean and population std (ddof=0); zero-variance scale 1.0",
+            "prediction_threshold": 0.5,
+            "block_length": D1_BLOCK_LENGTH,
+            "block_resamples": D1_BLOCK_RESAMPLES,
+            "block_percentile": 5,
+            "positive_control_label": "x_(t-1)",
+        },
+        "d2": {
+            "checkpoint_steps": CHECKPOINT_STEPS,
+            "checkpoint_count": N_CHECKPOINTS,
+            "onset_ratio": THRESHOLDS["d2_onset_ratio"],
+            "lead_steps": THRESHOLDS["d2_lead_steps"],
+            "localized_min_seeds": THRESHOLDS["d2_localized_min_seeds"],
+            "bound_fraction_denominator": 40,
+        },
+        "d3": {
+            "train_draws": PHASE_STEPS + 1,
+            "eval_draws": EVAL_LEN + 1,
+            "target": "y_t = x_(t-1), y_0 = x_-1",
+        },
+        "d4_drive": {
+            "targets": DRIVE_TARGETS,
+            "sources_per_target": DRIVE_SOURCES_PER_TARGET,
+            "sources_total": DRIVE_TARGETS * DRIVE_SOURCES_PER_TARGET,
+            "rate_hz": DRIVE_RATE_HZ,
+            "weight_mv": DRIVE_WEIGHT_MV,
+            "spike_probability_per_ms": DRIVE_P,
+            "realization_steps": DRIVE_STEPS,
+            "random_call_shape": [DRIVE_STEPS, DRIVE_TARGETS, DRIVE_SOURCES_PER_TARGET],
+            "train_indices": [0, PHASE_STEPS - 1],
+            "eval_indices": [PHASE_STEPS, DRIVE_STEPS - 1],
+            "hidden_targets": [0, 19],
+            "O1_target": 20,
+            "O0_target": 21,
+            "plastic": False,
+            "background_plasticity_objects": len(getattr(net, "background_plasticities", ())),
+            "seed_sequence_component": 40,
+        },
+        "bootstrap": {"resamples": 100_000, "percentile_method": "inverted_cdf", "entropy": "[20261001, 30, 7, k]", "metric_ids": list(range(9))},
+        "thresholds": dict(THRESHOLDS),
+    }
+
+
 class FeatureAccumulator:
     """Causal D1 feature recurrence over already-present hidden spikes."""
 
@@ -198,8 +339,8 @@ class FeatureAccumulator:
         self.buffer[self.index] = h
         self.index = (self.index + 1) % 20
         self.count20 += h - old
-        self.trace20 = math.exp(-1.0 / 20.0) * self.trace20 + h
-        self.trace25 = math.exp(-1.0 / 25.0) * self.trace25 + h
+        self.trace20 = TRACE20_DECAY * self.trace20 + h
+        self.trace25 = TRACE25_DECAY * self.trace25 + h
         return np.concatenate((self.count20, self.trace20, self.trace25)).copy()
 
 
@@ -265,15 +406,7 @@ def fit_d1_decoder(train_features: np.ndarray, labels: np.ndarray) -> FittedDeco
     raw_scale = x.std(axis=0, ddof=0)
     scale = np.where(raw_scale == 0.0, 1.0, raw_scale)
     z = (x - mean) / scale
-    model = LogisticRegression(
-        penalty="l2",
-        C=1.0,
-        fit_intercept=True,
-        solver="lbfgs",
-        tol=1e-8,
-        max_iter=2000,
-        class_weight=None,
-    )
+    model = LogisticRegression(**D1_DECODER_CONFIG)
     with warnings.catch_warnings():
         warnings.simplefilter("error", ConvergenceWarning)
         model.fit(z, y)
@@ -291,8 +424,8 @@ def circular_block_lower_bound(
     correctness: np.ndarray,
     seed: int,
     target_q: int,
-    n_resamples: int = 10_000,
-    block_length: int = 100,
+    n_resamples: int = D1_BLOCK_RESAMPLES,
+    block_length: int = D1_BLOCK_LENGTH,
     chunk_size: int = 100,
 ) -> float:
     """One-sided 95% D1 circular moving-block lower interval."""
@@ -316,13 +449,17 @@ def circular_block_lower_bound(
     return float(np.percentile(reps, 5, method="inverted_cdf"))
 
 
-def run_d1_seed(seed: int) -> Dict[str, object]:
-    """One complete D1 seed. The CLI, not this function, owns run authorization."""
-    train = capture_d1_features(seed, train=True)
-    test = capture_d1_features(seed, train=False)
+def run_d1_seed(seed: int, *, n_train: int = PHASE_STEPS, n_test: int = EVAL_LEN) -> Dict[str, object]:
+    """One complete D1 seed. The CLI, not this function, owns run authorization.
+
+    Keyword lengths exist only for short construction tests on non-diagnostic
+    seeds; the runner uses the spec defaults and the validator rejects others.
+    """
+    train = capture_d1_features(seed, train=True, n=n_train)
+    test = capture_d1_features(seed, train=False, n=n_test)
     tr = slice(D1_WARMUP, None)
     te = slice(D1_WARMUP, None)
-    if train["features"][tr].shape[0] != D1_TRAIN_ROWS or test["features"][te].shape[0] != D1_TEST_ROWS:
+    if train["features"][tr].shape[0] != n_train - D1_WARMUP or test["features"][te].shape[0] != n_test - D1_WARMUP:
         raise AssertionError("D1 row-count invariant failed")
     out: Dict[str, object] = {
         "diagnostic": "D1",
@@ -332,8 +469,10 @@ def run_d1_seed(seed: int) -> Dict[str, object]:
         "train_feature_hash": train["feature_hash"],
         "test_feature_hash": test["feature_hash"],
         "initial_weights_sha256": sha256(*initial_weights(seed)),
-        "train_rows": D1_TRAIN_ROWS,
-        "test_rows": D1_TEST_ROWS,
+        "train_rows": int(train["features"][tr].shape[0]),
+        "test_rows": int(test["features"][te].shape[0]),
+        "warmup_rows": D1_WARMUP,
+        "feature_dim": int(train["features"].shape[1]),
         "weights_constant": bool(train["weights_constant"] and test["weights_constant"]),
         "decoders": {},
     }
@@ -344,14 +483,208 @@ def run_d1_seed(seed: int) -> Dict[str, object]:
         out["decoders"][name] = {
             "accuracy": float(correctness.mean()),
             "lower_95": circular_block_lower_bound(correctness, seed, q),
+            "scored": int(correctness.size),
+            "decoder_config": dict(D1_DECODER_CONFIG),
+            "train_label_sha256": sha256(np.asarray(train[field][tr], dtype=np.int8)),
             "mean": fitted.mean.tolist(),
             "scale": fitted.scale.tolist(),
+            "normalization_sha256": normalization_hash(fitted.mean, fitted.scale),
             "coefficients": fitted.coefficients.tolist(),
             "intercept": fitted.intercept.tolist(),
-            "n_iter": fitted.n_iter.tolist(),
-            "converged": bool(np.all(fitted.n_iter < 2000)),
+            "coefficients_sha256": coefficients_hash(fitted.coefficients, fitted.intercept),
+            "n_iter": [int(v) for v in fitted.n_iter.tolist()],
+            "converged": bool(np.all(fitted.n_iter < D1_MAX_ITER)),
         }
     return out
+
+
+def normalization_hash(mean: Sequence[float], scale: Sequence[float]) -> str:
+    """SHA-256 of the stored training-only float64 mean vector then scale vector."""
+    return sha256(np.asarray(mean, dtype=np.float64), np.asarray(scale, dtype=np.float64))
+
+
+def coefficients_hash(coefficients: Sequence[Sequence[float]], intercept: Sequence[float]) -> str:
+    return sha256(np.asarray(coefficients, dtype=np.float64), np.asarray(intercept, dtype=np.float64))
+
+
+def d1_object_hashes(seed: int) -> Dict[str, str]:
+    """Coordinator-side D1 identities, constructed without a network transition."""
+    return {
+        "initial_weights_sha256": sha256(*initial_weights(seed)),
+        "train_input_hash": sha256(a_stream(seed, True)),
+        "test_input_hash": sha256(a_stream(seed, False)),
+    }
+
+
+# ----------------------------------------------------------- D1 validation
+D1_ROW_FIELDS = (
+    "diagnostic",
+    "seed",
+    "train_input_hash",
+    "test_input_hash",
+    "train_feature_hash",
+    "test_feature_hash",
+    "initial_weights_sha256",
+    "train_rows",
+    "test_rows",
+    "warmup_rows",
+    "feature_dim",
+    "weights_constant",
+    "decoders",
+)
+D1_DECODER_FIELDS = (
+    "accuracy",
+    "lower_95",
+    "scored",
+    "decoder_config",
+    "train_label_sha256",
+    "mean",
+    "scale",
+    "normalization_sha256",
+    "coefficients",
+    "intercept",
+    "coefficients_sha256",
+    "n_iter",
+    "converged",
+)
+
+
+def _finite_unit(v: object) -> bool:
+    return isinstance(v, float) and math.isfinite(v) and 0.0 <= v <= 1.0
+
+
+def _finite_vector(v: object, n: int) -> bool:
+    try:
+        a = np.asarray(v, dtype=np.float64)
+    except (TypeError, ValueError):
+        return False
+    return a.shape == (n,) and bool(np.isfinite(a).all())
+
+
+def validate_d1_row(
+    row: Mapping[str, object],
+    expected: Optional[Mapping[str, str]],
+    *,
+    train_rows: int = D1_TRAIN_ROWS,
+    test_rows: int = D1_TEST_ROWS,
+) -> List[str]:
+    """Every spec 0.4 / 4.6 INVALID invariant for one D1 seed row. Empty list = valid.
+
+    ``train_rows``/``test_rows`` default to the spec and are overridden only
+    by short construction tests; the package validator always uses the spec.
+    """
+    v: List[str] = []
+    seed = row.get("seed") if isinstance(row, Mapping) else None
+    tag = f"D1 seed={seed}"
+    if not isinstance(row, Mapping):
+        return [f"{tag}: row is not a mapping"]
+    if row.get("status", "ok") != "ok":
+        v.append(f"{tag}: job status {row.get('status')!r}")
+    missing = [k for k in D1_ROW_FIELDS if k not in row]
+    if missing:
+        v.append(f"{tag}: missing field(s) {missing}")
+        return v
+    if row["diagnostic"] != "D1":
+        v.append(f"{tag}: diagnostic label {row['diagnostic']!r}")
+    if not isinstance(seed, int) or isinstance(seed, bool):
+        v.append(f"{tag}: seed is not int")
+    for k in ("train_input_hash", "test_input_hash", "train_feature_hash", "test_feature_hash", "initial_weights_sha256"):
+        if not _is_hash(row[k]):
+            v.append(f"{tag}: {k} is not a SHA-256 hex digest")
+    if row["train_input_hash"] == row["test_input_hash"]:
+        v.append(f"{tag}: train and test input hashes are identical (split not disjoint)")
+    if row["train_feature_hash"] == row["test_feature_hash"]:
+        v.append(f"{tag}: train and test feature hashes are identical")
+    if expected is None:
+        v.append(f"{tag}: no coordinator identity supplied")
+    else:
+        for k in ("initial_weights_sha256", "train_input_hash", "test_input_hash"):
+            if row[k] != expected.get(k):
+                v.append(f"{tag}: {k} differs from coordinator identity")
+    if row["weights_constant"] is not True:
+        v.append(f"{tag}: frozen W1/W2 were not bitwise constant")
+    for k, want in (("train_rows", train_rows), ("test_rows", test_rows), ("warmup_rows", D1_WARMUP), ("feature_dim", D1_FEATURE_DIM)):
+        if row[k] != want or isinstance(row[k], bool):
+            v.append(f"{tag}: {k}={row[k]!r}, expected {want}")
+    decoders = row["decoders"]
+    if not isinstance(decoders, Mapping) or set(decoders) != set(D1_DECODERS):
+        v.append(f"{tag}: decoders must be exactly {list(D1_DECODERS)}")
+        return v
+    for name in D1_DECODERS:
+        d = decoders[name]
+        dtag = f"{tag} decoder={name}"
+        if not isinstance(d, Mapping):
+            v.append(f"{dtag}: not a mapping")
+            continue
+        dmissing = [k for k in D1_DECODER_FIELDS if k not in d]
+        if dmissing:
+            v.append(f"{dtag}: missing field(s) {dmissing}")
+            continue
+        if not _finite_unit(d["accuracy"]):
+            v.append(f"{dtag}: accuracy is not a finite float in [0,1]")
+        elif abs(d["accuracy"] * test_rows - round(d["accuracy"] * test_rows)) > 1e-6:
+            v.append(f"{dtag}: accuracy is not a count over {test_rows} scored rows")
+        if not _finite_unit(d["lower_95"]):
+            v.append(f"{dtag}: lower_95 is not a finite float in [0,1]")
+        if d["scored"] != test_rows or isinstance(d["scored"], bool):
+            v.append(f"{dtag}: scored={d['scored']!r}, expected {test_rows}")
+        config = d["decoder_config"]
+        if not isinstance(config, Mapping) or dict(config) != D1_DECODER_CONFIG:
+            v.append(f"{dtag}: decoder configuration differs from spec 4.4")
+        if not _is_hash(d["train_label_sha256"]):
+            v.append(f"{dtag}: train_label_sha256 is not a SHA-256 hex digest")
+        mean_ok = _finite_vector(d["mean"], D1_FEATURE_DIM)
+        scale_ok = _finite_vector(d["scale"], D1_FEATURE_DIM)
+        if not (mean_ok and scale_ok):
+            v.append(f"{dtag}: training normalization mean/scale not finite length-{D1_FEATURE_DIM}")
+        else:
+            if not (np.asarray(d["scale"], dtype=np.float64) > 0.0).all():
+                v.append(f"{dtag}: non-positive training scale")
+            if d["normalization_sha256"] != normalization_hash(d["mean"], d["scale"]):
+                v.append(f"{dtag}: normalization_sha256 does not match stored mean/scale")
+        try:
+            coef = np.asarray(d["coefficients"], dtype=np.float64)
+            icpt = np.asarray(d["intercept"], dtype=np.float64)
+            coef_ok = coef.shape == (1, D1_FEATURE_DIM) and icpt.shape == (1,) and bool(np.isfinite(coef).all() and np.isfinite(icpt).all())
+        except (TypeError, ValueError):
+            coef_ok = False
+        if not coef_ok:
+            v.append(f"{dtag}: coefficients/intercept not finite (1,{D1_FEATURE_DIM})/(1,)")
+        elif d["coefficients_sha256"] != coefficients_hash(d["coefficients"], d["intercept"]):
+            v.append(f"{dtag}: coefficients_sha256 does not match stored coefficients")
+        n_iter = d["n_iter"]
+        iters_ok = isinstance(n_iter, list) and len(n_iter) == 1 and all(isinstance(i, int) and not isinstance(i, bool) for i in n_iter)
+        if not iters_ok or not all(0 < i < D1_MAX_ITER for i in n_iter):
+            v.append(f"{dtag}: solver iterations {n_iter!r} not strictly below max_iter")
+        if d["converged"] is not True:
+            v.append(f"{dtag}: decoder did not converge")
+    if all(isinstance(decoders[n], Mapping) and "train_label_sha256" in decoders[n] for n in D1_DECODERS):
+        if decoders["A"]["train_label_sha256"] == decoders["positive_prior"]["train_label_sha256"]:
+            v.append(f"{tag}: A and positive-control training labels are identical")
+    return v
+
+
+def validate_d1_package(
+    rows: Sequence[Mapping[str, object]],
+    expected: Optional[Mapping[int, Mapping[str, str]]],
+    seeds: Sequence[int] = DIAGNOSTIC_SEEDS,
+) -> List[str]:
+    """Package-level D1 validity: exact seed set, no duplicates, every row valid."""
+    v: List[str] = []
+    seen = [r.get("seed") if isinstance(r, Mapping) else None for r in rows]
+    if len(rows) != len(seeds):
+        v.append(f"D1: {len(rows)} rows, expected {len(seeds)}")
+    dupes = sorted({s for s in seen if seen.count(s) > 1}, key=str)
+    if dupes:
+        v.append(f"D1: duplicate seed rows {dupes}")
+    if set(seen) != set(seeds):
+        v.append(f"D1: seed set differs; missing {sorted(set(seeds) - set(seen))}, unexpected {sorted((set(seen) - set(seeds)), key=str)}")
+    if expected is None:
+        v.append("D1: coordinator identities not supplied")
+    for row in rows:
+        s = row.get("seed") if isinstance(row, Mapping) else None
+        v.extend(validate_d1_row(row, None if expected is None else expected.get(s)))  # type: ignore[arg-type]
+    return v
 
 
 CHECKPOINT_FIELDS = (
@@ -523,9 +856,10 @@ def validate_checkpoint_rows(
 
 
 def classify_onsets(hidden_step: Optional[int], output_step: Optional[int]) -> str:
-    if hidden_step is not None and (output_step is None or output_step - hidden_step >= 5_000):
+    lead = THRESHOLDS["d2_lead_steps"]
+    if hidden_step is not None and (output_step is None or output_step - hidden_step >= lead):
         return "HIDDEN_FIRST"
-    if output_step is not None and (hidden_step is None or hidden_step - output_step >= 5_000):
+    if output_step is not None and (hidden_step is None or hidden_step - output_step >= lead):
         return "OUTPUT_FIRST"
     return "CO_ONSET"
 
@@ -539,7 +873,7 @@ def onset_record(primary: Sequence[Mapping[str, object]], frozen: Sequence[Mappi
     def first(rate_key: str) -> Optional[int]:
         for c in sorted(p):
             denominator = float(f[c][rate_key])
-            if denominator != 0.0 and float(p[c][rate_key]) < 0.50 * denominator:
+            if denominator != 0.0 and float(p[c][rate_key]) < THRESHOLDS["d2_onset_ratio"] * denominator:
                 return int(p[c]["step_index"])
         return None
 
@@ -646,27 +980,44 @@ def evaluate_task(
     }
 
 
-def condition_object_hashes(seed: int, task: str, drive: bool) -> Dict[str, Optional[str]]:
-    """Construct and hash every paired object without simulating a transition."""
+def _condition_objects(seed: int, task: str, drive: bool, n_train: int, n_eval: int):
     w1, w2 = initial_weights(seed)
     if task == "A":
-        train_x = a_stream(seed, True)
+        train_x = a_stream(seed, True, n_train)
         train_y = train_x.copy()
-        eval_x = a_stream(seed, False)
+        eval_x = a_stream(seed, False, n_eval)
         eval_y = eval_x.copy()
     elif task == "lag1":
-        tr = lag1_stream(seed, True)
-        te = lag1_stream(seed, False)
+        tr = lag1_stream(seed, True, n_train)
+        te = lag1_stream(seed, False, n_eval)
         train_x, train_y = tr["inputs"], tr["targets"]
         eval_x, eval_y = te["inputs"], te["targets"]
     else:
         raise ValueError(task)
-    source = background_source_vectors(seed) if drive else None
+    source = background_source_vectors(seed, n_train + n_eval) if drive else None
+    coin = tie_coin(seed, task, n_eval)
+    return w1, w2, train_x, train_y, eval_x, eval_y, source, coin
+
+
+def condition_object_hashes(
+    seed: int,
+    task: str,
+    drive: bool,
+    *,
+    n_train: int = PHASE_STEPS,
+    n_eval: int = EVAL_LEN,
+) -> Dict[str, Optional[str]]:
+    """Construct and hash every paired object without simulating a transition.
+
+    The keyword lengths exist only for short construction tests; the runner
+    always uses the spec defaults.
+    """
+    w1, w2, train_x, train_y, eval_x, eval_y, source, coin = _condition_objects(seed, task, drive, n_train, n_eval)
     return {
         "initial_weights_sha256": sha256(w1, w2),
         "train_stream_sha256": sha256(train_x, train_y),
         "eval_stream_sha256": sha256(eval_x, eval_y),
-        "tie_coin_sha256": sha256(tie_coin(seed, task)),
+        "tie_coin_sha256": sha256(coin),
         "drive_sha256": background_hash(source) if source is not None else None,
     }
 
@@ -677,23 +1028,18 @@ def run_condition_seed(
     plastic: bool,
     drive: bool,
     expected_hashes: Optional[Mapping[str, Optional[str]]] = None,
+    *,
+    n_train: int = PHASE_STEPS,
+    n_eval: int = EVAL_LEN,
+    warmup: int = EVAL_WARMUP,
 ) -> Dict[str, object]:
-    """One D2/D3/D4 condition row plus D2-style checkpoints."""
-    w1, w2 = initial_weights(seed)
-    if task == "A":
-        train_x = a_stream(seed, True)
-        train_y = train_x.copy()
-        eval_x = a_stream(seed, False)
-        eval_y = eval_x.copy()
-    elif task == "lag1":
-        tr = lag1_stream(seed, True)
-        te = lag1_stream(seed, False)
-        train_x, train_y = tr["inputs"], tr["targets"]
-        eval_x, eval_y = te["inputs"], te["targets"]
-    else:
-        raise ValueError(task)
-    source = background_source_vectors(seed) if drive else None
-    coin = tie_coin(seed, task)
+    """One D2/D3/D4 condition row plus D2-style checkpoints.
+
+    The keyword lengths exist only for short construction tests; the runner
+    always uses the spec defaults and the package validator rejects any row
+    whose checkpoint count or scored length differs from the spec.
+    """
+    w1, w2, train_x, train_y, eval_x, eval_y, source, coin = _condition_objects(seed, task, drive, n_train, n_eval)
     local_hashes: Dict[str, Optional[str]] = {
         "initial_weights_sha256": sha256(w1, w2),
         "train_stream_sha256": sha256(train_x, train_y),
@@ -707,7 +1053,7 @@ def run_condition_seed(
     net = build_network(w1, w2)
     init_state(net)
     checkpoints = train_condition(net, train_x, train_y, plastic, condition, seed, source)
-    eval_result = evaluate_task(net, eval_x, eval_y, coin, source)
+    eval_result = evaluate_task(net, eval_x, eval_y, coin, source, source_offset=n_train, warmup=warmup)
     final_weights = tuple(s.weight.detach().cpu().numpy().copy() for s in net.synapses)
     return {
         "diagnostic": "D2/D3/D4",
@@ -729,19 +1075,37 @@ def run_condition_seed(
     }
 
 
-def summarize_d1(rows: Sequence[Mapping[str, object]]) -> Dict[str, object]:
-    if sorted(int(r["seed"]) for r in rows) != list(DIAGNOSTIC_SEEDS):
-        raise ValueError("D1 requires exactly seeds 2000..2019")
+def summarize_d1(
+    rows: Sequence[Mapping[str, object]],
+    expected: Optional[Mapping[int, Mapping[str, str]]] = None,
+    seeds: Sequence[int] = DIAGNOSTIC_SEEDS,
+) -> Dict[str, object]:
+    """Spec 4.6 readout. Fail-closed: the strict package validator runs first.
+
+    Any validator finding returns ``INVALID`` with no accuracy predicate
+    evaluated and no accuracy statistic in the returned record. Omitting the
+    coordinator identities is itself a finding, so a bare call cannot PASS.
+    """
+    violations = validate_d1_package(rows, expected, seeds)
+    if violations:
+        return {"status": "INVALID", "valid": False, "rows_schema_valid": False, "violations": violations, "A": None, "positive_prior": None}
+
+    t = THRESHOLDS
 
     def one(name: str) -> Dict[str, object]:
-        acc = np.asarray([r["decoders"][name]["accuracy"] for r in rows], dtype=float)
-        lower = np.asarray([r["decoders"][name]["lower_95"] for r in rows], dtype=float)
+        acc = np.asarray([r["decoders"][name]["accuracy"] for r in rows], dtype=float)  # type: ignore[index]
+        lower = np.asarray([r["decoders"][name]["lower_95"] for r in rows], dtype=float)  # type: ignore[index]
         median = float(np.median(acc))
-        count = int((lower > 0.50).sum())
-        status = "PASS" if median >= 0.70 and count >= 15 else "FAIL" if median < 0.55 else "INCONCLUSIVE"
+        count = int((lower > t["d1_lower_bound_reference"]).sum())
+        if median >= t["d1_pass_median_accuracy"] and count >= t["d1_pass_min_lower_bounds_gt_half"]:
+            status = "PASS"
+        elif median < t["d1_fail_median_below"]:
+            status = "FAIL"
+        else:
+            status = "INCONCLUSIVE"
         return {"median_accuracy": median, "lower_bounds_gt_half": count, "status": status}
 
     a = one("A")
     positive = one("positive_prior")
     status = "INVALID_HARNESS" if positive["status"] != "PASS" else a["status"]
-    return {"A": a, "positive_prior": positive, "status": status}
+    return {"status": status, "valid": True, "rows_schema_valid": True, "violations": [], "A": a, "positive_prior": positive}

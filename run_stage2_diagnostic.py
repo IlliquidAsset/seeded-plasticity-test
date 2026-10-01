@@ -3,7 +3,15 @@
 
 The implementation card may use only ``--shakedown`` or ``--ss-probe``.
 ``--run-diagnostic`` is fail-closed behind a separate Nora approval record tied
-to the exact pushed implementation commit. Progress output is outcome-free.
+to the exact pushed implementation commit.
+
+Outcome-exposure contract (spec section 8): while a stage executes, the only
+file written is an outcome-free progress ledger. Seed rows stay in coordinator
+memory until every predeclared row of the stage is present, then the strict
+package validator runs. A schema-valid stage is written in full; an invalid
+stage is written with outcome-bearing keys redacted. Every predeclared stop
+branch, including an exception, goes through ``finalize_package``, which
+writes the section 13 package summary and the SHA-256 manifest.
 """
 
 from __future__ import annotations
@@ -11,6 +19,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import math
 import os
 import platform
 import shlex
@@ -18,10 +27,10 @@ import socket
 import subprocess
 import sys
 import time
-from concurrent.futures import ProcessPoolExecutor, as_completed
+from concurrent.futures import Executor, ProcessPoolExecutor, as_completed
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Dict, Iterable, List, Mapping, Sequence, Tuple
+from typing import Callable, Dict, List, Mapping, Optional, Sequence, Tuple
 
 import numpy as np
 
@@ -39,10 +48,67 @@ SCI_FILES = (
     "run_stage2_diagnostic.py",
     "tools/stage2_diagnostic_ss_probe.py",
     "tests/test_stage2_diagnostic.py",
+    "tests/test_stage2_diagnostic_package.py",
     "docs/STAGE2_SPEC.md",
     "docs/STAGE2_DIAGNOSTIC_SPEC.md",
     "docs/STAGE2_DIAGNOSTIC_IMPLEMENTATION_NOTES.md",
 )
+PROGRESS_FIELDS = ("stage", "index", "total", "seed", "condition", "status", "elapsed_s", "rss_peak_total_bytes")
+
+# Spec section 13 claim boundary and no-oracle statement, carried verbatim in
+# substance into every package, whatever branch stops the sequence.
+NO_ORACLE = (
+    "The target is used only to grade already-emitted output spikes and, in D1 only, as an offline decoder "
+    "label after feature capture. It is never an input, hidden-state label, plasticity feature, state reset, "
+    "initialization signal, or internal policy/world-model component. D4 drive is generated without task or "
+    "target input. No LLM logic enters the network, policy, memory, reward rule, decoder feature path, or simulator."
+)
+CLAIM_BOUNDARY = (
+    "Passing any diagnostic does not pass Stage 2. D1 is only linear decodability under one frozen specification. "
+    "D2 is localization. D3 is a simpler-task contrast. D4 is one anti-silence perturbation at one frozen amplitude. "
+    "None establishes general learning, continual learning, developmental progress, biological equivalence, Abe "
+    "transfer, or an r4 result. Positive findings remain simulated bench findings and require Nora review before use."
+)
+D1_CLAIM = (
+    "Under the fixed split, feature map, preprocessing, and L2 logistic decoder, the noisy A target was or was not "
+    "linearly decodable from the hidden activity of the frozen random r3 network."
+)
+NOT_SUPPORTED = (
+    "the network can or cannot represent A at all",
+    "any nonlinear-decoder, trained-weight, architecture-wide, or learning-rule claim from D1",
+    "passing Stage 2 or re-scoring r2/r3",
+    "general or continual learning, developmental progress, biological equivalence, or Abe transfer",
+    "any r4 result, drive retuning, or post-data constant change",
+)
+
+# Spec section 10, ordered; earlier rows take precedence.
+BRANCH_TABLE: Tuple[Tuple[str, str, str], ...] = (
+    ("STOP_INVALID", "Any D1-D4 INVALID, collision-probe failure, or incomplete package",
+     "STOP. Return to spec/implementation review. No r4."),
+    ("STOP_D1_INVALID_HARNESS", "D1 positive control not PASS",
+     "D1 is INVALID_HARNESS. Repair only under a new reviewed spec; no downstream diagnostic."),
+    ("STOP_D1_FAIL", "D1 FAIL",
+     "The specified linear decoder cannot recover A under the fixed split. Task/architecture pairing needs roadmap revision. Return to Kendrick. No r4 readout or reward change."),
+    ("STOP_D1_INCONCLUSIVE", "D1 INCONCLUSIVE",
+     "Evidence is not decision-complete. Return to Kendrick/spec review. No downstream diagnostic and no r4."),
+    ("RETURN_D3_FAIL", "D1 PASS and D3 FAIL",
+     "Frozen activity is linearly decodable but the unchanged rule/harness does not establish lag-1 competence. Treat as a rule-limit or harness question; return to Kendrick. D4 observations cannot independently authorize r4."),
+    ("RETURN_D3_INCONCLUSIVE", "D1 PASS and D3 INCONCLUSIVE",
+     "Rule capacity is unresolved. Return to Kendrick. D4 may be reported if already completed in the fixed sequence, but cannot authorize r4."),
+    ("RETURN_D4_SILENCE_FAIL", "D1 PASS, D3 PASS, D4(ii) FAIL",
+     "The frozen drive did not prevent silence at its predeclared constants. No constant retuning inside this diagnostic. No r4 with this drive. D2 localization is reported."),
+    ("RETURN_D4_COMPETENCE_FAIL", "D1 PASS, D3 PASS, D4(ii) PASS, D4(iii) FAIL",
+     "Silence was prevented but competence did not improve decisively. Silence alone is not shown to be the bottleneck. Drive alone does not justify r4. D2 localization is reported."),
+    ("RETURN_D4_COMPETENCE_INCONCLUSIVE", "D1 PASS, D3 PASS, D4(ii) PASS, D4(iii) INCONCLUSIVE",
+     "Silence was prevented but learning evidence is unresolved. Return to Kendrick; no r4 and no retuning."),
+    ("CONSIDER_DOC_ONLY_R4_SPEC", "D1 PASS, D3 PASS, D4(ii) PASS, D4(iii) PASS",
+     "An r4 with this exact frozen drive is warranted for consideration. Create a new doc-only r4 spec card, inform Kendrick, retain all Stage 2 gates/controls/rule, and require Nora review before execution."),
+    ("RETURN_D4_SILENCE_FAIL_COMPETENCE_PASS", "D1 PASS, D3 PASS, D4(ii) FAIL, D4(iii) PASS",
+     "Activity criterion still failed, so the anti-silence mechanism is not validated even if competence happened to pass. No r4 with this drive; return to Kendrick."),
+    ("RETURN_D4_OTHER_INCONCLUSIVE", "D1 PASS, D3 PASS, D4 overall INCONCLUSIVE for any other valid combination",
+     "Return to Kendrick. No r4 and no post-data constant change."),
+)
+BRANCH_INDEX = {code: i + 1 for i, (code, _, _) in enumerate(BRANCH_TABLE)}
 
 
 def file_sha(path: Path) -> str:
@@ -66,6 +132,125 @@ def parser() -> argparse.ArgumentParser:
     return p
 
 
+# ------------------------------------------------------- effective parameters
+def expected_parameters_from_spec() -> Dict[str, object]:
+    """Values transcribed by hand from docs/STAGE2_DIAGNOSTIC_SPEC.md sections 2-9.
+
+    Deliberately independent of snn/stage2_diagnostic.py constants: the runner
+    compares this block with the effective block read from constructed objects
+    and refuses a diagnostic run on any difference.
+    """
+    return {
+        "layer_sizes": [2, 20, 2],
+        "dt_ms": 1.0,
+        "tau_m_ms": [20.0, 20.0],
+        "v_rest_mv": [-70.0, -70.0],
+        "v_reset_mv": [-70.0, -70.0],
+        "v_thresh_mv": [-54.0, -54.0],
+        "tau_syn_ms": [0.0, 0.0],
+        "hidden_tau_a_ms": 200.0,
+        "hidden_beta_a_mv": 1.12,
+        "w1_bounds_mv": [-10.0, 10.0],
+        "w2_bounds_mv": [0.0, 10.0],
+        "plasticity_credit": ["eligibility", "eligibility"],
+        "gamma_mv": [0.25, 0.25],
+        "tau_plus_ms": [20.0, 20.0],
+        "tau_minus_ms": [20.0, 20.0],
+        "tau_elig_ms": [25.0, 25.0],
+        "a_plus": [1 / 25, 1 / 25],
+        "a_minus": [1 / 25, 1 / 25],
+        "noise_p": 0.10,
+        "training_steps": 200_000,
+        "eval_len": 12_000,
+        "eval_warmup": 2_000,
+        "eval_scored": 10_000,
+        "seeds": list(range(2000, 2020)),
+        "namespace": 30,
+        "root_entropy": 20261001,
+        "d1": {
+            "warmup_rows": 2_000,
+            "train_rows": 198_000,
+            "test_rows": 10_000,
+            "feature_dim": 60,
+            "count_window_steps": 20,
+            "trace20_decay": math.exp(-1 / 20),
+            "trace25_decay": math.exp(-1 / 25),
+            "decoder": {"penalty": "l2", "C": 1.0, "fit_intercept": True, "solver": "lbfgs", "tol": 1e-8, "max_iter": 2000, "class_weight": None},
+            "prediction_threshold": 0.5,
+            "block_length": 100,
+            "block_resamples": 10_000,
+            "block_percentile": 5,
+        },
+        "d2": {"checkpoint_steps": 1_000, "checkpoint_count": 200, "onset_ratio": 0.50, "lead_steps": 5_000, "localized_min_seeds": 14, "bound_fraction_denominator": 40},
+        "d3": {"train_draws": 200_001, "eval_draws": 12_001},
+        "d4_drive": {
+            "targets": 22,
+            "sources_per_target": 8,
+            "sources_total": 176,
+            "rate_hz": 25.0,
+            "weight_mv": 2.0,
+            "spike_probability_per_ms": 1 - math.exp(-25 / 1000),
+            "realization_steps": 212_000,
+            "random_call_shape": [212_000, 22, 8],
+            "train_indices": [0, 199_999],
+            "eval_indices": [200_000, 211_999],
+            "hidden_targets": [0, 19],
+            "O1_target": 20,
+            "O0_target": 21,
+            "plastic": False,
+            "background_plasticity_objects": 0,
+            "seed_sequence_component": 40,
+        },
+        "bootstrap": {"resamples": 100_000, "percentile_method": "inverted_cdf", "metric_ids": list(range(9))},
+        "thresholds": {
+            "d1_pass_median_accuracy": 0.70,
+            "d1_pass_min_lower_bounds_gt_half": 15,
+            "d1_lower_bound_reference": 0.50,
+            "d1_fail_median_below": 0.55,
+            "d2_onset_ratio": 0.50,
+            "d2_lead_steps": 5_000,
+            "d2_localized_min_seeds": 14,
+            "d3_chance": 0.50,
+            "d3_pass_median_accuracy": 0.70,
+            "d3_pass_lower_bound_gt": 0.55,
+            "d4_chance": 0.50,
+            "d4_hidden_rate_ratio_min": 0.50,
+            "d4_silent_end_max": 0.80,
+            "d4_pass_median_accuracy": 0.70,
+            "d4_pass_median_delta": 0.05,
+            "d4_pass_delta_lower_gt": 0.0,
+        },
+    }
+
+
+def parameter_mismatches(effective: Mapping[str, object], expected: Mapping[str, object], prefix: str = "") -> List[str]:
+    """Every expected key must be present in ``effective`` with an identical value."""
+    out: List[str] = []
+    for key, want in expected.items():
+        path = f"{prefix}{key}"
+        if key not in effective:
+            out.append(f"{path}: missing")
+            continue
+        have = effective[key]
+        if isinstance(want, Mapping):
+            if not isinstance(have, Mapping):
+                out.append(f"{path}: expected mapping")
+            else:
+                out.extend(parameter_mismatches(have, want, path + "."))
+        elif have != want:
+            out.append(f"{path}: effective {have!r} != spec {want!r}")
+    return out
+
+
+def validated_effective_parameters() -> Dict[str, object]:
+    from snn import stage2_diagnostic as diag
+
+    effective = diag.effective_parameters()
+    mismatches = parameter_mismatches(effective, expected_parameters_from_spec())
+    return {"effective": effective, "matches_spec": not mismatches, "mismatches": mismatches}
+
+
+# ------------------------------------------------------------- preflight
 def _approval(path: str, head: str, spec_sha: str) -> Dict[str, object]:
     if not path:
         raise SystemExit("refusing diagnostic: --approval-file is required")
@@ -130,8 +315,9 @@ def preflight(args: argparse.Namespace, mode: str, out: Path) -> Dict[str, objec
     stage2_sha = file_sha(STAGE2_SPEC)
     probe = verified_probe()
     approval = _approval(args.approval_file, head, diag_sha) if mode == "diagnostic" else None
+    params = validated_effective_parameters()
     prov: Dict[str, object] = {
-        "schema_version": 1,
+        "schema_version": 2,
         "mode": mode,
         "code_commit": head,
         "upstream_tracking_ref_sha": upstream,
@@ -149,8 +335,12 @@ def preflight(args: argparse.Namespace, mode: str, out: Path) -> Dict[str, objec
         "scientific_files_status": dirty,
         "ss_probe": probe,
         "approval": approval,
+        "effective_parameters": params["effective"],
+        "effective_parameters_match_spec": params["matches_spec"],
+        "effective_parameter_mismatches": params["mismatches"],
         "argv": [sys.executable, *sys.argv],
         "argv_display": shlex.join([sys.executable, *sys.argv]),
+        "environment": {k: os.environ.get(k) for k in ("PYTHONHASHSEED", "OMP_NUM_THREADS", "MKL_NUM_THREADS", "OPENBLAS_NUM_THREADS", "CONDA_DEFAULT_ENV", "CONDA_PREFIX", "VIRTUAL_ENV")},
         "host": {
             "hostname": socket.gethostname(),
             "platform": platform.platform(),
@@ -177,17 +367,22 @@ def preflight(args: argparse.Namespace, mode: str, out: Path) -> Dict[str, objec
             prov["scientific_files_clean"],
             probe["pass"],
             approval is not None,
+            params["matches_spec"],
         )
         if not all(checks):
             raise SystemExit(
-                "diagnostic preflight failed: pushed={0} diag_spec={1} stage2_spec={2} clean={3} ss_probe={4} approval={5}".format(*checks)
+                "diagnostic preflight failed: pushed={0} diag_spec={1} stage2_spec={2} clean={3} ss_probe={4} approval={5} params={6}".format(*checks)
             )
     return prov
 
 
+# ------------------------------------------------------------- job wrappers
 def _d1_job(seed: int) -> Dict[str, object]:
+    import torch
+
     from snn.stage2_diagnostic import run_d1_seed
 
+    torch.set_num_threads(1)
     try:
         row = run_d1_seed(seed)
         row["status"] = "ok"
@@ -198,8 +393,11 @@ def _d1_job(seed: int) -> Dict[str, object]:
 
 
 def _condition_job(job: Tuple[int, str, bool, bool, Mapping[str, object]]) -> Dict[str, object]:
+    import torch
+
     from snn.stage2_diagnostic import run_condition_seed
 
+    torch.set_num_threads(1)
     seed, task, plastic, drive, expected = job
     condition = ("P" if plastic else "F0") + "_" + task + ("+drive" if drive else "-no")
     try:
@@ -211,32 +409,59 @@ def _condition_job(job: Tuple[int, str, bool, bool, Mapping[str, object]]) -> Di
         return {"condition": condition, "seed": seed, "status": "error", "error": repr(exc), "worker_pid": os.getpid()}
 
 
-def run_pool(fn, jobs: Sequence[object], workers: int, stage: str, out: Path) -> Tuple[List[Dict[str, object]], Dict[str, object]]:
-    """Complete a whole predeclared stage before any outcome inspection."""
-    watch = RSSWatch()
-    watch.start()
+# ------------------------------------------------------------- stage pool
+def progress_record(stage: str, index: int, total: int, row: Mapping[str, object], elapsed: float, rss: int) -> Dict[str, object]:
+    """Outcome-free ledger line: identity, status, and resources only."""
+    return {
+        "stage": stage,
+        "index": index,
+        "total": total,
+        "seed": row.get("seed"),
+        "condition": row.get("condition", row.get("diagnostic")),
+        "status": "ok" if row.get("status") == "ok" else "error",
+        "elapsed_s": round(elapsed, 1),
+        "rss_peak_total_bytes": int(rss),
+    }
+
+
+def run_pool(
+    fn: Callable[[object], Dict[str, object]],
+    jobs: Sequence[object],
+    workers: int,
+    stage: str,
+    out: Path,
+    executor_factory: Callable[[int], Executor] = lambda n: ProcessPoolExecutor(max_workers=n),
+    watch: Optional[object] = None,
+) -> Tuple[List[Dict[str, object]], Dict[str, object]]:
+    """Complete a whole predeclared stage before any outcome is persisted.
+
+    Rows are held only in coordinator memory. The sole file written during the
+    stage is ``<stage>.progress.jsonl`` with ``PROGRESS_FIELDS`` per finished
+    job; it never contains an accuracy, rate, bound, interval, or decoder field.
+    An exception leaves only that ledger behind.
+    """
+    watch = watch if watch is not None else RSSWatch()
+    watch.start()  # type: ignore[attr-defined]
     started = datetime.now(timezone.utc).isoformat()
     t0 = time.time()
     rows: List[Dict[str, object]] = []
-    partial = out / f"{stage}.partial.jsonl"
-    partial.write_text("")
-    with ProcessPoolExecutor(max_workers=workers) as pool:
-        futures = [pool.submit(fn, job) for job in jobs]
-        for i, future in enumerate(as_completed(futures), 1):
-            row = future.result()
-            rows.append(row)
-            with partial.open("a") as handle:
-                handle.write(json.dumps(row, default=_jsonable) + "\n")
-            print(
-                f"[{stage} {i}/{len(jobs)}] seed={row.get('seed')} condition={row.get('condition', 'D1')} "
-                f"status={row.get('status')} elapsed={time.time() - t0:.0f}s rss_peak={watch.peak_total / 2**30:.2f}GiB",
-                flush=True,
-            )
-            if watch.exceeded:
-                raise RuntimeError("RSS exceeded 8 GiB; aborting rather than swapping")
-    watch.sample()
-    watch.stop()
-    partial.unlink()
+    ledger = out / f"{stage}.progress.jsonl"
+    ledger.write_text("")
+    try:
+        with executor_factory(workers) as pool:
+            futures = [pool.submit(fn, job) for job in jobs]
+            for i, future in enumerate(as_completed(futures), 1):
+                row = future.result()
+                rows.append(row)
+                rec = progress_record(stage, i, len(jobs), row, time.time() - t0, watch.peak_total)  # type: ignore[attr-defined]
+                with ledger.open("a") as handle:
+                    handle.write(json.dumps(rec, sort_keys=True) + "\n")
+                print(" ".join(f"{k}={rec[k]}" for k in PROGRESS_FIELDS), flush=True)
+                if watch.exceeded:  # type: ignore[attr-defined]
+                    raise RuntimeError("RSS exceeded 8 GiB; aborting rather than swapping")
+    finally:
+        watch.sample()  # type: ignore[attr-defined]
+        watch.stop()  # type: ignore[attr-defined]
     meta = {
         "stage": stage,
         "started_at": started,
@@ -246,19 +471,38 @@ def run_pool(fn, jobs: Sequence[object], workers: int, stage: str, out: Path) ->
         "jobs": len(jobs),
         "rows_ok": sum(r.get("status") == "ok" for r in rows),
         "rows_error": sum(r.get("status") != "ok" for r in rows),
-        "peak_rss_total_bytes": watch.peak_total,
-        "peak_rss_single_process_bytes": watch.peak_single,
-        "max_worker_processes_observed": watch.max_children,
+        "peak_rss_total_bytes": watch.peak_total,  # type: ignore[attr-defined]
+        "peak_rss_single_process_bytes": watch.peak_single,  # type: ignore[attr-defined]
+        "max_worker_processes_observed": watch.max_children,  # type: ignore[attr-defined]
         "rss_limit_bytes": RSS_LIMIT,
-        "rss_exceeded": watch.exceeded,
+        "rss_exceeded": watch.exceeded,  # type: ignore[attr-defined]
         "interruptions": 0,
         "retries": 0,
     }
     return rows, meta
 
 
+def _row_key(row: Mapping[str, object]) -> Tuple[str, int, str]:
+    """Spec section 2 order: diagnostic/condition, then seed; tolerant of malformed rows."""
+    seed = row.get("seed")
+    return (str(row.get("condition", row.get("diagnostic"))), seed if isinstance(seed, int) and not isinstance(seed, bool) else -1, repr(seed))
+
+
 def write_jsonl(path: Path, rows: Sequence[Mapping[str, object]]) -> None:
     path.write_text("".join(json.dumps(r, sort_keys=True, default=_jsonable) + "\n" for r in rows))
+
+
+def write_stage_rows(out: Path, name: str, rows: Sequence[Mapping[str, object]], valid: bool) -> str:
+    """Write a completed stage. Invalid stages are redacted (spec section 8)."""
+    from snn.stage2_diagnostic_stats import redact_outcomes
+
+    if valid:
+        path = out / f"{name}.jsonl"
+        write_jsonl(path, rows)
+    else:
+        path = out / f"{name}.invalid_redacted.jsonl"
+        write_jsonl(path, [redact_outcomes(r) for r in rows])  # type: ignore[misc]
+    return path.name
 
 
 def manifest(out: Path) -> None:
@@ -266,22 +510,293 @@ def manifest(out: Path) -> None:
     (out / "SHA256SUMS").write_text("".join(f"{file_sha(p)}  {p.relative_to(out)}\n" for p in files))
 
 
-def branch_outcome(d1: str, d3: str, d4: Mapping[str, object]) -> str:
-    if d1 in ("INVALID", "INVALID_HARNESS") or d3 == "INVALID" or d4["status"] == "INVALID":
-        return "STOP_INVALID"
-    if d1 != "PASS":
-        return f"STOP_D1_{d1}"
-    if d3 != "PASS":
-        return f"STOP_D3_{d3}"
-    if d4["silence_prevention"] != "PASS":
-        return "STOP_D4_SILENCE_PREVENTION_FAIL"
-    if d4["competence"] == "FAIL":
-        return "STOP_D4_COMPETENCE_FAIL"
-    if d4["competence"] == "INCONCLUSIVE":
-        return "STOP_D4_COMPETENCE_INCONCLUSIVE"
-    if d4["competence"] == "PASS":
-        return "CONSIDER_DOC_ONLY_R4_SPEC"
-    return "STOP_UNCLASSIFIED"
+# ------------------------------------------------------------- branch table
+def branch_outcome(
+    d1: Optional[str],
+    d2: Optional[str] = None,
+    d3: Optional[str] = None,
+    d4: Optional[Mapping[str, object]] = None,
+    incomplete: bool = False,
+) -> Dict[str, object]:
+    """Ordered spec section 10 branch table over whatever stages were reached."""
+    d4_status = None if d4 is None else d4.get("status")
+    invalid = (
+        incomplete
+        or d1 in (None, "INVALID")
+        or d2 == "D2_INVALID"
+        or d3 == "INVALID"
+        or d4_status == "INVALID"
+    )
+    if invalid:
+        code = "STOP_INVALID"
+    elif d1 == "INVALID_HARNESS":
+        code = "STOP_D1_INVALID_HARNESS"
+    elif d1 == "FAIL":
+        code = "STOP_D1_FAIL"
+    elif d1 == "INCONCLUSIVE":
+        code = "STOP_D1_INCONCLUSIVE"
+    elif d1 != "PASS" or d2 is None or d3 is None or d4 is None:
+        code = "STOP_INVALID"  # a PASS path that did not reach every predeclared stage is incomplete
+    elif d3 == "FAIL":
+        code = "RETURN_D3_FAIL"
+    elif d3 == "INCONCLUSIVE":
+        code = "RETURN_D3_INCONCLUSIVE"
+    elif d4.get("silence_prevention") == "FAIL":
+        code = "RETURN_D4_SILENCE_FAIL"
+    elif d4.get("competence") == "FAIL":
+        code = "RETURN_D4_COMPETENCE_FAIL"
+    elif d4.get("competence") == "INCONCLUSIVE":
+        code = "RETURN_D4_COMPETENCE_INCONCLUSIVE"
+    elif d4.get("competence") == "PASS":
+        code = "CONSIDER_DOC_ONLY_R4_SPEC"
+    else:
+        code = "RETURN_D4_OTHER_INCONCLUSIVE"
+    _, condition, action = BRANCH_TABLE[BRANCH_INDEX[code] - 1]
+    return {"code": code, "table_row": BRANCH_INDEX[code], "condition": condition, "action": action}
+
+
+def plain_language(branch: Mapping[str, object], statuses: Mapping[str, object]) -> Dict[str, object]:
+    reached = {k: v for k, v in statuses.items() if v is not None}
+    supported: List[str] = []
+    if branch["code"] == "STOP_INVALID":
+        supported.append("Nothing beyond the invalidity itself: the sequence stopped before any decision-bearing readout could be inspected.")
+    else:
+        d1 = statuses.get("D1")
+        if d1 in ("PASS", "FAIL", "INCONCLUSIVE"):
+            supported.append(f"D1 {d1}: {D1_CLAIM}")
+        if d1 == "INVALID_HARNESS":
+            supported.append("D1 positive control did not pass, so the D1 harness cannot support any decodability statement.")
+        if statuses.get("D2"):
+            supported.append(f"D2 {statuses['D2']}: a mechanical localization label only, not a competence result.")
+        if statuses.get("D3"):
+            supported.append(f"D3 {statuses['D3']}: a balanced lag-1 contrast under the unchanged rule and budget.")
+        if statuses.get("D4"):
+            supported.append(f"D4 {statuses['D4']}: one fixed anti-silence drive at one frozen amplitude.")
+    return {
+        "stages_reached": sorted(reached),
+        "statuses": dict(statuses),
+        "branch": branch["code"],
+        "next_action": branch["action"],
+        "supported": supported,
+        "not_supported": list(NOT_SUPPORTED),
+    }
+
+
+REQUIRED_PACKAGE_FIELDS = (
+    "provenance",
+    "effective_parameters",
+    "effective_parameters_match_spec",
+    "collision_probe",
+    "run_metadata",
+    "statuses",
+    "stages",
+    "branch_outcome",
+    "package_summary",
+    "claim_boundary",
+    "no_oracle",
+    "d1_claim_boundary",
+    "artifacts",
+)
+
+
+def validate_package_summary(summary: Mapping[str, object]) -> List[str]:
+    missing = [k for k in REQUIRED_PACKAGE_FIELDS if k not in summary]
+    problems = [f"missing {k}" for k in missing]
+    branch = summary.get("branch_outcome")
+    if isinstance(branch, Mapping) and branch.get("code") not in BRANCH_INDEX:
+        problems.append("branch outcome not in spec section 10 table")
+    params = summary.get("effective_parameters")
+    if isinstance(params, Mapping):
+        drive = params.get("d4_drive")
+        if not isinstance(drive, Mapping) or drive.get("sources_total") != 176 or drive.get("rate_hz") != 25.0 or drive.get("weight_mv") != 2.0:
+            problems.append("D4 drive constants missing from effective parameters")
+    return problems
+
+
+def finalize_package(
+    out: Path,
+    provenance: Mapping[str, object],
+    stages: Mapping[str, object],
+    statuses: Mapping[str, object],
+    run_meta: Sequence[Mapping[str, object]],
+    artifacts: Sequence[str],
+    incomplete_reason: Optional[str] = None,
+) -> Dict[str, object]:
+    """The single exit for every predeclared stop branch (spec sections 8, 10, 13)."""
+    params = validated_effective_parameters()
+    branch = branch_outcome(
+        statuses.get("D1"),  # type: ignore[arg-type]
+        statuses.get("D2"),  # type: ignore[arg-type]
+        statuses.get("D3"),  # type: ignore[arg-type]
+        stages.get("D4"),  # type: ignore[arg-type]
+        incomplete=incomplete_reason is not None,
+    )
+    summary: Dict[str, object] = {
+        "schema_version": 2,
+        "provenance": provenance,
+        "effective_parameters": params["effective"],
+        "effective_parameters_match_spec": params["matches_spec"],
+        "effective_parameter_mismatches": params["mismatches"],
+        "collision_probe": provenance.get("ss_probe"),
+        "run_metadata": {
+            "stages": list(run_meta),
+            "workers": provenance.get("workers"),
+            "total_wall_seconds": sum(float(m.get("wall_seconds", 0.0)) for m in run_meta),
+            "peak_rss_total_bytes": max([int(m.get("peak_rss_total_bytes", 0)) for m in run_meta] or [0]),
+            "interruptions": sum(int(m.get("interruptions", 0)) for m in run_meta),
+            "retries": sum(int(m.get("retries", 0)) for m in run_meta),
+            "incomplete_reason": incomplete_reason,
+        },
+        "statuses": dict(statuses),
+        "stages": dict(stages),
+        "branch_outcome": branch,
+        "package_summary": plain_language(branch, statuses),
+        "claim_boundary": CLAIM_BOUNDARY,
+        "no_oracle": NO_ORACLE,
+        "d1_claim_boundary": D1_CLAIM,
+        "artifacts": sorted(set(artifacts) | {"summary.json", "branch_outcome.json", "provenance.json"}),
+    }
+    problems = validate_package_summary(summary)
+    if problems:
+        raise AssertionError(f"package summary incomplete: {problems}")
+    (out / "summary.json").write_text(json.dumps(summary, indent=2, sort_keys=True, default=_jsonable) + "\n")
+    (out / "branch_outcome.json").write_text(json.dumps({"statuses": dict(statuses), **branch}, indent=2, sort_keys=True) + "\n")
+    manifest(out)
+    print(f"PACKAGE FROZEN branch_outcome={branch['code']} table_row={branch['table_row']}", flush=True)
+    return summary
+
+
+# ------------------------------------------------------------- diagnostic
+Executer = Callable[[str, Callable[..., Dict[str, object]], Sequence[object]], Tuple[List[Dict[str, object]], Dict[str, object]]]
+
+
+def write_incomplete_marker(out: Path) -> None:
+    """Fail-closed default written before D1 starts.
+
+    If the process dies without reaching ``finalize_package`` (for example the
+    RSS watchdog's hard ``os._exit``), the machine-readable outcome on disk is
+    already STOP_INVALID / incomplete package, and nothing outcome-bearing.
+    """
+    code = "STOP_INVALID"
+    _, condition, action = BRANCH_TABLE[BRANCH_INDEX[code] - 1]
+    record = {
+        "code": code,
+        "table_row": BRANCH_INDEX[code],
+        "condition": condition,
+        "action": action,
+        "statuses": {"D1": None, "D2": None, "D3": None, "D4": None},
+        "incomplete_reason": "sequence has not reached finalize_package",
+    }
+    (out / "branch_outcome.json").write_text(json.dumps(record, indent=2, sort_keys=True) + "\n")
+
+
+def run_diagnostic(
+    args: argparse.Namespace,
+    out: Path,
+    provenance: Mapping[str, object],
+    execute: Optional[Executer] = None,
+    seeds: Optional[Sequence[int]] = None,
+    d1_identity: Optional[Callable[[int], Mapping[str, str]]] = None,
+    condition_identity: Optional[Callable[[int, str, bool], Mapping[str, Optional[str]]]] = None,
+    n_boot: Optional[int] = None,
+) -> Dict[str, object]:
+    """Spec section 8 sequence. Injection points exist for construction tests only."""
+    from snn import stage2_diagnostic as diag
+    from snn import stage2_diagnostic_stats as dstat
+
+    seeds = tuple(diag.DIAGNOSTIC_SEEDS if seeds is None else seeds)
+    n_boot = dstat.N_BOOT if n_boot is None else n_boot
+    d1_identity = d1_identity or diag.d1_object_hashes
+    condition_identity = condition_identity or diag.condition_object_hashes
+    def _default_execute(stage, fn, jobs):
+        return run_pool(fn, jobs, args.workers, stage, out)
+
+    run_stage: Executer = execute or _default_execute  # type: ignore[assignment]
+
+    run_meta: List[Dict[str, object]] = []
+    stages: Dict[str, object] = {}
+    statuses: Dict[str, object] = {"D1": None, "D2": None, "D3": None, "D4": None}
+    artifacts: List[str] = []
+    identities: Dict[Tuple[str, bool], Dict[int, Mapping[str, Optional[str]]]] = {}
+
+    def ids(task: str, drive: bool) -> Dict[int, Mapping[str, Optional[str]]]:
+        if (task, drive) not in identities:
+            identities[(task, drive)] = {s: condition_identity(s, task, drive) for s in seeds}  # type: ignore[misc]
+        return identities[(task, drive)]
+
+    def condition_jobs(task: str, plastics: Sequence[bool], drive: bool):
+        # Every shared object is constructed and hashed in the coordinator
+        # before a worker executes a transition; each worker reasserts it.
+        expected = ids(task, drive)
+        return [(seed, task, plastic, drive, expected[seed]) for plastic in plastics for seed in seeds]
+
+    def stop(reason: Optional[str] = None) -> Dict[str, object]:
+        return finalize_package(out, provenance, stages, statuses, run_meta, artifacts, incomplete_reason=reason)
+
+    out.mkdir(parents=True, exist_ok=True)
+    write_incomplete_marker(out)
+    try:
+        # ---- D1
+        d1_expected = {s: d1_identity(s) for s in seeds}
+        d1_rows, meta = run_stage("D1", _d1_job, list(seeds))
+        run_meta.append(meta)
+        d1_rows.sort(key=_row_key)
+        d1 = diag.summarize_d1(d1_rows, d1_expected, seeds)
+        artifacts.append(write_stage_rows(out, "d1_rows", d1_rows, d1["rows_schema_valid"] is True))
+        if d1["valid"]:
+            d1["normalization_hashes"] = {
+                str(r["seed"]): {n: r["decoders"][n]["normalization_sha256"] for n in diag.D1_DECODERS} for r in d1_rows  # type: ignore[index]
+            }
+            d1["coefficient_hashes"] = {
+                str(r["seed"]): {n: r["decoders"][n]["coefficients_sha256"] for n in diag.D1_DECODERS} for r in d1_rows  # type: ignore[index]
+            }
+            d1["convergence"] = {str(r["seed"]): {n: r["decoders"][n]["converged"] for n in diag.D1_DECODERS} for r in d1_rows}  # type: ignore[index]
+        stages["D1"] = d1
+        statuses["D1"] = d1["status"]
+        if d1["status"] != "PASS":
+            return stop()
+
+        # ---- D2 (shared no-drive A rows, reused by D4)
+        d2_rows, meta = run_stage("D2_A_no_drive", _condition_job, condition_jobs("A", (True, False), False))
+        run_meta.append(meta)
+        d2_rows.sort(key=_row_key)
+        d2 = dstat.summarize_d2(d2_rows, {("A", False): ids("A", False)}, seeds)
+        artifacts.append(write_stage_rows(out, "d2_rows", d2_rows, d2["rows_schema_valid"] is True))
+        stages["D2"] = d2
+        statuses["D2"] = d2["status"]
+        if d2["status"] == "D2_INVALID":
+            return stop()
+
+        # ---- D3
+        d3_rows, meta = run_stage("D3_lag1_no_drive", _condition_job, condition_jobs("lag1", (True, False), False))
+        run_meta.append(meta)
+        d3_rows.sort(key=_row_key)
+        d3 = dstat.summarize_d3(d3_rows, {("lag1", False): ids("lag1", False)}, seeds, n_boot=n_boot)
+        artifacts.append(write_stage_rows(out, "d3_rows", d3_rows, d3["rows_schema_valid"] is True))
+        stages["D3"] = d3
+        statuses["D3"] = d3["status"]
+        if d3["status"] == "INVALID":
+            return stop()
+
+        # ---- D4 (only the predeclared drive rows)
+        drive_jobs = condition_jobs("A", (True, False), True) + condition_jobs("lag1", (True,), True)
+        drive_rows, meta = run_stage("D4_drive", _condition_job, drive_jobs)
+        run_meta.append(meta)
+        drive_rows.sort(key=_row_key)
+        d4_input = d2_rows + [r for r in d3_rows if r.get("condition") == "P_lag1-no"] + drive_rows
+        d4 = dstat.summarize_d4(
+            d4_input,
+            {k: ids(*k) for k in (("A", False), ("lag1", False), ("A", True), ("lag1", True))},
+            seeds,
+            n_boot=n_boot,
+        )
+        artifacts.append(write_stage_rows(out, "d4_drive_rows", drive_rows, d4["rows_schema_valid"] is True))
+        stages["D4"] = d4
+        statuses["D4"] = d4["status"]
+        return stop()
+    except Exception as exc:  # any unplanned stop still freezes an outcome-free INVALID package
+        stages["exception"] = {"type": type(exc).__name__}
+        return stop(reason=f"exception during sequence: {type(exc).__name__}")
 
 
 def run_shakedown(out: Path) -> None:
@@ -296,6 +811,7 @@ def run_shakedown(out: Path) -> None:
     rows = diag.train_condition(net, x, x, True, "fixture_P_A-no", seed)
     ev_x = diag.a_stream(seed, False, 300)
     ev = diag.evaluate_task(net, ev_x, ev_x, diag.tie_coin(seed, "A", 300), warmup=100, source_offset=0)
+    params = validated_effective_parameters()
     result = {
         "mode": "shakedown",
         "seed": seed,
@@ -304,108 +820,12 @@ def run_shakedown(out: Path) -> None:
         "checkpoint_schema": "PASS",
         "evaluation_scored": ev["scored"],
         "evaluation_nonmutating": ev["weights_bitwise_constant"],
+        "effective_parameters_match_spec": params["matches_spec"],
+        "effective_parameter_mismatches": params["mismatches"],
     }
     (out / "shakedown.json").write_text(json.dumps(result, indent=2, sort_keys=True) + "\n")
     manifest(out)
     print(json.dumps(result, sort_keys=True))
-
-
-def run_diagnostic(args: argparse.Namespace, out: Path, provenance: Mapping[str, object]) -> None:
-    from snn import stage2_diagnostic as diag
-    from snn import stage2_diagnostic_stats as dstat
-
-    seeds = diag.DIAGNOSTIC_SEEDS
-    all_meta: List[Dict[str, object]] = []
-
-    def condition_jobs(task: str, plastics: Sequence[bool], drive: bool):
-        # Construct and hash every shared object in the coordinator before a
-        # worker executes a network transition. Each worker reconstructs and
-        # asserts the same hash set before training.
-        expected = {seed: diag.condition_object_hashes(seed, task, drive) for seed in seeds}
-        return [(seed, task, plastic, drive, expected[seed]) for plastic in plastics for seed in seeds]
-
-    d1_rows, meta = run_pool(_d1_job, list(seeds), args.workers, "D1", out)
-    all_meta.append(meta)
-    d1_rows.sort(key=lambda r: r["seed"])
-    write_jsonl(out / "d1_rows.jsonl", d1_rows)
-    if any(r.get("status") != "ok" for r in d1_rows):
-        raise SystemExit("INVALID: D1 job error; downstream diagnostics not run")
-    d1 = diag.summarize_d1(d1_rows)
-    (out / "d1_summary.json").write_text(json.dumps(d1, indent=2, sort_keys=True) + "\n")
-    if d1["status"] != "PASS":
-        manifest(out)
-        raise SystemExit(f"D1 {d1['status']}: stop sequence")
-
-    d2_jobs = condition_jobs("A", (True, False), False)
-    d2_rows, meta = run_pool(_condition_job, d2_jobs, args.workers, "D2_A_no_drive", out)
-    all_meta.append(meta)
-    if any(r.get("status") != "ok" for r in d2_rows):
-        raise SystemExit("INVALID: D2 job error")
-    d2_rows.sort(key=lambda r: (r["condition"], r["seed"]))
-    write_jsonl(out / "d2_rows.jsonl", d2_rows)
-    d2_process = dstat.validate_d2_package(d2_rows)
-    onset_rows = []
-    for seed in seeds:
-        p = next(r for r in d2_rows if r["condition"] == "P_A-no" and r["seed"] == seed)
-        f = next(r for r in d2_rows if r["condition"] == "F0_A-no" and r["seed"] == seed)
-        onset = diag.onset_record(p["checkpoints"], f["checkpoints"])
-        onset.update({"seed": seed})
-        onset_rows.append(onset)
-    d2 = dstat.summarize_d2(onset_rows)
-    d2["process_integrity"] = d2_process
-
-    d3_jobs = condition_jobs("lag1", (True, False), False)
-    d3_rows, meta = run_pool(_condition_job, d3_jobs, args.workers, "D3_lag1_no_drive", out)
-    all_meta.append(meta)
-    if any(r.get("status") != "ok" for r in d3_rows):
-        raise SystemExit("INVALID: D3 job error")
-    d3_rows.sort(key=lambda r: (r["condition"], r["seed"]))
-    write_jsonl(out / "d3_rows.jsonl", d3_rows)
-    pre_drive_rows = d2_rows + d3_rows
-    pre_boot = dstat.bootstrap_all(pre_drive_rows, order=(0, 1, 7, 8))
-    d3 = dstat.summarize_d3(d3_rows, pre_boot)
-    if d3["status"] == "INVALID":
-        manifest(out)
-        raise SystemExit("D3 INVALID: stop sequence")
-
-    drive_jobs = condition_jobs("A", (True, False), True) + condition_jobs("lag1", (True,), True)
-    drive_rows, meta = run_pool(_condition_job, drive_jobs, args.workers, "D4_drive", out)
-    all_meta.append(meta)
-    if any(r.get("status") != "ok" for r in drive_rows):
-        raise SystemExit("INVALID: D4 job error")
-    drive_rows.sort(key=lambda r: (r["condition"], r["seed"]))
-    write_jsonl(out / "d4_drive_rows.jsonl", drive_rows)
-
-    all_rows = d2_rows + d3_rows + drive_rows
-    boot = dstat.bootstrap_all(all_rows)
-    d4 = dstat.summarize_d4(all_rows, boot)
-    lag_table = dstat.complete_seed_table(all_rows, ("P_lag1+drive", "P_lag1-no"))
-    lag_context = {
-        "median_P_lag1_drive": float(np.median(lag_table["P_lag1+drive"])),
-        "median_P_lag1_no": float(np.median(lag_table["P_lag1-no"])),
-        "median_drive_minus_no": next(b["point_estimate"] for b in boot if b["id"] == 5),
-        "two_sided_95": next(b["two_sided_95"] for b in boot if b["id"] == 5),
-    }
-    summary = {
-        "provenance": provenance,
-        "runs": all_meta,
-        "D1": d1,
-        "D2": d2,
-        "D2_onsets": onset_rows,
-        "D3": d3,
-        "D4": d4,
-        "D4_lag1_report_only": lag_context,
-        "bootstrap": boot,
-        "branch_outcome": branch_outcome(str(d1["status"]), str(d3["status"]), d4),
-        "no_oracle": (
-            "Targets grade already-emitted spikes and label D1 offline features only; they never enter network state. "
-            "D4 drive is task-independent, and no LLM logic enters the network, reward, decoder feature path, or simulator."
-        ),
-    }
-    (out / "bootstrap.json").write_text(json.dumps(boot, indent=2, sort_keys=True) + "\n")
-    (out / "summary.json").write_text(json.dumps(summary, indent=2, sort_keys=True, default=_jsonable) + "\n")
-    manifest(out)
-    print(f"PACKAGE COMPLETE branch_outcome={summary['branch_outcome']}")
 
 
 def main() -> None:
@@ -420,7 +840,9 @@ def main() -> None:
     if args.shakedown:
         run_shakedown(out)
     else:
-        run_diagnostic(args, out, provenance)
+        summary = run_diagnostic(args, out, provenance)
+        if summary["branch_outcome"]["code"] == "STOP_INVALID":  # type: ignore[index]
+            raise SystemExit(3)
 
 
 if __name__ == "__main__":
