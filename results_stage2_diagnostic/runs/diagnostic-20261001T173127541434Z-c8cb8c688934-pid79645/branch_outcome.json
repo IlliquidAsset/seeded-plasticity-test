@@ -1,0 +1,12 @@
+{
+  "action": "STOP. Return to spec/implementation review. No r4.",
+  "code": "STOP_INVALID",
+  "condition": "Any D1-D4 INVALID, collision-probe failure, or incomplete package",
+  "statuses": {
+    "D1": null,
+    "D2": null,
+    "D3": null,
+    "D4": null
+  },
+  "table_row": 1
+}
