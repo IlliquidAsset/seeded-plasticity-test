@@ -6,6 +6,7 @@
 **Frozen against baseline:** `608c4255a700f93318da9eb66a8b26adc55ead2c`  
 **Stage 1 evidence:** `docs/FLORIAN_CORE_GATE.md` and `results_florian_core/` (`CORE PASS`, independently approved by Nora).  
 **Date frozen:** 2026-10-01  
+**Revision:** r2 (2026-10-01) — closes the four implementation ambiguities in Nora's REVISE review of `b8a0168` (evaluation membrane initialization; bootstrap RNG/metric order and ratio recomputation; initial evaluation status; held-out stream starting context and RNG draw order). No scientific threshold, arm, seed, length, or hyperparameter changed; no Stage 2 run has occurred.  
 
 No Stage 2 experiment has been run. This document freezes the experiment before implementation or data collection. After independent approval, implementation must reproduce this contract exactly; a changed scientific parameter requires a new spec and a new review, not an edit made after seeing results.
 
@@ -88,7 +89,7 @@ x_t = ideal_B(t)             with probability 0.90
 x_t = 1 - ideal_B(t)         with probability 0.10
 ```
 
-A and B have the same binary marginal, the same one-hot input magnitude, the same innovation probability, the same theoretical optimum accuracy (90%), and opposite hidden transition rules. There is no shift marker. At the fixed boundary, B uses the last two realized A observations as its starting context.
+A and B have the same binary marginal, the same one-hot input magnitude, the same innovation probability, the same theoretical optimum accuracy (90%), and opposite hidden transition rules. There is no shift marker. At the fixed boundary, the training B stream uses the last two realized A observations as its starting context: the first B observation `x_200000` is generated from `x_199998` and `x_199999`. (The standalone held-out B stream has its own declared starting context; see section 7.1.)
 
 This is deliberately a hidden-structure problem rather than a label-remapping problem: the current observation alone is insufficient, and the regime can only be inferred from temporal history. Chance accuracy is exactly `0.50` because the stationary binary marginal is balanced.
 
@@ -100,7 +101,7 @@ Each run contains exactly `400,000` observed steps:
 - Unexpected A->B shift: immediately before step `200,000`.
 - B phase: steps `200,000..399,999` (`200,000 ms`; cumulative `400 s`).
 
-At the shift there is no membrane reset, SFA reset, eligibility reset, spike reset, reward-running-statistic reset, weight restore, optimizer/retrainer invocation, new neuron, new synapse, context bit, phase label, or pause in plasticity in the primary arm. The only changed variable is the environment's transition rule.
+The training run is initialized exactly once, before step 0, with the state defined in section 5.1 (identical to `PureSNN.reset_online_state` plus `a = 0`). At the shift there is no membrane reset, SFA reset, eligibility reset, spike reset, reward-running-statistic reset, weight restore, optimizer/retrainer invocation, new neuron, new synapse, context bit, phase label, or pause in plasticity in the primary arm. The only changed variable is the environment's transition rule.
 
 ## 4. Frozen network and learning rule
 
@@ -172,17 +173,36 @@ This is the Bellec et al. ALIF state equation mapped to the bench's voltage conv
 
 Training never consumes an evaluation observation. Evaluation pauses the simulated training clock and runs on a deep copy of the checkpoint; it cannot alter the live model, RNG, membranes, SFA, eligibility, weights, or stream position.
 
-For each seed, immutable A and B evaluation streams are generated before training from independent RNG streams. Each evaluation stream has `12,000` observations: the first `2,000` are an unscored state warm-up, and the final `10,000` are scored. Evaluation copies start with zero membrane, spike, eligibility, and adaptation state and have plasticity disabled. This common reset is confined to disposable evaluation copies; the continuous training run is never reset.
+For each seed, immutable A and B evaluation streams are generated before training from independent RNG streams by the exact procedure in section 7.1. Each evaluation stream has `12,000` observations: the first `2,000` (indices `0..1,999`) are an unscored state warm-up, and the final `10,000` (indices `2,000..11,999`) are scored. Evaluation copies have plasticity disabled (no reward is ever applied, so weights are bitwise constant during evaluation). The common start state in section 5.1 is confined to disposable evaluation copies; the continuous training run is never reset.
+
+### 5.1 Exact dynamic-state initialization (training start and every evaluation copy)
+
+The single training initialization before step 0 and the start of every evaluation copy use exactly this state, and no other:
+
+| State | Value |
+|---|---|
+| Membrane potential, every neuron in every layer (hidden and output) | `v_rest = -70.0 mV` (as `PureSNN.reset_online_state`, `snn/core.py:277-285`) |
+| Current spikes, every layer (so the first output prediction is `z = 0`) | `0` |
+| R-STDP `eligibility`, `pre_trace`, `post_trace`, `last_pairing` (`RSTDPPlasticity.reset`) | `0` |
+| ALIF adaptation `a`, every hidden neuron (SFA-on and SFA-off arms) | `0` |
+| Batch size / dtype | `1` / float64 |
+
+An evaluation copy is produced by `copy.deepcopy` of the live network at the checkpoint and then set to the table above; therefore the weights are the only quantity carried from training into evaluation. The live network, its dynamic state, and every RNG are not touched. No zero-membrane or any alternative initialization is permitted.
+
+### 5.2 Evaluation step contract
+
+At evaluation index `i`, the copy's current output spike `z_i` is the prediction of held-out observation `x_i`. It is recorded, and then `online_step(onehot(x_i), reward_fn=None)` is called. Prediction `i` is correct iff `z_i == x_i`. Only indices `2,000..11,999` are scored.
 
 The same held-out A stream is used for that seed at all A checkpoints, and the same held-out B stream is used at all B checkpoints. No evaluation output or state returns to training.
 
-Checkpoints:
+### 5.3 Checkpoints (exactly four evaluations per arm/seed; no others)
 
-1. Initial: optional report-only A and B accuracy before training.
-2. `A_pre`: after step 199,999 and before the first B step; evaluate held-out A.
-3. `B_pre`: from the same pre-shift weights; evaluate held-out B.
-4. `B_post`: after step 399,999; evaluate held-out B.
-5. `A_post`: from the same final weights as `B_post`; evaluate held-out A.
+1. `A_pre`: after step 199,999 and before the first B step; evaluate held-out A.
+2. `B_pre`: from the same pre-shift weights; evaluate held-out B.
+3. `B_post`: after step 399,999; evaluate held-out B.
+4. `A_post`: from the same final weights as `B_post`; evaluate held-out A.
+
+No initial (step-0) evaluation is executed in any arm. It would be redundant: the frozen-from-start arm's four evaluations are evaluations of the untouched initial weights under the identical start state and streams, and they are the predeclared untrained baseline. Executing any evaluation not listed above violates Gate 4 item 7.
 
 Primary metric per seed and checkpoint:
 
@@ -261,11 +281,26 @@ Use NumPy `SeedSequence` components below; no Python process hash or worker orde
 | B scramble permutation | `[20261001, seed, 4]` |
 | A held-out stream | `[20261001, seed, 5]` |
 | B held-out stream | `[20261001, seed, 6]` |
-| Bootstrap resampling | `[20261001, 7]` |
+| Bootstrap resampling, metric `k` (section 9.1) | `[20261001, 7, k]` |
 
-The B generator starts from the final two realized A observations but uses its independent innovation RNG. All arms must serialize SHA-256 hashes of initial weights, A observations, structured B observations, scrambled B observations where applicable, and both held-out streams. Paired arms must assert matching hashes for every object they share before running.
+Every generator is `numpy.random.default_rng(numpy.random.SeedSequence(<entropy list>))`, created fresh for its one object and used only by the draws listed in section 7.1, in the order listed. The B generator starts from the final two realized A observations but uses its independent innovation RNG. All arms must serialize SHA-256 hashes of initial weights, A observations, structured B observations, scrambled B observations where applicable, and both held-out streams. Paired arms must assert matching hashes for every object they share before running.
 
 Parallel workers may change wall time only. Result rows are sorted by arm then seed before aggregation.
+
+### 7.1 Exact draw procedures (streams and weights uniquely defined)
+
+Notation: `rng(e)` is a fresh `default_rng(SeedSequence(e))`; observations are `int8` values in `{0, 1}`; `flip_j = (u_j < 0.10)` with `u = rng.random(n)` (float64, NumPy's default `[0, 1)` uniform); `ideal_A = x_(t-2) XOR x_(t-1)` and `ideal_B = 1 - ideal_A`; `x_t = ideal(t) XOR flip`.
+
+| Object | Draws, in this exact order, and nothing else | Starting context |
+|---|---|---|
+| Initial weights | `g = rng([20261001, seed, 1])`; `W1 = g.uniform(-10.0, 10.0, size=(20, 2))` (hidden x input); then `W2 = g.uniform(0.0, 10.0, size=(1, 20))` (output x hidden); copied into `synapses[0].weight` and `synapses[1].weight` as float64 | — |
+| A training stream, length 200,000 (steps `0..199,999`) | `g = rng([20261001, seed, 2])`; `c = g.integers(0, 2, size=2)` -> `x_0, x_1`; then `u = g.random(199_998)` -> flips for `t = 2..199,999` in order, rule A | `x_0, x_1` = the two drawn context bits (they are observed and trained on) |
+| Structured B training stream, length 200,000 (steps `200,000..399,999`) | `g = rng([20261001, seed, 3])`; `u = g.random(200_000)` -> flips for `t = 200,000..399,999` in order, rule B. No context draw. | `x_199,998, x_199,999` of the realized A training stream |
+| Scrambled B twin | `g = rng([20261001, seed, 4])`; `perm = g.permutation(200_000)`; `B_scr = B_struct[perm]` | n/a (a permutation of the realized structured B vector) |
+| Held-out A stream, length 12,000 | `g = rng([20261001, seed, 5])`; `c = g.integers(0, 2, size=2)` -> `h_0, h_1`; then `u = g.random(11_998)` -> flips for `i = 2..11,999` in order, rule A | `h_0, h_1` = the two drawn context bits (indices 0-1, inside the unscored warm-up) |
+| Held-out B stream, length 12,000 | `g = rng([20261001, seed, 6])`; `c = g.integers(0, 2, size=2)` -> `h_0, h_1`; then `u = g.random(11_998)` -> flips for `i = 2..11,999` in order, rule B | `h_0, h_1` = the two drawn context bits (indices 0-1, inside the unscored warm-up); **not** taken from any training stream |
+
+`g.integers(0, 2, size=2)` uses NumPy's default `int64` dtype and is cast to `int8`. Both held-out streams are therefore functions of `(seed, entropy component)` alone: they do not depend on the training streams, the arm, the weights, or the checkpoint, and each is generated once per seed before training, hashed, and reused unchanged at its checkpoints in every arm. Because the held-out streams' contexts and innovations come from entropy components 5 and 6, which no training object uses, they are independent of training as claimed in section 5. The NumPy version used is recorded in provenance; the stream hashes, not the version, are the identity checked across arms.
 
 ## 8. Stage 1 sign-of-life instrumentation carried forward
 
@@ -300,12 +335,14 @@ For every reported mean, difference, absolute loss, and retained fraction:
 - point estimate: arithmetic on the 20 seed-level values;
 - interval: nonparametric percentile bootstrap over seed indices;
 - resamples: exactly `100,000`;
-- RNG: `default_rng(SeedSequence([20261001, 7]))` freshly initialized for the ordered metric table, with metrics evaluated in the order listed in the result schema;
-- ordinary accuracy: resample the 20 seed accuracies;
-- arm or checkpoint difference: resample the 20 paired seed rows together;
-- one-sided lower 95% bound: 5th percentile;
-- one-sided upper 95% bound: 95th percentile;
-- two-sided 95% interval: 2.5th and 97.5th percentiles.
+- RNG: one independent generator per metric, `default_rng(SeedSequence([20261001, 7, k]))`, where `k` is the metric ID in section 9.1; generators are never shared between metrics, so the metric evaluation order cannot change any draw;
+- resample draw: exactly one call per metric, `idx = g.integers(0, 20, size=(100_000, 20))`; replicate `b` uses seed rows `idx[b, :]` (with replacement);
+- a seed row is that seed's complete paired record: all five arms' accuracies at all four checkpoints. Every quantity entering one metric (both sides of a difference, numerator and denominator of a ratio) is taken from the same resampled seed rows `idx[b, :]` in replicate `b`;
+- each replicate recomputes the metric's full formula from section 9.1 on its 20 resampled rows (means first, then differences/ratios exactly as in the point estimate);
+- percentiles: `numpy.percentile(replicates, q, method="inverted_cdf")` over all 100,000 replicates;
+- one-sided lower 95% bound: `q = 5`;
+- one-sided upper 95% bound: `q = 95`;
+- two-sided 95% interval: `q = 2.5` and `q = 97.5`.
 
 No normal approximation, per-tick pseudo-replication, dropped seed, outlier exclusion, or alternate interval is allowed. All comparisons are strict where written `>`; equality fails a strict gate. The four behavioral exit gates are conjunctive, so no multiplicity correction is applied.
 
@@ -319,6 +356,31 @@ B_improvement   = mean(B_post_primary - B_pre_primary)
 ```
 
 If `A_learned <= 0`, retention is undefined and Gate 3 fails.
+
+### 9.1 Frozen bootstrap metric table (complete; IDs fix the RNG)
+
+Notation: `acc[arm, ckpt]` is the length-20 vector of seed accuracies, rows aligned by seed; `m(v)` is the arithmetic mean over the (resampled) rows. Arms: `P` primary, `F0` frozen from start, `FS` freeze at shift, `SC` scrambled-B twin, `NS` SFA off. In replicate `b` every vector is indexed by the same `idx[b, :]`.
+
+| ID `k` | Metric (point estimate and every replicate use this formula) | Interval(s) required | Used by |
+|---:|---|---|---|
+| 0 | `m(acc[F0, A_pre])` | two-sided 95% | §6.2 validity |
+| 1 | `m(acc[F0, B_pre])` | two-sided 95% | §6.2 validity |
+| 2 | `m(acc[F0, B_post])` | two-sided 95% | §6.2 validity |
+| 3 | `m(acc[F0, A_post])` | two-sided 95% | §6.2 validity |
+| 4 | `m(acc[P, A_pre])` | one-sided lower; two-sided 95% | Gate 1.2 |
+| 5 | `m(acc[P, A_pre] - acc[F0, A_pre])` | one-sided lower | Gate 1.4 |
+| 6 | `m(acc[P, B_post] - acc[P, B_pre])` (= `B_improvement`) | one-sided lower; two-sided 95% | Gate 2.2 |
+| 7 | `m(acc[P, B_post])` | one-sided lower; two-sided 95% | Gate 2.4 |
+| 8 | `m((acc[P, B_post] - acc[P, B_pre]) - (acc[FS, B_post] - acc[FS, B_pre]))` | one-sided lower | §6.3 / Gate 2.5 |
+| 9 | `m(acc[P, B_post] - acc[SC, B_post])` | one-sided lower | §6.4 / Gate 2.5 |
+| 10 | `m(acc[P, A_post])` | one-sided lower; two-sided 95% | Gate 3.3 |
+| 11 | `A_loss = m(acc[P, A_pre]) - m(acc[P, A_post])` | one-sided upper; two-sided 95% | Gate 3 report |
+| 12 | `A_retained = (m(acc[P, A_post]) - 0.50) / (m(acc[P, A_pre]) - 0.50)` | one-sided lower; two-sided 95% | Gate 3 report |
+| 13 | `m(acc[P, A_post] - acc[NS, A_post])` | one-sided lower | §6.5 SFA-benefit claim |
+| 14 | `A_learned = m(acc[P, A_pre]) - 0.50` | two-sided 95% | report |
+| 100 + 4·a + c | `m(acc[arm_a, ckpt_c])`, arm order `a = 0..4` = `P, F0, FS, SC, NS`; checkpoint order `c = 0..3` = `A_pre, B_pre, B_post, A_post` | two-sided 95% | report (all 20 arm×checkpoint means) |
+
+Metric 12 is a ratio of resampled means: in replicate `b` its numerator and denominator are both computed from rows `idx[b, :]`, never from separately resampled vectors and never as a mean of per-seed ratios. If the replicate denominator `m(acc[P, A_pre]) - 0.50 <= 0`, the replicate value is `-inf` (retention undefined counts toward failure); it is retained among the 100,000 replicates, and the count of such replicates is reported. `inverted_cdf` percentiles make this well-defined. No metric outside this table may be bootstrapped or reported as a gate quantity.
 
 ## 10. Exact pass/fail gates
 
@@ -360,7 +422,7 @@ For reporting, bootstrap retained-fraction and loss intervals are mandatory, but
 PASS only if all are true:
 
 1. every arm has exactly 60 trainable synaptic weights before and after the run;
-2. the primary arm has exactly one initialization and zero calls to network, membrane, spike, eligibility, SFA, or weight reset after step 0;
+2. the primary arm's live training network has exactly one initialization (section 5.1, before step 0) and zero calls to network, membrane, spike, eligibility, SFA, or weight reset after step 0 (initialization of a disposable evaluation copy per section 5.1 is not a call on the live network and is logged separately);
 3. the primary executes exactly 200,000 A steps followed immediately by 200,000 B steps, with R-STDP enabled on every eligible step;
 4. training-stream hashes do not equal either held-out-stream hash, and an access log shows zero held-out observations consumed by training;
 5. no replay buffer exists and no A observation is deliberately re-presented during B;
@@ -393,6 +455,9 @@ Required tests:
 6. Evaluation isolation: checkpoint evaluation leaves a byte-identical live training state and unchanged RNG states.
 7. SFA-off check: with `beta_a=0`, output is bit-identical to the ordinary LIF path on a fixed short fixture.
 8. Legacy regression: the maintained Stage 1 core and provenance tests stay green.
+9. Start-state check: training start and every evaluation copy have all membranes at exactly `-70.0 mV` and zero spikes, eligibility, traces, and adaptation (section 5.1).
+10. Stream-procedure check: on non-experimental seeds, streams and weights regenerated by the section 7.1 procedure are bit-identical across two independent constructions, and the held-out B stream's indices 0-1 equal the two context bits drawn from component 6.
+11. Bootstrap determinism: on a synthetic (non-experimental) 20-row table, every section 9.1 metric's interval is identical when metrics are computed in forward vs. reverse ID order, and metric 12 replicates equal the ratio recomputed from the same resampled rows.
 
 Performance smoke tests, seed screening, hyperparameter sweeps, or looking at partial seed outcomes before all 100 arm/seed jobs complete are prohibited.
 
@@ -418,7 +483,9 @@ These are planning estimates, not gates. Actual wall time, peak RSS, worker coun
 The future result package must contain:
 
 - one JSON row for every one of the 100 arm/seed runs;
-- seed-level checkpoint accuracies, sign-of-life metrics, freeze deltas, firing/SFA summaries, hashes, timing, and status;
+- seed-level accuracies and prediction-one fractions at exactly the four checkpoints `A_pre`, `B_pre`, `B_post`, `A_post` (no initial-checkpoint field exists);
+- one bootstrap record per metric ID in section 9.1, sorted by ID, each containing ID, formula name, point estimate, the required interval bounds, the SeedSequence entropy `[20261001, 7, k]`, and (for ID 12) the count of undefined-denominator replicates;
+- sign-of-life metrics, freeze deltas, firing/SFA summaries, hashes, timing, and status;
 - aggregate point estimates and all required bootstrap intervals;
 - exact executable argv as both JSON array and `shlex.join` display string;
 - source/gate commit and confirmation that scientific files were clean;
