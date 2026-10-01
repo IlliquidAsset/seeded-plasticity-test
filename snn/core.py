@@ -64,6 +64,51 @@ class LIFNeuron(nn.Module):
         return fired, v
 
 
+class ALIFNeuron(LIFNeuron):
+    """Threshold-adaptive LIF (ALIF / spike-frequency adaptation).
+
+    Bellec et al. 2020 (e-prop) ALIF state equation in this core's voltage
+    convention (docs/STAGE2_SPEC.md sec. 4.3)::
+
+        theta_t = v_thresh + beta_a * a_t
+        v_pre   = v_rest + exp(-dt/tau_m) * (v_t - v_rest) + I_t
+        z_t     = 1[v_pre >= theta_t]
+        v_t+1   = v_reset if z_t else v_pre
+        a_t+1   = exp(-dt/tau_a) * a_t + z_t
+
+    Hard reset, no refractory period, no adaptation clamp. ``a`` is dynamic
+    state set by ``reset_adaptation`` (called by ``PureSNN.reset_online_state``).
+    With ``beta_a = 0`` the spike decision is bit-identical to ``LIFNeuron``.
+    """
+    def __init__(self, n_neurons, tau_m=20.0, v_thresh=1.0, v_rest=0.0, v_reset=0.0, dt=1.0,
+                 tau_a=200.0, beta_a=0.0):
+        super().__init__(n_neurons, tau_m=tau_m, v_thresh=v_thresh, v_rest=v_rest,
+                         v_reset=v_reset, dt=dt)
+        self.tau_a = tau_a
+        self.beta_a = beta_a
+        self.rho = math.exp(-dt / tau_a)
+        self.a = None
+
+    def reset_adaptation(self, batch_size, device=None, dtype=None):
+        self.a = torch.zeros(batch_size, self.n_neurons, device=device, dtype=dtype or torch.float64)
+
+    def threshold_contribution(self):
+        """beta_a * a_t (mV): the adaptive part of the current threshold."""
+        return self.beta_a * self.a
+
+    def forward(self, I_syn, v=None):
+        if v is None:
+            v = torch.full_like(I_syn, self.v_rest)
+        if self.a is None:
+            self.reset_adaptation(I_syn.shape[0], I_syn.device, I_syn.dtype)
+        v = self.v_rest + self.beta * (v - self.v_rest) + I_syn
+        theta = self.v_thresh + self.beta_a * self.a
+        fired = (v >= theta).to(v.dtype)
+        v = torch.where(fired > 0, torch.full_like(v, self.v_reset), v)
+        self.a = self.rho * self.a + fired
+        return fired, v
+
+
 class Synapse(nn.Module):
     """
     Synaptic connection between two populations.
@@ -283,6 +328,9 @@ class PureSNN(nn.Module):
                         for n in self.neurons]
         for p in self.plasticities:
             p.reset(batch_size, device, dtype)
+        for n in self.neurons:
+            if hasattr(n, "reset_adaptation"):  # ALIF layers: a = 0
+                n.reset_adaptation(batch_size, device, dtype)
 
     def current_output(self):
         """Output-layer spikes f_out(t) of the current step (before advancing)."""
