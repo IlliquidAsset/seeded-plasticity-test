@@ -53,6 +53,17 @@ section 3.3 collision probe.
    the package validator rejects non-spec lengths.
 8. Resource cap per spec section 10: at most 3 workers (preflight refuses more),
    abort above 12 GiB total RSS (`D1RRSSWatch`), stop and report past 6 h.
+   The 6 h stop is a real deadline (round-1 review fix): `run_pool` waits on
+   futures with a timeout bounded by the remaining wall budget, so the check
+   fires even when no job completes. On the deadline, RSS abort, or any
+   exception, `terminate_executor` cancels every queued future, kills the
+   worker processes, and shuts the pool down with `wait=False`; the
+   coordinator never waits for running work. `WallLimitExceeded` then reaches
+   `run_d1r`, which freezes the outcome-free `STOP_D1R_INVALID` package
+   through the single finalizer. Tests:
+   `test_d1r_wall_limit_bounded_return_and_no_queued_job_starts_after_deadline`,
+   `test_d1r_wall_limit_terminates_running_worker_processes`,
+   `test_d1r_wall_limit_freezes_outcome_free_invalid_package`.
 
 ## Fail-closed package behaviour carried from t_53bf2d59
 

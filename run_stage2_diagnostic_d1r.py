@@ -30,7 +30,7 @@ import socket
 import subprocess
 import sys
 import time
-from concurrent.futures import Executor, ProcessPoolExecutor, as_completed
+from concurrent.futures import FIRST_COMPLETED, Executor, ProcessPoolExecutor, wait
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Callable, Dict, List, Mapping, Optional, Sequence, Tuple
@@ -353,6 +353,40 @@ class D1RRSSWatch(RSSWatch):
             self._stop.wait(self.period)
 
 
+POOL_POLL_SECONDS = 5.0
+
+
+class WallLimitExceeded(RuntimeError):
+    """Section 10: wall time above the limit stops the run; run_d1r freezes an outcome-free INVALID package."""
+
+
+def terminate_executor(pool: Executor, join_timeout: float = 10.0) -> None:
+    """Stop an executor without waiting for running work.
+
+    Queued futures are cancelled so nothing new starts, worker processes of a
+    ProcessPoolExecutor are killed (running jobs cannot continue), and the
+    executor is shut down with wait=False so the coordinator returns at once.
+    """
+    procs = list((getattr(pool, "_processes", None) or {}).values())
+    pending = getattr(pool, "_pending_work_items", None)
+    if isinstance(pending, dict):
+        for item in list(pending.values()):
+            item.future.cancel()
+    for p in procs:
+        try:
+            if p.is_alive():
+                p.kill()
+        except (OSError, ValueError, AttributeError):
+            pass
+    pool.shutdown(wait=False, cancel_futures=True)
+    end = time.monotonic() + join_timeout
+    for p in procs:
+        try:
+            p.join(timeout=max(0.0, end - time.monotonic()))
+        except (OSError, ValueError, AttributeError, AssertionError):
+            pass
+
+
 def run_pool(
     fn: Callable[[object], Dict[str, object]],
     jobs: Sequence[object],
@@ -375,26 +409,37 @@ def run_pool(
     watch.start()  # type: ignore[attr-defined]
     started = datetime.now(timezone.utc).isoformat()
     t0 = time.time()
+    deadline = time.monotonic() + wall_limit
     rows: List[Dict[str, object]] = []
     ledger = out / f"{STAGE}.progress.jsonl"
     ledger.open("x").close()
+    pool = executor_factory(workers)
+    completed_normally = False
     try:
-        with executor_factory(workers) as pool:
-            futures = [pool.submit(fn, job) for job in jobs]
-            for i, future in enumerate(as_completed(futures), 1):
+        futures = [pool.submit(fn, job) for job in jobs]
+        pending = set(futures)
+        while pending:
+            # The deadline is enforced independently of any future completing:
+            # wait() returns at the deadline even if every job is still running.
+            remaining = deadline - time.monotonic()
+            if remaining <= 0:
+                raise WallLimitExceeded(f"wall time exceeded {wall_limit} s (section 10 six-hour stop); stopped and reported, nothing changed")
+            done, pending = wait(pending, timeout=min(remaining, POOL_POLL_SECONDS), return_when=FIRST_COMPLETED)
+            if watch.exceeded:  # type: ignore[attr-defined]
+                raise RuntimeError("RSS exceeded 12 GiB; aborting rather than swapping")
+            for future in done:
                 row = future.result()
                 rows.append(row)
-                rec = progress_record(STAGE, i, len(jobs), row, time.time() - t0, watch.peak_total)  # type: ignore[attr-defined]
+                rec = progress_record(STAGE, len(rows), len(jobs), row, time.time() - t0, watch.peak_total)  # type: ignore[attr-defined]
                 with ledger.open("a") as handle:
                     handle.write(json.dumps(rec, sort_keys=True) + "\n")
                 print(" ".join(f"{k}={rec[k]}" for k in PROGRESS_FIELDS), flush=True)
-                if watch.exceeded:  # type: ignore[attr-defined]
-                    raise RuntimeError("RSS exceeded 12 GiB; aborting rather than swapping")
-                if time.time() - t0 > wall_limit:
-                    for f in futures:
-                        f.cancel()
-                    raise RuntimeError("wall time exceeded 6 h; stopped and reported, nothing changed")
+        completed_normally = True
     finally:
+        if completed_normally:
+            pool.shutdown(wait=True)
+        else:
+            terminate_executor(pool)
         watch.sample()  # type: ignore[attr-defined]
         watch.stop()  # type: ignore[attr-defined]
     meta = {

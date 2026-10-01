@@ -21,7 +21,7 @@ import json
 import math
 import subprocess
 import sys
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -749,3 +749,99 @@ def test_d1r_pkg_04_producer_and_strict_validator_agree_on_synthetic_capture():
     assert "lower_95" in row["decoders"]["A"] and "lower_95" not in row["decoders"]["pipeline"]
     # Full-length package validator refuses short rows.
     assert any("train_rows" in v for v in d1r.validate_row(row, ident))
+
+
+# ================================================================ section 10 wall stop (round-1 review)
+def test_d1r_wall_limit_bounded_return_and_no_queued_job_starts_after_deadline(tmp_path):
+    """Nora's reproduction shape: one worker, three queued jobs, wall_limit 0.05 s.
+
+    Jobs last 2.0 s (not 0.20 s) so the bound has a clear margin over host
+    timer slack. The stop must fire at the deadline without waiting for a job
+    to finish, and no queued job may start afterwards.
+    """
+    import threading
+    import time
+
+    events = []
+    lock = threading.Lock()
+
+    def job(seed):
+        with lock:
+            events.append(("start", seed, time.monotonic()))
+        time.sleep(2.0)
+        with lock:
+            events.append(("end", seed, time.monotonic()))
+        return {"seed": seed, "status": "ok"}
+
+    out = tmp_path / "stage"
+    out.mkdir()
+    t0 = time.monotonic()
+    with pytest.raises(runner.WallLimitExceeded):
+        runner.run_pool(job, [1, 2, 3], 1, out, executor_factory=lambda n: ThreadPoolExecutor(max_workers=1), watch=_Watch(), wall_limit=0.05)
+    returned = time.monotonic() - t0
+    assert returned < 1.0, returned  # bounded: well before the first 2.0 s job could finish
+    time.sleep(2.5)  # job 1 (unkillable thread) ends; jobs 2 and 3 would start here if still queued
+    started = [s for kind, s, _ in events if kind == "start"]
+    assert started == [1], events
+    assert sorted(p.name for p in out.iterdir()) == ["D1R.progress.jsonl"]
+    assert (out / "D1R.progress.jsonl").read_text() == ""  # no job finished before the stop
+
+
+def test_d1r_wall_limit_terminates_running_worker_processes(tmp_path, monkeypatch):
+    """Real ProcessPoolExecutor: running workers are killed, not waited for."""
+    import time
+
+    import psutil
+
+    pids = []
+    orig = runner.terminate_executor
+
+    def capture_then_terminate(pool, *a, **k):
+        pids.extend(p.pid for p in (pool._processes or {}).values())
+        return orig(pool, *a, **k)
+
+    monkeypatch.setattr(runner, "terminate_executor", capture_then_terminate)
+    out = tmp_path / "stage"
+    out.mkdir()
+    t0 = time.monotonic()
+    with pytest.raises(runner.WallLimitExceeded):
+        # time.sleep is a picklable job that would run 60 s per job if not killed
+        runner.run_pool(time.sleep, [60.0, 60.0, 60.0, 60.0], 2, out, executor_factory=lambda n: ProcessPoolExecutor(max_workers=n), watch=_Watch(), wall_limit=1.5)
+    returned = time.monotonic() - t0
+    assert returned < 20.0, returned
+    assert pids, "worker processes were captured before termination"
+    for pid in pids:
+        assert not psutil.pid_exists(pid) or psutil.Process(pid).status() == psutil.STATUS_ZOMBIE, pid
+    assert sorted(p.name for p in out.iterdir()) == ["D1R.progress.jsonl"]
+    assert (out / "D1R.progress.jsonl").read_text() == ""
+
+
+def test_d1r_wall_limit_freezes_outcome_free_invalid_package(tmp_path, monkeypatch):
+    """The wall stop routes through run_d1r's single finalizer as outcome-free STOP_D1R_INVALID."""
+    import time
+
+    orig = runner.run_pool
+    started = []
+
+    def slow(seed):
+        started.append(seed)
+        time.sleep(2.0)
+        return copy.deepcopy(syn_rows()[0])
+
+    def bounded(fn, jobs, workers, out):  # never runs the real _d1r_job
+        return orig(slow, jobs, 1, out, executor_factory=lambda n: ThreadPoolExecutor(max_workers=1), watch=_Watch(), wall_limit=0.05)
+
+    monkeypatch.setattr(runner, "run_pool", bounded)
+    out = tmp_path / "pkg"
+    t0 = time.monotonic()
+    summary = runner.run_d1r(SimpleNamespace(workers=1), out, PROV, seeds=SYN_SEEDS, identity=syn_identity)
+    assert time.monotonic() - t0 < 1.0
+    assert summary["branch"]["code"] == "STOP_D1R_INVALID"
+    assert summary["run_metadata"]["incomplete_reason"] == "exception during sequence: WallLimitExceeded"
+    assert summary["readouts"] == {"pipeline": None, "network_positive": None, "A": None} and summary["per_seed"] == {}
+    _assert_manifest(out, summary)
+    assert sorted(p.name for p in out.iterdir()) == ["D1R.progress.jsonl", "SHA256SUMS", "branch_outcome.json", "provenance.json", "summary.json"]
+    assert (out / "D1R.progress.jsonl").read_text() == ""
+    assert not stats.contains_outcome(json.loads((out / "summary.json").read_text())["readouts"] or {})
+    time.sleep(2.5)
+    assert started == [SYN_SEEDS[0]]
