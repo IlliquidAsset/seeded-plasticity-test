@@ -1,0 +1,558 @@
+[
+  {
+    "formula": "m(acc[F0, A_pre])",
+    "id": 0,
+    "point_estimate": 0.5011400000000001,
+    "resamples": 100000,
+    "seed_sequence_entropy": [
+      20261001,
+      7,
+      0
+    ],
+    "two_sided_95": [
+      0.4942149999999999,
+      0.507975
+    ],
+    "used_by": "6.2 validity"
+  },
+  {
+    "formula": "m(acc[F0, B_pre])",
+    "id": 1,
+    "point_estimate": 0.50659,
+    "resamples": 100000,
+    "seed_sequence_entropy": [
+      20261001,
+      7,
+      1
+    ],
+    "two_sided_95": [
+      0.5000399999999999,
+      0.513415
+    ],
+    "used_by": "6.2 validity"
+  },
+  {
+    "formula": "m(acc[F0, B_post])",
+    "id": 2,
+    "point_estimate": 0.50659,
+    "resamples": 100000,
+    "seed_sequence_entropy": [
+      20261001,
+      7,
+      2
+    ],
+    "two_sided_95": [
+      0.4999200000000002,
+      0.5135400000000001
+    ],
+    "used_by": "6.2 validity"
+  },
+  {
+    "formula": "m(acc[F0, A_post])",
+    "id": 3,
+    "point_estimate": 0.5011400000000001,
+    "resamples": 100000,
+    "seed_sequence_entropy": [
+      20261001,
+      7,
+      3
+    ],
+    "two_sided_95": [
+      0.49422,
+      0.5079849999999999
+    ],
+    "used_by": "6.2 validity"
+  },
+  {
+    "formula": "m(acc[P, A_pre])",
+    "id": 4,
+    "one_sided_lower_95": 0.49653500000000006,
+    "point_estimate": 0.49993,
+    "resamples": 100000,
+    "seed_sequence_entropy": [
+      20261001,
+      7,
+      4
+    ],
+    "two_sided_95": [
+      0.495845,
+      0.50366
+    ],
+    "used_by": "Gate 1.2"
+  },
+  {
+    "formula": "m(acc[P, A_pre] - acc[F0, A_pre])",
+    "id": 5,
+    "one_sided_lower_95": -0.006930000000000006,
+    "point_estimate": -0.0012100000000000027,
+    "resamples": 100000,
+    "seed_sequence_entropy": [
+      20261001,
+      7,
+      5
+    ],
+    "used_by": "Gate 1.4"
+  },
+  {
+    "formula": "m(acc[P, B_post] - acc[P, B_pre])",
+    "id": 6,
+    "one_sided_lower_95": -0.0006599999999999967,
+    "point_estimate": -0.00032999999999999973,
+    "resamples": 100000,
+    "seed_sequence_entropy": [
+      20261001,
+      7,
+      6
+    ],
+    "two_sided_95": [
+      -0.0007400000000000017,
+      -5.000000000002225e-06
+    ],
+    "used_by": "Gate 2.2"
+  },
+  {
+    "formula": "m(acc[P, B_post])",
+    "id": 7,
+    "one_sided_lower_95": 0.496215,
+    "point_estimate": 0.500095,
+    "resamples": 100000,
+    "seed_sequence_entropy": [
+      20261001,
+      7,
+      7
+    ],
+    "two_sided_95": [
+      0.49551999999999985,
+      0.504775
+    ],
+    "used_by": "Gate 2.4"
+  },
+  {
+    "formula": "m((acc[P, B_post] - acc[P, B_pre]) - (acc[FS, B_post] - acc[FS, B_pre]))",
+    "id": 8,
+    "one_sided_lower_95": -0.0006599999999999967,
+    "point_estimate": -0.00032999999999999973,
+    "resamples": 100000,
+    "seed_sequence_entropy": [
+      20261001,
+      7,
+      8
+    ],
+    "used_by": "6.3 / Gate 2.5"
+  },
+  {
+    "formula": "m(acc[P, B_post] - acc[SC, B_post])",
+    "id": 9,
+    "one_sided_lower_95": -0.0007150000000000073,
+    "point_estimate": -0.00035500000000000256,
+    "resamples": 100000,
+    "seed_sequence_entropy": [
+      20261001,
+      7,
+      9
+    ],
+    "used_by": "6.4 / Gate 2.5"
+  },
+  {
+    "formula": "m(acc[P, A_post])",
+    "id": 10,
+    "one_sided_lower_95": 0.49575499999999995,
+    "point_estimate": 0.49894000000000005,
+    "resamples": 100000,
+    "seed_sequence_entropy": [
+      20261001,
+      7,
+      10
+    ],
+    "two_sided_95": [
+      0.4951249999999999,
+      0.5023949999999999
+    ],
+    "used_by": "Gate 3.3"
+  },
+  {
+    "formula": "A_loss = m(acc[P, A_pre]) - m(acc[P, A_post])",
+    "id": 11,
+    "one_sided_upper_95": 0.00187499999999996,
+    "point_estimate": 0.0009899999999999354,
+    "resamples": 100000,
+    "seed_sequence_entropy": [
+      20261001,
+      7,
+      11
+    ],
+    "two_sided_95": [
+      0.00014500000000006175,
+      0.0020799999999998597
+    ],
+    "used_by": "Gate 3 report"
+  },
+  {
+    "formula": "A_retained = (m(acc[P, A_post]) - 0.50) / (m(acc[P, A_pre]) - 0.50)",
+    "id": 12,
+    "one_sided_lower_95": -Infinity,
+    "point_estimate": -Infinity,
+    "point_undefined": true,
+    "resamples": 100000,
+    "seed_sequence_entropy": [
+      20261001,
+      7,
+      12
+    ],
+    "two_sided_95": [
+      -Infinity,
+      0.7591623036648648
+    ],
+    "undefined_denominator_replicates": 50061,
+    "used_by": "Gate 3 report"
+  },
+  {
+    "formula": "m(acc[P, A_post] - acc[NS, A_post])",
+    "id": 13,
+    "one_sided_lower_95": -0.00029500000000000083,
+    "point_estimate": 0.00014000000000000123,
+    "resamples": 100000,
+    "seed_sequence_entropy": [
+      20261001,
+      7,
+      13
+    ],
+    "used_by": "6.5 SFA-benefit claim"
+  },
+  {
+    "formula": "A_learned = m(acc[P, A_pre]) - 0.50",
+    "id": 14,
+    "point_estimate": -7.00000000000145e-05,
+    "resamples": 100000,
+    "seed_sequence_entropy": [
+      20261001,
+      7,
+      14
+    ],
+    "two_sided_95": [
+      -0.00415500000000002,
+      0.003630000000000022
+    ],
+    "used_by": "report"
+  },
+  {
+    "formula": "m(acc[P, A_pre])",
+    "id": 100,
+    "point_estimate": 0.49993,
+    "resamples": 100000,
+    "seed_sequence_entropy": [
+      20261001,
+      7,
+      100
+    ],
+    "two_sided_95": [
+      0.495875,
+      0.5036550000000001
+    ],
+    "used_by": "report"
+  },
+  {
+    "formula": "m(acc[P, B_pre])",
+    "id": 101,
+    "point_estimate": 0.5004250000000001,
+    "resamples": 100000,
+    "seed_sequence_entropy": [
+      20261001,
+      7,
+      101
+    ],
+    "two_sided_95": [
+      0.4958099999999999,
+      0.5050250000000001
+    ],
+    "used_by": "report"
+  },
+  {
+    "formula": "m(acc[P, B_post])",
+    "id": 102,
+    "point_estimate": 0.500095,
+    "resamples": 100000,
+    "seed_sequence_entropy": [
+      20261001,
+      7,
+      102
+    ],
+    "two_sided_95": [
+      0.495475,
+      0.5047750000000001
+    ],
+    "used_by": "report"
+  },
+  {
+    "formula": "m(acc[P, A_post])",
+    "id": 103,
+    "point_estimate": 0.49894000000000005,
+    "resamples": 100000,
+    "seed_sequence_entropy": [
+      20261001,
+      7,
+      103
+    ],
+    "two_sided_95": [
+      0.49512999999999996,
+      0.5023949999999999
+    ],
+    "used_by": "report"
+  },
+  {
+    "formula": "m(acc[F0, A_pre])",
+    "id": 104,
+    "point_estimate": 0.5011400000000001,
+    "resamples": 100000,
+    "seed_sequence_entropy": [
+      20261001,
+      7,
+      104
+    ],
+    "two_sided_95": [
+      0.49419499999999994,
+      0.5079549999999999
+    ],
+    "used_by": "report"
+  },
+  {
+    "formula": "m(acc[F0, B_pre])",
+    "id": 105,
+    "point_estimate": 0.50659,
+    "resamples": 100000,
+    "seed_sequence_entropy": [
+      20261001,
+      7,
+      105
+    ],
+    "two_sided_95": [
+      0.50004,
+      0.5135000000000001
+    ],
+    "used_by": "report"
+  },
+  {
+    "formula": "m(acc[F0, B_post])",
+    "id": 106,
+    "point_estimate": 0.50659,
+    "resamples": 100000,
+    "seed_sequence_entropy": [
+      20261001,
+      7,
+      106
+    ],
+    "two_sided_95": [
+      0.5000399999999999,
+      0.51348
+    ],
+    "used_by": "report"
+  },
+  {
+    "formula": "m(acc[F0, A_post])",
+    "id": 107,
+    "point_estimate": 0.5011400000000001,
+    "resamples": 100000,
+    "seed_sequence_entropy": [
+      20261001,
+      7,
+      107
+    ],
+    "two_sided_95": [
+      0.494225,
+      0.508015
+    ],
+    "used_by": "report"
+  },
+  {
+    "formula": "m(acc[FS, A_pre])",
+    "id": 108,
+    "point_estimate": 0.49993,
+    "resamples": 100000,
+    "seed_sequence_entropy": [
+      20261001,
+      7,
+      108
+    ],
+    "two_sided_95": [
+      0.49583999999999995,
+      0.503665
+    ],
+    "used_by": "report"
+  },
+  {
+    "formula": "m(acc[FS, B_pre])",
+    "id": 109,
+    "point_estimate": 0.5004250000000001,
+    "resamples": 100000,
+    "seed_sequence_entropy": [
+      20261001,
+      7,
+      109
+    ],
+    "two_sided_95": [
+      0.49582,
+      0.5050699999999999
+    ],
+    "used_by": "report"
+  },
+  {
+    "formula": "m(acc[FS, B_post])",
+    "id": 110,
+    "point_estimate": 0.5004250000000001,
+    "resamples": 100000,
+    "seed_sequence_entropy": [
+      20261001,
+      7,
+      110
+    ],
+    "two_sided_95": [
+      0.4958349999999999,
+      0.5050349999999999
+    ],
+    "used_by": "report"
+  },
+  {
+    "formula": "m(acc[FS, A_post])",
+    "id": 111,
+    "point_estimate": 0.49993,
+    "resamples": 100000,
+    "seed_sequence_entropy": [
+      20261001,
+      7,
+      111
+    ],
+    "two_sided_95": [
+      0.4958349999999999,
+      0.5036399999999999
+    ],
+    "used_by": "report"
+  },
+  {
+    "formula": "m(acc[SC, A_pre])",
+    "id": 112,
+    "point_estimate": 0.49993,
+    "resamples": 100000,
+    "seed_sequence_entropy": [
+      20261001,
+      7,
+      112
+    ],
+    "two_sided_95": [
+      0.49582999999999994,
+      0.50367
+    ],
+    "used_by": "report"
+  },
+  {
+    "formula": "m(acc[SC, B_pre])",
+    "id": 113,
+    "point_estimate": 0.5004250000000001,
+    "resamples": 100000,
+    "seed_sequence_entropy": [
+      20261001,
+      7,
+      113
+    ],
+    "two_sided_95": [
+      0.49581500000000006,
+      0.50507
+    ],
+    "used_by": "report"
+  },
+  {
+    "formula": "m(acc[SC, B_post])",
+    "id": 114,
+    "point_estimate": 0.5004500000000001,
+    "resamples": 100000,
+    "seed_sequence_entropy": [
+      20261001,
+      7,
+      114
+    ],
+    "two_sided_95": [
+      0.4958449999999999,
+      0.5050600000000001
+    ],
+    "used_by": "report"
+  },
+  {
+    "formula": "m(acc[SC, A_post])",
+    "id": 115,
+    "point_estimate": 0.49993,
+    "resamples": 100000,
+    "seed_sequence_entropy": [
+      20261001,
+      7,
+      115
+    ],
+    "two_sided_95": [
+      0.4958349999999999,
+      0.503645
+    ],
+    "used_by": "report"
+  },
+  {
+    "formula": "m(acc[NS, A_pre])",
+    "id": 116,
+    "point_estimate": 0.49993,
+    "resamples": 100000,
+    "seed_sequence_entropy": [
+      20261001,
+      7,
+      116
+    ],
+    "two_sided_95": [
+      0.4957649999999999,
+      0.50363
+    ],
+    "used_by": "report"
+  },
+  {
+    "formula": "m(acc[NS, B_pre])",
+    "id": 117,
+    "point_estimate": 0.500375,
+    "resamples": 100000,
+    "seed_sequence_entropy": [
+      20261001,
+      7,
+      117
+    ],
+    "two_sided_95": [
+      0.49574999999999997,
+      0.5050350000000001
+    ],
+    "used_by": "report"
+  },
+  {
+    "formula": "m(acc[NS, B_post])",
+    "id": 118,
+    "point_estimate": 0.500095,
+    "resamples": 100000,
+    "seed_sequence_entropy": [
+      20261001,
+      7,
+      118
+    ],
+    "two_sided_95": [
+      0.49549000000000004,
+      0.5047499999999999
+    ],
+    "used_by": "report"
+  },
+  {
+    "formula": "m(acc[NS, A_post])",
+    "id": 119,
+    "point_estimate": 0.4988,
+    "resamples": 100000,
+    "seed_sequence_entropy": [
+      20261001,
+      7,
+      119
+    ],
+    "two_sided_95": [
+      0.494925,
+      0.502345
+    ],
+    "used_by": "report"
+  }
+]

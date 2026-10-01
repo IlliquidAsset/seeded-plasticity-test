@@ -1,0 +1,1443 @@
+{
+  "accuracy_table": {
+    "F0": {
+      "A_post": [
+        0.5207,
+        0.4734,
+        0.5054,
+        0.504,
+        0.4964,
+        0.5207,
+        0.5265,
+        0.5014,
+        0.4714,
+        0.4906,
+        0.4942,
+        0.5204,
+        0.4993,
+        0.496,
+        0.523,
+        0.4855,
+        0.497,
+        0.4822,
+        0.5004,
+        0.5143
+      ],
+      "A_pre": [
+        0.5207,
+        0.4734,
+        0.5054,
+        0.504,
+        0.4964,
+        0.5207,
+        0.5265,
+        0.5014,
+        0.4714,
+        0.4906,
+        0.4942,
+        0.5204,
+        0.4993,
+        0.496,
+        0.523,
+        0.4855,
+        0.497,
+        0.4822,
+        0.5004,
+        0.5143
+      ],
+      "B_post": [
+        0.5404,
+        0.4852,
+        0.4975,
+        0.5178,
+        0.4942,
+        0.5302,
+        0.5097,
+        0.5002,
+        0.4904,
+        0.5062,
+        0.495,
+        0.5233,
+        0.4948,
+        0.5097,
+        0.5179,
+        0.5164,
+        0.4952,
+        0.4823,
+        0.5001,
+        0.5253
+      ],
+      "B_pre": [
+        0.5404,
+        0.4852,
+        0.4975,
+        0.5178,
+        0.4942,
+        0.5302,
+        0.5097,
+        0.5002,
+        0.4904,
+        0.5062,
+        0.495,
+        0.5233,
+        0.4948,
+        0.5097,
+        0.5179,
+        0.5164,
+        0.4952,
+        0.4823,
+        0.5001,
+        0.5253
+      ]
+    },
+    "FS": {
+      "A_post": [
+        0.499,
+        0.4893,
+        0.5072,
+        0.4967,
+        0.4945,
+        0.4941,
+        0.5038,
+        0.514,
+        0.5001,
+        0.4978,
+        0.5034,
+        0.5044,
+        0.5004,
+        0.4759,
+        0.5111,
+        0.485,
+        0.5059,
+        0.5082,
+        0.5085,
+        0.4993
+      ],
+      "A_pre": [
+        0.499,
+        0.4893,
+        0.5072,
+        0.4967,
+        0.4945,
+        0.4941,
+        0.5038,
+        0.514,
+        0.5001,
+        0.4978,
+        0.5034,
+        0.5044,
+        0.5004,
+        0.4759,
+        0.5111,
+        0.485,
+        0.5059,
+        0.5082,
+        0.5085,
+        0.4993
+      ],
+      "B_post": [
+        0.5048,
+        0.5131,
+        0.5013,
+        0.4799,
+        0.5021,
+        0.4977,
+        0.4886,
+        0.4998,
+        0.5194,
+        0.514,
+        0.5105,
+        0.5041,
+        0.4946,
+        0.4957,
+        0.4897,
+        0.5166,
+        0.4885,
+        0.4869,
+        0.4955,
+        0.5057
+      ],
+      "B_pre": [
+        0.5048,
+        0.5131,
+        0.5013,
+        0.4799,
+        0.5021,
+        0.4977,
+        0.4886,
+        0.4998,
+        0.5194,
+        0.514,
+        0.5105,
+        0.5041,
+        0.4946,
+        0.4957,
+        0.4897,
+        0.5166,
+        0.4885,
+        0.4869,
+        0.4955,
+        0.5057
+      ]
+    },
+    "NS": {
+      "A_post": [
+        0.495,
+        0.4893,
+        0.5073,
+        0.4967,
+        0.4944,
+        0.4941,
+        0.5038,
+        0.514,
+        0.5001,
+        0.4978,
+        0.5034,
+        0.5002,
+        0.5004,
+        0.4759,
+        0.5074,
+        0.485,
+        0.5059,
+        0.5082,
+        0.4978,
+        0.4993
+      ],
+      "A_pre": [
+        0.499,
+        0.4893,
+        0.5073,
+        0.4967,
+        0.4944,
+        0.4941,
+        0.5038,
+        0.514,
+        0.5001,
+        0.4978,
+        0.5034,
+        0.5044,
+        0.5004,
+        0.4759,
+        0.5111,
+        0.485,
+        0.5059,
+        0.5082,
+        0.5085,
+        0.4993
+      ],
+      "B_post": [
+        0.5048,
+        0.5131,
+        0.4982,
+        0.4799,
+        0.5021,
+        0.4977,
+        0.4886,
+        0.4998,
+        0.5194,
+        0.514,
+        0.5105,
+        0.503,
+        0.4946,
+        0.4957,
+        0.4896,
+        0.5166,
+        0.4885,
+        0.4869,
+        0.4932,
+        0.5057
+      ],
+      "B_pre": [
+        0.5053,
+        0.5131,
+        0.4982,
+        0.4799,
+        0.5021,
+        0.4977,
+        0.4886,
+        0.4998,
+        0.5194,
+        0.514,
+        0.5105,
+        0.505,
+        0.4946,
+        0.4957,
+        0.49,
+        0.5166,
+        0.4885,
+        0.4869,
+        0.4959,
+        0.5057
+      ]
+    },
+    "P": {
+      "A_post": [
+        0.499,
+        0.4893,
+        0.5043,
+        0.4967,
+        0.4945,
+        0.4941,
+        0.5038,
+        0.514,
+        0.5001,
+        0.4978,
+        0.5034,
+        0.4998,
+        0.5004,
+        0.4759,
+        0.5074,
+        0.485,
+        0.5059,
+        0.5082,
+        0.4999,
+        0.4993
+      ],
+      "A_pre": [
+        0.499,
+        0.4893,
+        0.5072,
+        0.4967,
+        0.4945,
+        0.4941,
+        0.5038,
+        0.514,
+        0.5001,
+        0.4978,
+        0.5034,
+        0.5044,
+        0.5004,
+        0.4759,
+        0.5111,
+        0.485,
+        0.5059,
+        0.5082,
+        0.5085,
+        0.4993
+      ],
+      "B_post": [
+        0.5048,
+        0.5131,
+        0.4982,
+        0.4799,
+        0.5021,
+        0.4977,
+        0.4886,
+        0.4998,
+        0.5194,
+        0.514,
+        0.5105,
+        0.503,
+        0.4946,
+        0.4957,
+        0.4896,
+        0.5166,
+        0.4885,
+        0.4869,
+        0.4932,
+        0.5057
+      ],
+      "B_pre": [
+        0.5048,
+        0.5131,
+        0.5013,
+        0.4799,
+        0.5021,
+        0.4977,
+        0.4886,
+        0.4998,
+        0.5194,
+        0.514,
+        0.5105,
+        0.5041,
+        0.4946,
+        0.4957,
+        0.4897,
+        0.5166,
+        0.4885,
+        0.4869,
+        0.4955,
+        0.5057
+      ]
+    },
+    "SC": {
+      "A_post": [
+        0.499,
+        0.4893,
+        0.5072,
+        0.4967,
+        0.4945,
+        0.4941,
+        0.5038,
+        0.514,
+        0.5001,
+        0.4978,
+        0.5034,
+        0.5044,
+        0.5004,
+        0.4759,
+        0.5111,
+        0.485,
+        0.5059,
+        0.5082,
+        0.5085,
+        0.4993
+      ],
+      "A_pre": [
+        0.499,
+        0.4893,
+        0.5072,
+        0.4967,
+        0.4945,
+        0.4941,
+        0.5038,
+        0.514,
+        0.5001,
+        0.4978,
+        0.5034,
+        0.5044,
+        0.5004,
+        0.4759,
+        0.5111,
+        0.485,
+        0.5059,
+        0.5082,
+        0.5085,
+        0.4993
+      ],
+      "B_post": [
+        0.5048,
+        0.5131,
+        0.5018,
+        0.4799,
+        0.5021,
+        0.4977,
+        0.4886,
+        0.4998,
+        0.5194,
+        0.514,
+        0.5105,
+        0.5041,
+        0.4946,
+        0.4957,
+        0.4897,
+        0.5166,
+        0.4885,
+        0.4869,
+        0.4955,
+        0.5057
+      ],
+      "B_pre": [
+        0.5048,
+        0.5131,
+        0.5013,
+        0.4799,
+        0.5021,
+        0.4977,
+        0.4886,
+        0.4998,
+        0.5194,
+        0.514,
+        0.5105,
+        0.5041,
+        0.4946,
+        0.4957,
+        0.4897,
+        0.5166,
+        0.4885,
+        0.4869,
+        0.4955,
+        0.5057
+      ]
+    }
+  },
+  "bootstrap": [
+    {
+      "formula": "m(acc[F0, A_pre])",
+      "id": 0,
+      "point_estimate": 0.5011400000000001,
+      "resamples": 100000,
+      "seed_sequence_entropy": [
+        20261001,
+        7,
+        0
+      ],
+      "two_sided_95": [
+        0.4942149999999999,
+        0.507975
+      ],
+      "used_by": "6.2 validity"
+    },
+    {
+      "formula": "m(acc[F0, B_pre])",
+      "id": 1,
+      "point_estimate": 0.50659,
+      "resamples": 100000,
+      "seed_sequence_entropy": [
+        20261001,
+        7,
+        1
+      ],
+      "two_sided_95": [
+        0.5000399999999999,
+        0.513415
+      ],
+      "used_by": "6.2 validity"
+    },
+    {
+      "formula": "m(acc[F0, B_post])",
+      "id": 2,
+      "point_estimate": 0.50659,
+      "resamples": 100000,
+      "seed_sequence_entropy": [
+        20261001,
+        7,
+        2
+      ],
+      "two_sided_95": [
+        0.4999200000000002,
+        0.5135400000000001
+      ],
+      "used_by": "6.2 validity"
+    },
+    {
+      "formula": "m(acc[F0, A_post])",
+      "id": 3,
+      "point_estimate": 0.5011400000000001,
+      "resamples": 100000,
+      "seed_sequence_entropy": [
+        20261001,
+        7,
+        3
+      ],
+      "two_sided_95": [
+        0.49422,
+        0.5079849999999999
+      ],
+      "used_by": "6.2 validity"
+    },
+    {
+      "formula": "m(acc[P, A_pre])",
+      "id": 4,
+      "one_sided_lower_95": 0.49653500000000006,
+      "point_estimate": 0.49993,
+      "resamples": 100000,
+      "seed_sequence_entropy": [
+        20261001,
+        7,
+        4
+      ],
+      "two_sided_95": [
+        0.495845,
+        0.50366
+      ],
+      "used_by": "Gate 1.2"
+    },
+    {
+      "formula": "m(acc[P, A_pre] - acc[F0, A_pre])",
+      "id": 5,
+      "one_sided_lower_95": -0.006930000000000006,
+      "point_estimate": -0.0012100000000000027,
+      "resamples": 100000,
+      "seed_sequence_entropy": [
+        20261001,
+        7,
+        5
+      ],
+      "used_by": "Gate 1.4"
+    },
+    {
+      "formula": "m(acc[P, B_post] - acc[P, B_pre])",
+      "id": 6,
+      "one_sided_lower_95": -0.0006599999999999967,
+      "point_estimate": -0.00032999999999999973,
+      "resamples": 100000,
+      "seed_sequence_entropy": [
+        20261001,
+        7,
+        6
+      ],
+      "two_sided_95": [
+        -0.0007400000000000017,
+        -5.000000000002225e-06
+      ],
+      "used_by": "Gate 2.2"
+    },
+    {
+      "formula": "m(acc[P, B_post])",
+      "id": 7,
+      "one_sided_lower_95": 0.496215,
+      "point_estimate": 0.500095,
+      "resamples": 100000,
+      "seed_sequence_entropy": [
+        20261001,
+        7,
+        7
+      ],
+      "two_sided_95": [
+        0.49551999999999985,
+        0.504775
+      ],
+      "used_by": "Gate 2.4"
+    },
+    {
+      "formula": "m((acc[P, B_post] - acc[P, B_pre]) - (acc[FS, B_post] - acc[FS, B_pre]))",
+      "id": 8,
+      "one_sided_lower_95": -0.0006599999999999967,
+      "point_estimate": -0.00032999999999999973,
+      "resamples": 100000,
+      "seed_sequence_entropy": [
+        20261001,
+        7,
+        8
+      ],
+      "used_by": "6.3 / Gate 2.5"
+    },
+    {
+      "formula": "m(acc[P, B_post] - acc[SC, B_post])",
+      "id": 9,
+      "one_sided_lower_95": -0.0007150000000000073,
+      "point_estimate": -0.00035500000000000256,
+      "resamples": 100000,
+      "seed_sequence_entropy": [
+        20261001,
+        7,
+        9
+      ],
+      "used_by": "6.4 / Gate 2.5"
+    },
+    {
+      "formula": "m(acc[P, A_post])",
+      "id": 10,
+      "one_sided_lower_95": 0.49575499999999995,
+      "point_estimate": 0.49894000000000005,
+      "resamples": 100000,
+      "seed_sequence_entropy": [
+        20261001,
+        7,
+        10
+      ],
+      "two_sided_95": [
+        0.4951249999999999,
+        0.5023949999999999
+      ],
+      "used_by": "Gate 3.3"
+    },
+    {
+      "formula": "A_loss = m(acc[P, A_pre]) - m(acc[P, A_post])",
+      "id": 11,
+      "one_sided_upper_95": 0.00187499999999996,
+      "point_estimate": 0.0009899999999999354,
+      "resamples": 100000,
+      "seed_sequence_entropy": [
+        20261001,
+        7,
+        11
+      ],
+      "two_sided_95": [
+        0.00014500000000006175,
+        0.0020799999999998597
+      ],
+      "used_by": "Gate 3 report"
+    },
+    {
+      "formula": "A_retained = (m(acc[P, A_post]) - 0.50) / (m(acc[P, A_pre]) - 0.50)",
+      "id": 12,
+      "one_sided_lower_95": -Infinity,
+      "point_estimate": -Infinity,
+      "point_undefined": true,
+      "resamples": 100000,
+      "seed_sequence_entropy": [
+        20261001,
+        7,
+        12
+      ],
+      "two_sided_95": [
+        -Infinity,
+        0.7591623036648648
+      ],
+      "undefined_denominator_replicates": 50061,
+      "used_by": "Gate 3 report"
+    },
+    {
+      "formula": "m(acc[P, A_post] - acc[NS, A_post])",
+      "id": 13,
+      "one_sided_lower_95": -0.00029500000000000083,
+      "point_estimate": 0.00014000000000000123,
+      "resamples": 100000,
+      "seed_sequence_entropy": [
+        20261001,
+        7,
+        13
+      ],
+      "used_by": "6.5 SFA-benefit claim"
+    },
+    {
+      "formula": "A_learned = m(acc[P, A_pre]) - 0.50",
+      "id": 14,
+      "point_estimate": -7.00000000000145e-05,
+      "resamples": 100000,
+      "seed_sequence_entropy": [
+        20261001,
+        7,
+        14
+      ],
+      "two_sided_95": [
+        -0.00415500000000002,
+        0.003630000000000022
+      ],
+      "used_by": "report"
+    },
+    {
+      "formula": "m(acc[P, A_pre])",
+      "id": 100,
+      "point_estimate": 0.49993,
+      "resamples": 100000,
+      "seed_sequence_entropy": [
+        20261001,
+        7,
+        100
+      ],
+      "two_sided_95": [
+        0.495875,
+        0.5036550000000001
+      ],
+      "used_by": "report"
+    },
+    {
+      "formula": "m(acc[P, B_pre])",
+      "id": 101,
+      "point_estimate": 0.5004250000000001,
+      "resamples": 100000,
+      "seed_sequence_entropy": [
+        20261001,
+        7,
+        101
+      ],
+      "two_sided_95": [
+        0.4958099999999999,
+        0.5050250000000001
+      ],
+      "used_by": "report"
+    },
+    {
+      "formula": "m(acc[P, B_post])",
+      "id": 102,
+      "point_estimate": 0.500095,
+      "resamples": 100000,
+      "seed_sequence_entropy": [
+        20261001,
+        7,
+        102
+      ],
+      "two_sided_95": [
+        0.495475,
+        0.5047750000000001
+      ],
+      "used_by": "report"
+    },
+    {
+      "formula": "m(acc[P, A_post])",
+      "id": 103,
+      "point_estimate": 0.49894000000000005,
+      "resamples": 100000,
+      "seed_sequence_entropy": [
+        20261001,
+        7,
+        103
+      ],
+      "two_sided_95": [
+        0.49512999999999996,
+        0.5023949999999999
+      ],
+      "used_by": "report"
+    },
+    {
+      "formula": "m(acc[F0, A_pre])",
+      "id": 104,
+      "point_estimate": 0.5011400000000001,
+      "resamples": 100000,
+      "seed_sequence_entropy": [
+        20261001,
+        7,
+        104
+      ],
+      "two_sided_95": [
+        0.49419499999999994,
+        0.5079549999999999
+      ],
+      "used_by": "report"
+    },
+    {
+      "formula": "m(acc[F0, B_pre])",
+      "id": 105,
+      "point_estimate": 0.50659,
+      "resamples": 100000,
+      "seed_sequence_entropy": [
+        20261001,
+        7,
+        105
+      ],
+      "two_sided_95": [
+        0.50004,
+        0.5135000000000001
+      ],
+      "used_by": "report"
+    },
+    {
+      "formula": "m(acc[F0, B_post])",
+      "id": 106,
+      "point_estimate": 0.50659,
+      "resamples": 100000,
+      "seed_sequence_entropy": [
+        20261001,
+        7,
+        106
+      ],
+      "two_sided_95": [
+        0.5000399999999999,
+        0.51348
+      ],
+      "used_by": "report"
+    },
+    {
+      "formula": "m(acc[F0, A_post])",
+      "id": 107,
+      "point_estimate": 0.5011400000000001,
+      "resamples": 100000,
+      "seed_sequence_entropy": [
+        20261001,
+        7,
+        107
+      ],
+      "two_sided_95": [
+        0.494225,
+        0.508015
+      ],
+      "used_by": "report"
+    },
+    {
+      "formula": "m(acc[FS, A_pre])",
+      "id": 108,
+      "point_estimate": 0.49993,
+      "resamples": 100000,
+      "seed_sequence_entropy": [
+        20261001,
+        7,
+        108
+      ],
+      "two_sided_95": [
+        0.49583999999999995,
+        0.503665
+      ],
+      "used_by": "report"
+    },
+    {
+      "formula": "m(acc[FS, B_pre])",
+      "id": 109,
+      "point_estimate": 0.5004250000000001,
+      "resamples": 100000,
+      "seed_sequence_entropy": [
+        20261001,
+        7,
+        109
+      ],
+      "two_sided_95": [
+        0.49582,
+        0.5050699999999999
+      ],
+      "used_by": "report"
+    },
+    {
+      "formula": "m(acc[FS, B_post])",
+      "id": 110,
+      "point_estimate": 0.5004250000000001,
+      "resamples": 100000,
+      "seed_sequence_entropy": [
+        20261001,
+        7,
+        110
+      ],
+      "two_sided_95": [
+        0.4958349999999999,
+        0.5050349999999999
+      ],
+      "used_by": "report"
+    },
+    {
+      "formula": "m(acc[FS, A_post])",
+      "id": 111,
+      "point_estimate": 0.49993,
+      "resamples": 100000,
+      "seed_sequence_entropy": [
+        20261001,
+        7,
+        111
+      ],
+      "two_sided_95": [
+        0.4958349999999999,
+        0.5036399999999999
+      ],
+      "used_by": "report"
+    },
+    {
+      "formula": "m(acc[SC, A_pre])",
+      "id": 112,
+      "point_estimate": 0.49993,
+      "resamples": 100000,
+      "seed_sequence_entropy": [
+        20261001,
+        7,
+        112
+      ],
+      "two_sided_95": [
+        0.49582999999999994,
+        0.50367
+      ],
+      "used_by": "report"
+    },
+    {
+      "formula": "m(acc[SC, B_pre])",
+      "id": 113,
+      "point_estimate": 0.5004250000000001,
+      "resamples": 100000,
+      "seed_sequence_entropy": [
+        20261001,
+        7,
+        113
+      ],
+      "two_sided_95": [
+        0.49581500000000006,
+        0.50507
+      ],
+      "used_by": "report"
+    },
+    {
+      "formula": "m(acc[SC, B_post])",
+      "id": 114,
+      "point_estimate": 0.5004500000000001,
+      "resamples": 100000,
+      "seed_sequence_entropy": [
+        20261001,
+        7,
+        114
+      ],
+      "two_sided_95": [
+        0.4958449999999999,
+        0.5050600000000001
+      ],
+      "used_by": "report"
+    },
+    {
+      "formula": "m(acc[SC, A_post])",
+      "id": 115,
+      "point_estimate": 0.49993,
+      "resamples": 100000,
+      "seed_sequence_entropy": [
+        20261001,
+        7,
+        115
+      ],
+      "two_sided_95": [
+        0.4958349999999999,
+        0.503645
+      ],
+      "used_by": "report"
+    },
+    {
+      "formula": "m(acc[NS, A_pre])",
+      "id": 116,
+      "point_estimate": 0.49993,
+      "resamples": 100000,
+      "seed_sequence_entropy": [
+        20261001,
+        7,
+        116
+      ],
+      "two_sided_95": [
+        0.4957649999999999,
+        0.50363
+      ],
+      "used_by": "report"
+    },
+    {
+      "formula": "m(acc[NS, B_pre])",
+      "id": 117,
+      "point_estimate": 0.500375,
+      "resamples": 100000,
+      "seed_sequence_entropy": [
+        20261001,
+        7,
+        117
+      ],
+      "two_sided_95": [
+        0.49574999999999997,
+        0.5050350000000001
+      ],
+      "used_by": "report"
+    },
+    {
+      "formula": "m(acc[NS, B_post])",
+      "id": 118,
+      "point_estimate": 0.500095,
+      "resamples": 100000,
+      "seed_sequence_entropy": [
+        20261001,
+        7,
+        118
+      ],
+      "two_sided_95": [
+        0.49549000000000004,
+        0.5047499999999999
+      ],
+      "used_by": "report"
+    },
+    {
+      "formula": "m(acc[NS, A_post])",
+      "id": 119,
+      "point_estimate": 0.4988,
+      "resamples": 100000,
+      "seed_sequence_entropy": [
+        20261001,
+        7,
+        119
+      ],
+      "two_sided_95": [
+        0.494925,
+        0.502345
+      ],
+      "used_by": "report"
+    }
+  ],
+  "provenance": {
+    "argv": [
+      "/Users/kendrick/.hermes/hermes-agent/venv/bin/python3.11",
+      "run_stage2.py",
+      "--workers",
+      "5",
+      "--tests",
+      "pytest -q tests -> 187 passed at d04fbd9 (2026-10-01, Mac Mini)"
+    ],
+    "argv_display": "/Users/kendrick/.hermes/hermes-agent/venv/bin/python3.11 run_stage2.py --workers 5 --tests 'pytest -q tests -> 187 passed at d04fbd9 (2026-10-01, Mac Mini)'",
+    "argv_normalized": [
+      "/Users/kendrick/.hermes/hermes-agent/venv/bin/python3.11",
+      "run_stage2.py",
+      "--workers",
+      "5",
+      "--out",
+      "results_stage2",
+      "--tests",
+      "pytest -q tests -> 187 passed at d04fbd9 (2026-10-01, Mac Mini)"
+    ],
+    "branch": "v0.3.0-calibrated",
+    "code_commit": "d04fbd9a4cfa97dd0f60dd4f5f685486f7a692d3",
+    "host": {
+      "cpu_count": 6,
+      "hostname": "Kendricks-Mac-mini.local",
+      "machine": "x86_64",
+      "platform": "macOS-15.7.4-x86_64-i386-64bit",
+      "processor": "i386"
+    },
+    "lengths": {
+      "eval_len": 12000,
+      "eval_warmup": 2000,
+      "phase_steps": 200000
+    },
+    "maintained_tests": "pytest -q tests -> 187 passed at d04fbd9 (2026-10-01, Mac Mini)",
+    "numpy": "1.26.4",
+    "params": {
+      "a_minus": 0.04,
+      "a_plus": 0.04,
+      "arms": [
+        "P",
+        "F0",
+        "FS",
+        "SC",
+        "NS"
+      ],
+      "batch_size": 1,
+      "beta_a_mv": 1.12,
+      "beta_a_mv_sfa_off": 0.0,
+      "bootstrap_resamples": 100000,
+      "checkpoints": [
+        "A_pre",
+        "B_pre",
+        "B_post",
+        "A_post"
+      ],
+      "credit": "eligibility",
+      "dt_ms": 1.0,
+      "dtype": "float64",
+      "eval_len": 12000,
+      "eval_scored": 10000,
+      "eval_warmup": 2000,
+      "gamma_mv": 0.25,
+      "layer_sizes": [
+        2,
+        20,
+        1
+      ],
+      "n_trainable_synapses": 60,
+      "noise_p": 0.1,
+      "phase_steps": 200000,
+      "reward": "r_t = (2*x_t - 1) * z_t",
+      "reward_mode": "per_spike_next_step",
+      "root_entropy": 20261001,
+      "seeds": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19
+      ],
+      "tau_a_ms": 200.0,
+      "tau_elig_ms": 25.0,
+      "tau_m_ms": 20.0,
+      "tau_minus_ms": 20.0,
+      "tau_plus_ms": 20.0,
+      "tau_syn_ms": 0.0,
+      "total_steps": 400000,
+      "v_reset_mv": -70.0,
+      "v_rest_mv": -70.0,
+      "v_thresh_mv": -54.0,
+      "w1_bounds_mv": [
+        -10.0,
+        10.0
+      ],
+      "w1_init": "U(-10,10) mV",
+      "w2_bounds_mv": [
+        0.0,
+        10.0
+      ],
+      "w2_init": "U(0,10) mV"
+    },
+    "params_match_spec": true,
+    "python": "3.11.15 (main, Jun 23 2026, 15:44:50) [Clang 22.1.3 ]",
+    "schema_version": 1,
+    "scientific_files": [
+      "snn/core.py",
+      "snn/florian_bench.py",
+      "snn/stage2.py",
+      "snn/stage2_stats.py",
+      "run_stage2.py",
+      "tests/test_stage2.py",
+      "docs/STAGE2_SPEC.md",
+      "docs/STAGE2_IMPLEMENTATION_NOTES.md"
+    ],
+    "scientific_files_clean": true,
+    "scientific_files_status": "",
+    "seeds": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19
+    ],
+    "shakedown": false,
+    "spec_commit_frozen": "ef85a15b0382bdc86b8dba377671e4c2b2e4f79f",
+    "spec_hash_unchanged": true,
+    "spec_path": "docs/STAGE2_SPEC.md",
+    "spec_sha256_at_run": "0c1bbdba036b13955c81f2ce0ffee0557b09842ef7d56b0dec0834faf8d8ec87",
+    "spec_sha256_frozen": "0c1bbdba036b13955c81f2ce0ffee0557b09842ef7d56b0dec0834faf8d8ec87",
+    "stage": "Stage 2 continual hidden-structure learning",
+    "torch": "2.2.2",
+    "workers": 5,
+    "written_at": "2026-10-01T06:59:45.822882+00:00"
+  },
+  "run": {
+    "finished_at": "2026-10-01T07:55:08.412125+00:00",
+    "interruptions": 0,
+    "jobs": 100,
+    "max_worker_processes_observed": 6,
+    "peak_rss_single_process_bytes": 210243584,
+    "peak_rss_total_bytes": 1241579520,
+    "retries": 0,
+    "rows_error": 0,
+    "rows_ok": 100,
+    "rss_exceeded": false,
+    "rss_limit_bytes": 8589934592,
+    "started_at": "2026-10-01T06:59:51.761195+00:00",
+    "wall_seconds": 3316.6508162021637,
+    "workers": 5
+  },
+  "scoring": {
+    "gates": {
+      "gate0": {
+        "items": {
+          "6.2_frozen_from_start_chance_means_in_[0.45,0.55]": true,
+          "6.2_frozen_from_start_ci95_contains_0.50": false,
+          "6.2_frozen_from_start_zero_dW": true,
+          "6.3_freeze_at_shift_A_dW_gt0": true,
+          "6.3_freeze_at_shift_B_differential_lower_gt_0": false,
+          "6.3_freeze_at_shift_B_differential_point_ge_0.10": false,
+          "6.3_freeze_at_shift_zero_dW_B": true,
+          "6.4_scrambled_B_post_differential_lower_gt_0": false,
+          "6.4_scrambled_B_post_differential_point_ge_0.10": false,
+          "6.4_scrambled_histogram_and_spike_count_equal": true,
+          "6.4_scrambled_order2_lookup_le_0.55": true,
+          "6.5_sfa_off_dW_gt0_A_and_B": false,
+          "6.5_sfa_off_sign_of_life_A": false,
+          "6.5_sfa_off_sign_of_life_B": false,
+          "6.5_sfa_off_threshold_exactly_0": true,
+          "8_primary_sign_of_life_A": true,
+          "8_primary_sign_of_life_B": false,
+          "integrity:all_100_rows_present": true,
+          "integrity:evaluation_copy_start_state_ok": true,
+          "integrity:evaluation_isolation_byte_identical": true,
+          "integrity:evaluation_scored_10000": true,
+          "integrity:evaluation_weights_bitwise_constant": true,
+          "integrity:exactly_four_evaluations_every_row": true,
+          "integrity:hash_assertions_passed_all_rows": true,
+          "integrity:no_nonfinite": true,
+          "integrity:shared_hashes_equal_across_arms": true,
+          "integrity:weights_within_bounds": true
+        },
+        "pass": false
+      },
+      "gate1": {
+        "items": {
+          "1_mean_A_pre_ge_0.70": false,
+          "2_lower_mean_A_pre_gt_0.50": false,
+          "3_mean_P_minus_F0_A_pre_ge_0.15": false,
+          "4_lower_P_minus_F0_A_pre_gt_0": false
+        },
+        "pass": false
+      },
+      "gate2": {
+        "items": {
+          "1_B_improvement_ge_0.15": false,
+          "2_lower_B_improvement_gt_0": false,
+          "3_mean_B_post_ge_0.70": false,
+          "4_lower_mean_B_post_gt_0.50": false,
+          "5_freeze_and_scramble_differentials": false
+        },
+        "pass": false
+      },
+      "gate3": {
+        "A_learned": -7.00000000000145e-05,
+        "A_loss": 0.0009899999999999354,
+        "A_retained": -Infinity,
+        "items": {
+          "0_A_learned_gt_0": false,
+          "1_A_retained_ge_0.80": false,
+          "2_A_loss_le_0.05": true,
+          "3_lower_mean_A_post_gt_0.50": false
+        },
+        "pass": false
+      },
+      "gate4": {
+        "items": {
+          "1_exactly_60_weights_all_arms": true,
+          "2_primary_one_init_zero_resets": true,
+          "3_primary_200k_A_then_200k_B_plastic_every_step": true,
+          "4_train_hashes_ne_heldout_and_zero_heldout_consumed": true,
+          "5_no_replay_no_A_represented_in_B": true,
+          "6_provenance_serialized_before_execution": true,
+          "7_no_deviation_from_spec": true
+        },
+        "pass": true
+      }
+    },
+    "integrity": {
+      "all_100_rows_present": true,
+      "evaluation_copy_start_state_ok": true,
+      "evaluation_isolation_byte_identical": true,
+      "evaluation_scored_10000": true,
+      "evaluation_weights_bitwise_constant": true,
+      "exactly_four_evaluations_every_row": true,
+      "hash_assertions_passed_all_rows": true,
+      "no_nonfinite": true,
+      "shared_hashes_equal_across_arms": true,
+      "weights_within_bounds": true
+    },
+    "means": {
+      "F0": {
+        "A_post": 0.5011400000000001,
+        "A_pre": 0.5011400000000001,
+        "B_post": 0.50659,
+        "B_pre": 0.50659
+      },
+      "FS": {
+        "A_post": 0.49993,
+        "A_pre": 0.49993,
+        "B_post": 0.5004250000000001,
+        "B_pre": 0.5004250000000001
+      },
+      "NS": {
+        "A_post": 0.4988,
+        "A_pre": 0.49993,
+        "B_post": 0.500095,
+        "B_pre": 0.500375
+      },
+      "P": {
+        "A_post": 0.49894000000000005,
+        "A_pre": 0.49993,
+        "B_post": 0.500095,
+        "B_pre": 0.5004250000000001
+      },
+      "SC": {
+        "A_post": 0.49993,
+        "A_pre": 0.49993,
+        "B_post": 0.5004500000000001,
+        "B_pre": 0.5004250000000001
+      }
+    },
+    "sfa": {
+      "interpretation_label": null,
+      "metric13_lower": -0.00029500000000000083,
+      "metric13_point": 0.00014000000000000123,
+      "note": "SFA-dependence labels (sec. 6.5) apply only if the primary arm is STAGE2_PASS; NS checks use point thresholds only (no NS bootstrap metric exists in sec. 9.1) - recorded spec gap for the reviewer.",
+      "sfa_benefit_claim_allowed": false,
+      "sfa_off_behavioral_point_checks": {
+        "g1_mean_A_pre_ge_0.70": false,
+        "g1_mean_NS_minus_F0_A_pre_ge_0.15": false,
+        "g2_B_improvement_ge_0.15": false,
+        "g2_mean_B_post_ge_0.70": false,
+        "g3_A_loss_le_0.05": true,
+        "g3_A_retained_ge_0.80": false
+      }
+    },
+    "sign_of_life_primary": {
+      "A": {
+        "abs_dw_gt0_seeds": 20,
+        "item1_abs_dw_gt0_20of20": true,
+        "item2_ge100_pos_and_neg_each_seed": true,
+        "item3_median_corr_ge_0.30": true,
+        "item4_ge18_seeds_corr_gt_0.10": true,
+        "median_reward_signed_dw_out_corr": 0.8583952327198954,
+        "min_negative_reward_events": 202,
+        "min_positive_reward_events": 112,
+        "pass": true,
+        "seeds": 20,
+        "seeds_corr_gt_0.10": 20,
+        "undefined_corr_seeds": 0
+      },
+      "B": {
+        "abs_dw_gt0_seeds": 4,
+        "item1_abs_dw_gt0_20of20": false,
+        "item2_ge100_pos_and_neg_each_seed": false,
+        "item3_median_corr_ge_0.30": false,
+        "item4_ge18_seeds_corr_gt_0.10": false,
+        "median_reward_signed_dw_out_corr": 0.0,
+        "min_negative_reward_events": 0,
+        "min_positive_reward_events": 0,
+        "pass": false,
+        "seeds": 20,
+        "seeds_corr_gt_0.10": 4,
+        "undefined_corr_seeds": 16
+      }
+    },
+    "validity_6_2": {
+      "ci95_contains_0.50": {
+        "A_post": true,
+        "A_pre": true,
+        "B_post": true,
+        "B_pre": false
+      },
+      "max_abs_dW_eq_0_20of20": true,
+      "means_in_[0.45,0.55]": {
+        "A_post": true,
+        "A_pre": true,
+        "B_post": true,
+        "B_pre": true
+      },
+      "pass": false
+    },
+    "validity_6_3": {
+      "A_abs_dw_gt0_20of20": true,
+      "differential_lower": -0.0006599999999999967,
+      "differential_lower_gt_0": false,
+      "differential_point": -0.00032999999999999973,
+      "differential_point_ge_0.10": false,
+      "max_abs_dW_B_eq_0_20of20": true,
+      "pass": false
+    },
+    "validity_6_4": {
+      "differential_lower": -0.0007150000000000073,
+      "differential_lower_gt_0": false,
+      "differential_point": -0.00035500000000000256,
+      "differential_point_ge_0.10": false,
+      "histogram_and_spike_count_equal_20of20": true,
+      "order2_lookup_le_0.55_20of20": true,
+      "order2_lookup_max": 0.507160071600716,
+      "pass": false
+    },
+    "validity_6_5": {
+      "abs_dw_gt0_A_and_B_20of20": false,
+      "pass": false,
+      "sign_of_life_A": false,
+      "sign_of_life_B": false,
+      "sign_of_life_detail": {
+        "A": {
+          "abs_dw_gt0_seeds": 20,
+          "item1_abs_dw_gt0_20of20": true,
+          "item2_ge100_pos_and_neg_each_seed": false,
+          "item3_median_corr_ge_0.30": true,
+          "item4_ge18_seeds_corr_gt_0.10": true,
+          "median_reward_signed_dw_out_corr": 0.7088440509725895,
+          "min_negative_reward_events": 98,
+          "min_positive_reward_events": 33,
+          "pass": false,
+          "seeds": 20,
+          "seeds_corr_gt_0.10": 20,
+          "undefined_corr_seeds": 0
+        },
+        "B": {
+          "abs_dw_gt0_seeds": 4,
+          "item1_abs_dw_gt0_20of20": false,
+          "item2_ge100_pos_and_neg_each_seed": false,
+          "item3_median_corr_ge_0.30": false,
+          "item4_ge18_seeds_corr_gt_0.10": false,
+          "median_reward_signed_dw_out_corr": 0.0,
+          "min_negative_reward_events": 0,
+          "min_positive_reward_events": 0,
+          "pass": false,
+          "seeds": 20,
+          "seeds_corr_gt_0.10": 4,
+          "undefined_corr_seeds": 16
+        }
+      },
+      "threshold_contribution_exactly_0_all_samples": true
+    },
+    "verdict": "INVALID_OR_MECHANISM_FAIL: 6.2_frozen_from_start_ci95_contains_0.50, 6.3_freeze_at_shift_B_differential_point_ge_0.10, 6.3_freeze_at_shift_B_differential_lower_gt_0, 6.4_scrambled_B_post_differential_point_ge_0.10, 6.4_scrambled_B_post_differential_lower_gt_0, 6.5_sfa_off_dW_gt0_A_and_B, 6.5_sfa_off_sign_of_life_A, 6.5_sfa_off_sign_of_life_B, 8_primary_sign_of_life_B",
+    "verdict_labels": [
+      "INVALID_OR_MECHANISM_FAIL: 6.2_frozen_from_start_ci95_contains_0.50, 6.3_freeze_at_shift_B_differential_point_ge_0.10, 6.3_freeze_at_shift_B_differential_lower_gt_0, 6.4_scrambled_B_post_differential_point_ge_0.10, 6.4_scrambled_B_post_differential_lower_gt_0, 6.5_sfa_off_dW_gt0_A_and_B, 6.5_sfa_off_sign_of_life_A, 6.5_sfa_off_sign_of_life_B, 8_primary_sign_of_life_B",
+      "NO_A_COMPETENCE"
+    ]
+  },
+  "verdict": "INVALID_OR_MECHANISM_FAIL: 6.2_frozen_from_start_ci95_contains_0.50, 6.3_freeze_at_shift_B_differential_point_ge_0.10, 6.3_freeze_at_shift_B_differential_lower_gt_0, 6.4_scrambled_B_post_differential_point_ge_0.10, 6.4_scrambled_B_post_differential_lower_gt_0, 6.5_sfa_off_dW_gt0_A_and_B, 6.5_sfa_off_sign_of_life_A, 6.5_sfa_off_sign_of_life_B, 8_primary_sign_of_life_B",
+  "verdict_labels": [
+    "INVALID_OR_MECHANISM_FAIL: 6.2_frozen_from_start_ci95_contains_0.50, 6.3_freeze_at_shift_B_differential_point_ge_0.10, 6.3_freeze_at_shift_B_differential_lower_gt_0, 6.4_scrambled_B_post_differential_point_ge_0.10, 6.4_scrambled_B_post_differential_lower_gt_0, 6.5_sfa_off_dW_gt0_A_and_B, 6.5_sfa_off_sign_of_life_A, 6.5_sfa_off_sign_of_life_B, 8_primary_sign_of_life_B",
+    "NO_A_COMPETENCE"
+  ]
+}
