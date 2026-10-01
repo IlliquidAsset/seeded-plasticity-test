@@ -14,7 +14,9 @@ from __future__ import annotations
 import argparse
 import json
 import math
+import shlex
 import subprocess
+import sys
 import time
 from concurrent.futures import ProcessPoolExecutor
 from datetime import datetime, timezone
@@ -30,8 +32,34 @@ ANCHOR_SUMMARY = ROOT / "results_florian_anchor" / "summary.json"
 GROUPS = [(t, r) for t in ("rate", "temporal") for r in ("mstdp", "mstdpet")]
 
 
-def command_from_args(args) -> str:
-    return f"python run_florian_core.py --seeds {args.seeds} --epochs {args.epochs} --workers {args.workers}"
+def build_parser() -> argparse.ArgumentParser:
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--seeds", type=int, default=20)
+    ap.add_argument("--epochs", type=int, default=200)
+    ap.add_argument("--workers", type=int, default=5)
+    ap.add_argument("--gate-commit", required=True, help="commit that froze docs/FLORIAN_CORE_GATE.md")
+    ap.add_argument("--g0", default="not recorded")
+    return ap
+
+
+def argv_from_args(args, parser: argparse.ArgumentParser | None = None) -> list[str]:
+    """Every parsed option, explicitly, in parser order (so the argv round-trips).
+
+    Derived from the parser's own actions, not a hand-written list, so a newly
+    added argument cannot silently drop out of the recorded provenance.
+    """
+    parser = parser or build_parser()
+    argv = []
+    for action in parser._actions:
+        if not action.option_strings or action.dest == "help":
+            continue
+        argv += [action.option_strings[0], str(getattr(args, action.dest))]
+    return argv
+
+
+def command_from_args(args, executable: str = "python") -> str:
+    """Shell-safe display of the full invocation (round-trips via shlex.split)."""
+    return shlex.join([executable, "run_florian_core.py", *argv_from_args(args)])
 
 
 def _git(*cmd):
@@ -204,6 +232,8 @@ def _report(payload):
         f"Generated: {payload['updated_at']}",
         f"Code commit: `{payload['code_commit']}` (core/bench files dirty: {payload['code_dirty']})",
         f"Command: `{payload['command']}` on {payload['host']}",
+        f"Argv (JSON, exact): `{json.dumps(payload.get('argv'))}`",
+        *([f"Provenance repair: {payload['provenance_repair']['note']}"] if payload.get("provenance_repair") else []),
         f"Engine: {payload['engine']}",
         f"Predeclared gate: `docs/FLORIAN_CORE_GATE.md` (committed at `{payload['gate_commit']}` before this run)",
         "",
@@ -265,12 +295,7 @@ def _report(payload):
 
 
 def main():
-    ap = argparse.ArgumentParser()
-    ap.add_argument("--seeds", type=int, default=20)
-    ap.add_argument("--epochs", type=int, default=200)
-    ap.add_argument("--workers", type=int, default=5)
-    ap.add_argument("--gate-commit", required=True, help="commit that froze docs/FLORIAN_CORE_GATE.md")
-    ap.add_argument("--g0", default="not recorded")
+    ap = build_parser()
     args = ap.parse_args()
     OUT.mkdir(exist_ok=True)
     anchor = json.loads(ANCHOR_SUMMARY.read_text())
@@ -281,7 +306,9 @@ def main():
         "code_dirty": bool(_git("status", "--porcelain", "--", "snn", "ladder", "run_florian_core.py")),
         "gate_commit": args.gate_commit,
         "G0": args.g0,
-        "command": command_from_args(args),
+        "command": command_from_args(args, sys.executable),
+        "argv": [sys.executable, *sys.argv],
+        "argv_normalized": [sys.executable, "run_florian_core.py", *argv_from_args(args, ap)],
         "host": "Mac Mini",
         "engine": "snn/core.py PureSNN.online_step, reward_mode=per_spike_next_step (snn/florian_bench.py); comparison anchor ladder/florian.py",
         "anchor_summary_commit_of_results": anchor.get("code_commit"),

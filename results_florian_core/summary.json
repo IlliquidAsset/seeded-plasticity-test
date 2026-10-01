@@ -2,9 +2,37 @@
   "CORE_PASS": true,
   "G0": "PASS: pytest 160 passed at ee442bc; core==anchor spike-for-spike (4 cells, 2 epochs, max dW 2.7e-15 mV); legacy end_of_trial bit-identical to 490cb1c",
   "anchor_summary_commit_of_results": "b1824502f417c7187d3ba958675a3d3009552782",
+  "argv": [
+    "/Users/kendrick/.hermes/hermes-agent/venv/bin/python3.11",
+    "run_florian_core.py",
+    "--seeds",
+    "20",
+    "--epochs",
+    "200",
+    "--workers",
+    "5",
+    "--gate-commit",
+    "ee442bc2c0e4e776dbda9c96754e3f00f9c97e4e",
+    "--g0",
+    "PASS: pytest 160 passed at ee442bc; core==anchor spike-for-spike (4 cells, 2 epochs, max dW 2.7e-15 mV); legacy end_of_trial bit-identical to 490cb1c"
+  ],
+  "argv_normalized": [
+    "/Users/kendrick/.hermes/hermes-agent/venv/bin/python3.11",
+    "run_florian_core.py",
+    "--seeds",
+    "20",
+    "--epochs",
+    "200",
+    "--workers",
+    "5",
+    "--gate-commit",
+    "ee442bc2c0e4e776dbda9c96754e3f00f9c97e4e",
+    "--g0",
+    "PASS: pytest 160 passed at ee442bc; core==anchor spike-for-spike (4 cells, 2 epochs, max dW 2.7e-15 mV); legacy end_of_trial bit-identical to 490cb1c"
+  ],
   "code_commit": "ee442bc2c0e4e776dbda9c96754e3f00f9c97e4e",
   "code_dirty": false,
-  "command": "python run_florian_core.py --seeds 20 --epochs 200 --workers 5",
+  "command": "/Users/kendrick/.hermes/hermes-agent/venv/bin/python3.11 run_florian_core.py --seeds 20 --epochs 200 --workers 5 --gate-commit ee442bc2c0e4e776dbda9c96754e3f00f9c97e4e --g0 'PASS: pytest 160 passed at ee442bc; core==anchor spike-for-spike (4 cells, 2 epochs, max dW 2.7e-15 mV); legacy end_of_trial bit-identical to 490cb1c'",
   "engine": "snn/core.py PureSNN.online_step, reward_mode=per_spike_next_step (snn/florian_bench.py); comparison anchor ladder/florian.py",
   "gate_commit": "ee442bc2c0e4e776dbda9c96754e3f00f9c97e4e",
   "groups": {
@@ -1938,6 +1966,13 @@
     }
   },
   "host": "Mac Mini",
+  "provenance_repair": {
+    "note": "metadata-only repair after Nora review of 2c7cd6b; no science rerun; runs/groups unchanged. Exact argv recovered verbatim from Hermes process record proc_4affc9917d7f (exit 0).",
+    "previous_command": "python run_florian_core.py --seeds 20 --epochs 200 --workers 5",
+    "repaired_by": "tools/repair_florian_core_provenance.py",
+    "source_record": "~/.hermes/profiles/ethan/logs/process-results/proc_4affc9917d7f.json",
+    "source_shell_command": "~/.hermes/hermes-agent/venv/bin/python3.11 run_florian_core.py --seeds 20 --epochs 200 --workers 5 --gate-commit ee442bc2c0e4e776dbda9c96754e3f00f9c97e4e --g0 \"PASS: pytest 160 passed at ee442bc; core==anchor spike-for-spike (4 cells, 2 epochs, max dW 2.7e-15 mV); legacy end_of_trial bit-identical to 490cb1c\" > /Users/kendrick/.hermes/profiles/ethan/cache/scratch/florian_core_run.log 2>&1"
+  },
   "runs": [
     {
       "engine": "snn/core.py PureSNN.online_step (reward_mode=per_spike_next_step)",

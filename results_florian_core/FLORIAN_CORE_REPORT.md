@@ -2,7 +2,9 @@
 
 Generated: 2026-10-01T04:23:02.476696+00:00
 Code commit: `ee442bc2c0e4e776dbda9c96754e3f00f9c97e4e` (core/bench files dirty: False)
-Command: `python run_florian_core.py --seeds 20 --epochs 200 --workers 5` on Mac Mini
+Command: `/Users/kendrick/.hermes/hermes-agent/venv/bin/python3.11 run_florian_core.py --seeds 20 --epochs 200 --workers 5 --gate-commit ee442bc2c0e4e776dbda9c96754e3f00f9c97e4e --g0 'PASS: pytest 160 passed at ee442bc; core==anchor spike-for-spike (4 cells, 2 epochs, max dW 2.7e-15 mV); legacy end_of_trial bit-identical to 490cb1c'` on Mac Mini
+Argv (JSON, exact): `["/Users/kendrick/.hermes/hermes-agent/venv/bin/python3.11", "run_florian_core.py", "--seeds", "20", "--epochs", "200", "--workers", "5", "--gate-commit", "ee442bc2c0e4e776dbda9c96754e3f00f9c97e4e", "--g0", "PASS: pytest 160 passed at ee442bc; core==anchor spike-for-spike (4 cells, 2 epochs, max dW 2.7e-15 mV); legacy end_of_trial bit-identical to 490cb1c"]`
+Provenance repair: metadata-only repair after Nora review of 2c7cd6b; no science rerun; runs/groups unchanged. Exact argv recovered verbatim from Hermes process record proc_4affc9917d7f (exit 0).
 Engine: snn/core.py PureSNN.online_step, reward_mode=per_spike_next_step (snn/florian_bench.py); comparison anchor ladder/florian.py
 Predeclared gate: `docs/FLORIAN_CORE_GATE.md` (committed at `ee442bc2c0e4e776dbda9c96754e3f00f9c97e4e` before this run)
 
