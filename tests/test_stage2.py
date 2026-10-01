@@ -39,7 +39,17 @@ def _net(seed=1000, beta_a=stage2.BETA_A):
 
 # ---------------------------------------------------------------- frozen identity
 def test_spec_file_hash_is_frozen_ef85a15():
-    assert hashlib.sha256((ROOT / "docs" / "STAGE2_SPEC.md").read_bytes()).hexdigest() == stage2.SPEC_SHA256
+    # The r2 implementation (snn/stage2.py) is pinned to the r2 spec bytes. Since the r3 freeze
+    # (t_de6dcd58) the live docs/STAGE2_SPEC.md is r3. The r2 text is archived byte-identically
+    # (git show ef85a15:docs/STAGE2_SPEC.md) as docs/STAGE2_SPEC_r2_ef85a15.md.
+    r2 = hashlib.sha256((ROOT / "docs" / "STAGE2_SPEC_r2_ef85a15.md").read_bytes()).hexdigest()
+    assert r2 == stage2.SPEC_SHA256 == "0c1bbdba036b13955c81f2ce0ffee0557b09842ef7d56b0dec0834faf8d8ec87"
+    # The r2 runner's preflight still hashes the LIVE spec, so it must refuse to run r2 code against r3.
+    import run_stage2
+
+    assert run_stage2.SPEC == ROOT / "docs" / "STAGE2_SPEC.md"
+    live = hashlib.sha256(run_stage2.SPEC.read_bytes()).hexdigest()
+    assert live != stage2.SPEC_SHA256
 
 
 def test_frozen_params_equal_independent_spec_transcription():

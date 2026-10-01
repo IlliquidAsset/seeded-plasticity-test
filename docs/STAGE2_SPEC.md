@@ -1,14 +1,44 @@
 # Stage 2 — Continual hidden-structure learning: frozen specification
 
-**Status:** FROZEN CANDIDATE — document only. Implementation and execution require independent approval of this document.  
-**Task:** `t_83684b37`  
+**Status:** FROZEN CANDIDATE r3 — document only. Implementation and execution require independent approval of this document.  
+**Task:** `t_83684b37` (r1, r2); `t_de6dcd58` (r3, from Amanda's proposal on `t_89fc68c8`)  
 **Branch:** `v0.3.0-calibrated`  
-**Frozen against baseline:** `608c4255a700f93318da9eb66a8b26adc55ead2c`  
+**Frozen against baseline:** `608c4255a700f93318da9eb66a8b26adc55ead2c` (r1/r2); r3 edits the r2 text of `ef85a15b0382bdc86b8dba377671e4c2b2e4f79f` (SHA-256 `0c1bbdba036b13955c81f2ce0ffee0557b09842ef7d56b0dec0834faf8d8ec87`) on branch head `084aec8`  
 **Stage 1 evidence:** `docs/FLORIAN_CORE_GATE.md` and `results_florian_core/` (`CORE PASS`, independently approved by Nora).  
 **Date frozen:** 2026-10-01  
-**Revision:** r2 (2026-10-01) — closes the four implementation ambiguities in Nora's REVISE review of `b8a0168` (evaluation membrane initialization; bootstrap RNG/metric order and ratio recomputation; initial evaluation status; held-out stream starting context and RNG draw order). No scientific threshold, arm, seed, length, or hyperparameter changed; no Stage 2 run has occurred.  
+**Revision:** r3 (2026-10-01). See the revision history and the r3 change ledger (section 0).
 
-No Stage 2 experiment has been run. This document freezes the experiment before implementation or data collection. After independent approval, implementation must reproduce this contract exactly; a changed scientific parameter requires a new spec and a new review, not an edit made after seeing results.
+### Revision history
+
+- **r1** (`b8a0168`): first freeze.
+- **r2** (`ef85a15`, 2026-10-01): closes the four implementation ambiguities in Nora's REVISE review of `b8a0168` (evaluation membrane initialization; bootstrap RNG/metric order and ratio recomputation; initial evaluation status; held-out stream starting context and RNG draw order). No scientific threshold, arm, seed, length, or hyperparameter changed. r2 was approved, implemented (`d04fbd9`), and run once (`1418436`; review amendment `084aec8`). Verdict under r2: `INVALID_OR_MECHANISM_FAIL + NO_A_COMPETENCE; G0-G3 FAIL, G4 PASS`. Nora approved that verdict on `t_26c046ac`. The result package was INCOMPLETE and the process card FAILED, because the §8 A-end weight min/max and bound hits were never serialized (9/100 rows unrecoverable). Diagnosis (`results_stage2/KENDRICK_SUMMARY.md`): the single output fell silent. Under `r_t = (2x_t-1)*z_t` silence earns no update, while accuracy credits silence as a correct "0". In 19/20 seeds the prediction-one fraction was 0 at `A_pre`, and in 16/20 seeds there were zero B output spikes. The r2 verdict stands. It is not re-scored, superseded, or rescued by r3.
+- **r3** (this revision): one mechanism change, an active-"0" two-output readout (2-20-2), plus the edits that follow from it in the wording, a §8 A-end/B-end instrumentation fix with a schema-completeness assertion, and a pre-run frozen-control fixture qualification (§11). No roadmap gate, control, §10 numeric threshold, §6 validity rule, MSTDPET/ALIF parameter, regime, length, shift, experimental seed, evaluation length, or bootstrap procedure changed.
+
+No r3 experiment has been run. r3 is a new frozen experiment and not a rerun of r2. It uses the same predeclared seeds `0..19`, and its outcome will be reported next to the r2 FAIL as a second attempt under the same roadmap gates. This document freezes the experiment before implementation or data collection. After independent approval, implementation must reproduce this contract exactly; a changed scientific parameter requires a new spec and a new review, not an edit made after seeing results.
+
+## 0. r3 change ledger (complete list of differences from r2 `ef85a15`)
+
+| # | Change | Sections | Kind |
+|---:|---|---|---|
+| 1 | **Single mechanism change.** The single LIF output is replaced by two non-adaptive LIF outputs, `O1` ("predict 1", output index 0) and `O0` ("predict 0", output index 1). Network `[2, 20, 2]`. Reward is ONE global scalar, delivered online on the following step, `r_t = (2*x_t - 1) * (z1_t - z0_t)`, applied to every synapse through that synapse's own eligibility (unchanged MSTDPET path). It is not a per-neuron or vector reward (that would be Track 4, out of scope). | §3.1, §4.1, §4.2 | mechanism |
+| 2 | `O0` hidden-to-output weights: bounds `[0, 10] mV`, init `U(0, 10) mV`, drawn from a NEW SeedSequence component `[20261001, seed, 21]`. Every r2 draw (components 1–6, bootstrap) is bitwise unchanged; `O1`'s row is r2's `W2` draw. | §4.1, §7, §7.1 | follows from 1 |
+| 3 | Evaluation prediction rule: `O1` alone -> 1, `O0` alone -> 0, tie (both or neither) -> a fair coin bit from a NEW SeedSequence component `[20261001, seed, 22]`. The coin is fixed per seed and per checkpoint, identical across arms, and independent of streams, weights, and network state. The coin is used only to score evaluations. It never enters the network, the reward, or training. | §3.1, §5.2, §5.3, §7.1 | follows from 1 |
+| 4 | Consequential wording: layer sizes, 80 trainable synapses, auxiliary-readout clause narrowed to "anything beyond the declared O1/O0 pair", output-spike and prediction-one definitions, §8 `reward_signed_dw_out_corr` summed over all hidden-to-output weights (both rows). | §4.1, §5.3, §8 | wording follows architecture |
+| 5 | **Gate 4 item 1 constant `60` -> `80`.** Gate wording and logic are unchanged; the constant is the trainable-synapse count of the declared architecture (40 + 40). **Flagged for Nora to confirm this is not a gate change.** | §10 Gate 4 | constant tracks architecture |
+| 6 | §8 instrumentation fix: separate `a_end_*` (after step 199,999, before the first B step) and `b_end_*` (after step 399,999) fields per arm/seed/layer. Each set records weight min, weight max, lower-bound hits, and upper-bound hits for W1 and W2, and for W2 also per output neuron. A schema-completeness assertion makes the writer refuse any row missing a field. Per-output spike counts, +/- reward-event counts, and both-silent/both-fire fractions for A and B separately (report only). | §8, §8.1, §13 | instrumentation |
+| 7 | Frozen-control fixture qualification: before any experimental seed, run the frozen-from-start arm only, on non-experimental seeds `1000..1019`, at full length. If any §6.2 validity condition fails at any checkpoint (including a 95% CI that excludes `0.50`), the build card stops and returns to spec review. §6.2 itself is unchanged. | §6.2 (note), §11 | pre-run validity screen |
+| 8 | New §11 shakedown items: rule-unchanged bit-identity per output, `a_end_*`/`b_end_*` presence and shift identity, tie-coin determinism and independence. | §11 | test |
+| 9 | §12 resource estimate updated for 80 synapses, 2 outputs, the r2 observed timing, and the fixture qualification. | §12 | estimate |
+
+Unchanged, explicitly: the four roadmap exit gates and the four controls (§1); every §10 numeric threshold; every §6 validity rule; MSTDPET (`gamma = 0.25 mV`, `tau_plus = tau_minus = 20 ms`, `tau_elig = 25 ms`, `a_plus = a_minus = 1/25`); ALIF (`tau_a = 200 ms`, `beta_a = 1.12 mV`); hidden layer and W1; regimes A/B; 400,000 steps with the shift before step 200,000; experimental seeds `0..19`; held-out stream construction and lengths (12,000 = 2,000 warm-up + 10,000 scored); exactly four checkpoints; the bootstrap (§9, §9.1). No tuning, no extra arm, no Stage 3/4, no Track 4.
+
+Items for the reviewer to adjudicate (flagged, not decided here):
+
+- **R1.** Gate 4 item 1 constant `60 -> 80` (ledger #5).
+- **R2.** §8 `reward_signed_dw_out_corr` keeps the Stage 1 definition, Pearson(reward, signed change of the summed hidden-to-output weights). With two outputs the sum runs over all 40 W2 entries. The threshold is unchanged. Per-output correlations are reported, not gated.
+- **R3.** Pre-existing SeedSequence coincidence, carried unchanged from r2 (the r2 run already used it). For seed `7`, the object components `[20261001, 7, c]`, `c = 1..6`, are the same entropy lists as the bootstrap generators `[20261001, 7, k]` for `k = 1..6`. The weights/streams of seed 7 and bootstrap metrics 1–6 are therefore drawn from identically-seeded generators (different draw calls). The card freezes the bootstrap, so r3 does not change it. The new r3 components (`21`, `22`) collide with no r2 or bootstrap identity, which was checked with `SeedSequence.generate_state` on numpy 1.26.4 for seeds `0..19` and `1000..1019` and bootstrap IDs `0..14`, `100..119`.
+- **R4.** The §11 fixture qualification looks at frozen-control accuracy on non-experimental seeds before the run. It is predeclared, it covers the frozen-from-start arm only, and its only permitted response is STOP. It is an explicit exception to the last paragraph of §11.
+- **Residual risks (reported, not gated):** (i) if both outputs fall silent, or both fire on every step, `r_t = 0` and that state is still absorbing. r3 makes it unrewarded (scored at coin-flip accuracy) and no longer favored by the observed A-phase reward imbalance, but it does not make it impossible. (ii) A global scalar reward multiplies every output row's eligibility, including the row of the output that did not cause the reward, through its decaying `tau_elig = 25 ms` trace. This is the standard global-reward credit problem of Florian's multi-output setting, and it is exactly what the "one global scalar, not Track 4" decision accepts.
 
 ## 1. Roadmap contract (verbatim)
 
@@ -55,17 +85,34 @@ The environment emits a binary observation `x_t in {0, 1}` every SNN integration
 - `x_t = 0` -> `[1, 0]`
 - `x_t = 1` -> `[0, 1]`
 
-The network's single output spike already present at step `t`, `z_t in {0, 1}`, is its prediction of `x_t`, made from earlier observations. The environment then reveals `x_t` and grades that prediction before `x_t` is integrated into the network. This ordering uses `PureSNN.online_step` exactly: the reward associated with `z_t` is applied on transition `t -> t+1`, and only afterward does the network integrate the input spike encoding `x_t`.
+The network has two output neurons (r3, section 0 ledger #1): `O1` (output index 0, "predict 1") and `O0` (output index 1, "predict 0"). Their spikes already present at step `t`, `z1_t, z0_t in {0, 1}`, are the network's prediction of `x_t`, made from earlier observations. The environment then reveals `x_t` and grades that prediction before `x_t` is integrated into the network. This ordering uses `PureSNN.online_step` exactly: the reward associated with `(z1_t, z0_t)` is applied on transition `t -> t+1`, and only afterward does the network integrate the input spike encoding `x_t`.
 
-The Florian reward is retained exactly:
+The Florian per-spike, next-step, global scalar reward is retained. Its output term is the signed difference of the two declared outputs:
 
 ```text
-r_t = (2*x_t - 1) * z_t
+r_t = (2*x_t - 1) * (z1_t - z0_t)        r_t in {-1, 0, +1}
 ```
 
-Thus an output spike is rewarded `+1` when the newly revealed observation is `1`, punished `-1` when it is `0`, and silence causes no weight update. Accuracy, however, scores both outcomes: `prediction_t = z_t`, so a correct silence for `x_t=0` counts as correct.
+| `z1_t` | `z0_t` | `x_t = 1` | `x_t = 0` |
+|---:|---:|---:|---:|
+| 1 | 0 | `+1` | `-1` |
+| 0 | 1 | `-1` | `+1` |
+| 0 | 0 | `0` | `0` |
+| 1 | 1 | `0` | `0` |
 
-The target is never supplied as an input, feature, regime label, loss gradient, weight initializer, or state reset. It enters only as the next observation and the sign of the reward for an already-emitted output spike. This is the no-oracle boundary.
+`r_t` is ONE scalar per transition. It is passed unchanged as the `reward` of `online_step`, so every synapse in both layers (W1 and both rows of W2) is updated by `gamma * r_t * e_ij` with its own eligibility `e_ij`. This is exactly the Stage 1 `REWARD_PER_SPIKE_NEXT_STEP` path. There is no per-neuron, per-row, or vector reward channel; that is Track 4 and is out of scope. With one output and `z0 = 0` the formula reduces exactly to r2's `r_t = (2*x_t - 1) * z_t`.
+
+The prediction rule (section 5.2) is:
+
+```text
+prediction_t = 1                     if z1_t = 1 and z0_t = 0
+prediction_t = 0                     if z1_t = 0 and z0_t = 1
+prediction_t = coin_t in {0, 1}      if z1_t = z0_t   (tie: both silent or both firing)
+```
+
+`coin_t` is a fair coin from its own SeedSequence component (section 7.1). It is independent of the streams, weights, and network state, and it never enters the network, the reward, or the plasticity. A "0" is therefore an active choice: it must be emitted as an `O0` spike, so it can be rewarded or punished. A tie earns no update, and it is scored at coin-flip accuracy rather than as a correct base-rate "0". This removes r2's asymmetry, in which silence received full credit for `x_t = 0` but could never be corrected. Prediction (and therefore the coin) is computed only to score held-out evaluations. Training accuracy is neither scored nor used.
+
+The target is never supplied as an input, feature, regime label, loss gradient, weight initializer, or state reset. It enters only as the next observation and the sign of the reward for already-emitted output spikes. This is the no-oracle boundary.
 
 ### 3.2 Regime A
 
@@ -111,21 +158,21 @@ The implementation must reuse the Stage 1 repository path `snn/core.py` and rewa
 
 | Quantity | Frozen value |
 |---|---:|
-| Layer sizes | `[2, 20, 1]` |
-| Trainable synapses | 40 input-to-hidden + 20 hidden-to-output = 60 |
+| Layer sizes | `[2, 20, 2]` (r3; r2 was `[2, 20, 1]`) |
+| Trainable synapses | 40 input-to-hidden + 40 hidden-to-output (20 to `O1` + 20 to `O0`) = 80 |
 | `dt` | `1.0 ms` |
 | LIF `tau_m` | `20.0 ms` |
 | Synaptic filter | none, `tau_syn = 0.0 ms` (direct voltage jump) |
 | Rest/reset | `-70.0 mV` / `-70.0 mV` |
 | Baseline threshold | `-54.0 mV` |
 | Hidden neurons | ALIF/SFA on in primary arm |
-| Output neuron | ordinary LIF, non-adaptive |
+| Output neurons | two, `O1` (index 0, "predict 1") and `O0` (index 1, "predict 0"); each an ordinary LIF, non-adaptive, with the same LIF parameters as above; no lateral, recurrent, or inhibitory connection between them |
 | Precision | float64 |
 | Batch size | 1 |
 
-Initial input-to-hidden weights are independent uniform `U(-10, 10) mV`; hidden-to-output weights are independent uniform `U(0, 10) mV`. Bounds remain `[-10, 10] mV` and `[0, 10] mV`, respectively. Initialization and all stream generation use NumPy `default_rng` as specified in section 7.
+Initial input-to-hidden weights are independent uniform `U(-10, 10) mV`. Hidden-to-output weights, for both rows (`O1` and `O0`), are independent uniform `U(0, 10) mV`. Bounds remain `[-10, 10] mV` for W1 and `[0, 10] mV` for both W2 rows. Row `O1` is r2's `W2` draw, unchanged. Row `O0` comes from the new component `[20261001, seed, 21]` (section 7.1). Initialization and all stream generation use NumPy `default_rng` as specified in section 7.
 
-Capacity is fixed at construction. Structural plasticity, neuron birth/death, masks that add connections, auxiliary readouts, replay buffers, and external classifiers are prohibited.
+Capacity is fixed at construction. Structural plasticity, neuron birth/death, masks that add connections, replay buffers, and external classifiers are prohibited. Auxiliary readouts are prohibited: the only readout is the declared `O1`/`O0` pair, decoded by the fixed section 3.1 rule. Any further output neuron, readout, decoder, read-out of hidden activity, or learned or fitted decision rule is forbidden.
 
 ### 4.2 R-STDP
 
@@ -138,10 +185,10 @@ Use Stage 1 temporal MSTDPET parameters without tuning:
 | STDP `tau_plus`, `tau_minus` | `20.0 ms`, `20.0 ms` |
 | Eligibility `tau_elig` | `25.0 ms` |
 | Pairing amplitudes | `a_plus = a_minus = 1/25` |
-| Reward schedule | per-output-spike, following-step, online |
+| Reward schedule | per-output-spike, following-step, online; one global scalar `r_t = (2*x_t - 1) * (z1_t - z0_t)` (section 3.1) |
 | Plasticity state | continuous across patterns and A->B |
 
-The update ordering, signs, and bounds are those already qualified in `CoreFlorianBench`: update pairing and eligibility, apply the per-spike reward, clamp, then integrate the current input with the updated weight.
+The update ordering, signs, and bounds are those already qualified in `CoreFlorianBench`: update pairing and eligibility, apply the per-spike reward, clamp, then integrate the current input with the updated weight. The rule is the unmodified `RSTDPPlasticity` on both synapse layers. Each W2 row's eligibility is driven only by its own output neuron's spikes and the shared hidden spikes. Implementation calls `online_step(onehot(x_t), reward_fn)` with `reward_fn(f) = (2*x_t - 1) * (f[0, 0] - f[0, 1])`. No new learning code is permitted: no change to `snn/core.py`'s plasticity, reward application, or clamp.
 
 ### 4.3 SFA / ALIF
 
@@ -182,7 +229,7 @@ The single training initialization before step 0 and the start of every evaluati
 | State | Value |
 |---|---|
 | Membrane potential, every neuron in every layer (hidden and output) | `v_rest = -70.0 mV` (as `PureSNN.reset_online_state`, `snn/core.py:277-285`) |
-| Current spikes, every layer (so the first output prediction is `z = 0`) | `0` |
+| Current spikes, every layer (so the first output state is `z1 = z0 = 0`, a tie: no training reward, and in evaluation it is resolved by the coin, inside the unscored warm-up) | `0` |
 | R-STDP `eligibility`, `pre_trace`, `post_trace`, `last_pairing` (`RSTDPPlasticity.reset`) | `0` |
 | ALIF adaptation `a`, every hidden neuron (SFA-on and SFA-off arms) | `0` |
 | Batch size / dtype | `1` / float64 |
@@ -191,7 +238,9 @@ An evaluation copy is produced by `copy.deepcopy` of the live network at the che
 
 ### 5.2 Evaluation step contract
 
-At evaluation index `i`, the copy's current output spike `z_i` is the prediction of held-out observation `x_i`. It is recorded, and then `online_step(onehot(x_i), reward_fn=None)` is called. Prediction `i` is correct iff `z_i == x_i`. Only indices `2,000..11,999` are scored.
+At evaluation index `i` of checkpoint `c`, the copy's current output spikes `(z1_i, z0_i)` are recorded. The prediction of held-out observation `x_i` is formed by the section 3.1 rule: `1` if `O1` alone fired, `0` if `O0` alone fired, otherwise `coin[seed, c][i]`. Then `online_step(onehot(x_i), reward_fn=None)` is called. Prediction `i` is correct iff `prediction_i == x_i`. Only indices `2,000..11,999` are scored.
+
+The tie-coin vector `coin[seed, c]` (length 12,000, `int8` in `{0, 1}`) is drawn once per seed and per checkpoint before training by the section 7.1 procedure. It is indexed by evaluation index `i` and consulted only when `z1_i == z0_i`. It is the same vector in every arm for that seed and checkpoint, so arms remain paired. It does not depend on the streams, the weights, the arm, or the network state. It is never consumed by training, is never an input to the network, and never enters a reward. The four checkpoints use four distinct coin vectors.
 
 The same held-out A stream is used for that seed at all A checkpoints, and the same held-out B stream is used at all B checkpoints. No evaluation output or state returns to training.
 
@@ -210,7 +259,9 @@ Primary metric per seed and checkpoint:
 accuracy = correct binary predictions / 10,000 scored observations
 ```
 
-A spike is prediction 1 and silence prediction 0. Chance is `0.50`. No threshold is estimated from data.
+Predictions follow the section 3.1 rule (`O1` alone -> 1, `O0` alone -> 0, tie -> the checkpoint's fair coin). Chance is `0.50`: a network whose output carries no information about `x_t` is right with probability exactly `0.50` on every step, because the coin is fair and independent and the held-out marginal is balanced. No threshold is estimated from data.
+
+Also recorded per seed and checkpoint (report only, not gated): the prediction-one fraction (scored predictions equal to `1`, coin outcomes included), the `O1`-only, `O0`-only, both-silent, and both-fire fractions of scored indices, and the accuracy restricted to non-tie indices together with its count.
 
 ## 6. Required arms and control validity
 
@@ -229,6 +280,8 @@ No reward is applied to weights in either phase. Validity requires:
 - the two-sided 95% seed-bootstrap interval at each checkpoint contains `0.50`.
 
 A failure of the weight equality check invalidates the run. A performance failure means the nominal 50% chance model is wrong for the realized fixture and invalidates the predeclared chance-based gates.
+
+r3 note: these three conditions are unchanged from r2 and are not relaxed. Under r2 the frozen-from-start `B_pre` interval `[0.50004, 0.51342]` excluded `0.50`. r3 keeps nominal chance at `0.50` (section 5.3). It also applies this same validity check once before the experimental run, on non-experimental seeds, as a fixture qualification (section 11, item 15). If that check fails, the experimental run does not start.
 
 ### 6.3 Freeze at the A->B shift
 
@@ -275,15 +328,17 @@ Use NumPy `SeedSequence` components below; no Python process hash or worker orde
 
 | Object | SeedSequence entropy list |
 |---|---|
-| Initial weights | `[20261001, seed, 1]` |
+| Initial weights: W1 and W2 row `O1` (unchanged from r2) | `[20261001, seed, 1]` |
 | A training stream | `[20261001, seed, 2]` |
 | B innovation draws | `[20261001, seed, 3]` |
 | B scramble permutation | `[20261001, seed, 4]` |
 | A held-out stream | `[20261001, seed, 5]` |
 | B held-out stream | `[20261001, seed, 6]` |
+| Initial weights: W2 row `O0` (new in r3) | `[20261001, seed, 21]` |
+| Evaluation tie-coin, checkpoint `c` (new in r3; `c = 1, 2, 3, 4` = `A_pre, B_pre, B_post, A_post`) | `[20261001, seed, 22, c]` |
 | Bootstrap resampling, metric `k` (section 9.1) | `[20261001, 7, k]` |
 
-Every generator is `numpy.random.default_rng(numpy.random.SeedSequence(<entropy list>))`, created fresh for its one object and used only by the draws listed in section 7.1, in the order listed. The B generator starts from the final two realized A observations but uses its independent innovation RNG. All arms must serialize SHA-256 hashes of initial weights, A observations, structured B observations, scrambled B observations where applicable, and both held-out streams. Paired arms must assert matching hashes for every object they share before running.
+Every generator is `numpy.random.default_rng(numpy.random.SeedSequence(<entropy list>))`, created fresh for its one object and used only by the draws listed in section 7.1, in the order listed. The B generator starts from the final two realized A observations but uses its independent innovation RNG. The r3 components `21` and `22` are new. Adding them changes no draw of components `1..6` or of the bootstrap generators, so every r2 object (W1, W2 row `O1`, all streams, the scramble, the bootstrap) is bitwise identical to its r2 value for the same seed. All arms must serialize SHA-256 hashes of initial weights (the full `(20, 2)` W1 and `(2, 20)` W2), A observations, structured B observations, scrambled B observations where applicable, both held-out streams, and the four tie-coin vectors. Paired arms must assert matching hashes for every object they share before running. A §11 test asserts that W1, W2 row `O1`, and every stream hash for a non-experimental seed equal those produced by the r2 procedure.
 
 Parallel workers may change wall time only. Result rows are sorted by arm then seed before aggregation.
 
@@ -293,7 +348,8 @@ Notation: `rng(e)` is a fresh `default_rng(SeedSequence(e))`; observations are `
 
 | Object | Draws, in this exact order, and nothing else | Starting context |
 |---|---|---|
-| Initial weights | `g = rng([20261001, seed, 1])`; `W1 = g.uniform(-10.0, 10.0, size=(20, 2))` (hidden x input); then `W2 = g.uniform(0.0, 10.0, size=(1, 20))` (output x hidden); copied into `synapses[0].weight` and `synapses[1].weight` as float64 | — |
+| Initial weights | `g = rng([20261001, seed, 1])`; `W1 = g.uniform(-10.0, 10.0, size=(20, 2))` (hidden x input); then `W2_O1 = g.uniform(0.0, 10.0, size=(1, 20))` (identical to r2's `W2` draw). Then `h = rng([20261001, seed, 21])`; `W2_O0 = h.uniform(0.0, 10.0, size=(1, 20))`. `W2 = concatenate([W2_O1, W2_O0], axis=0)`, shape `(2, 20)` (output x hidden; row 0 = `O1`, row 1 = `O0`). Copied into `synapses[0].weight` and `synapses[1].weight` as float64 | — |
+| Evaluation tie-coin, checkpoint `c` in `1..4`, length 12,000 | `g = rng([20261001, seed, 22, c])`; `coin = g.integers(0, 2, size=12_000)` cast to `int8`; `coin[i]` is used only at evaluation index `i` of checkpoint `c` when `z1_i == z0_i` | n/a |
 | A training stream, length 200,000 (steps `0..199,999`) | `g = rng([20261001, seed, 2])`; `c = g.integers(0, 2, size=2)` -> `x_0, x_1`; then `u = g.random(199_998)` -> flips for `t = 2..199,999` in order, rule A | `x_0, x_1` = the two drawn context bits (they are observed and trained on) |
 | Structured B training stream, length 200,000 (steps `200,000..399,999`) | `g = rng([20261001, seed, 3])`; `u = g.random(200_000)` -> flips for `t = 200,000..399,999` in order, rule B. No context draw. | `x_199,998, x_199,999` of the realized A training stream |
 | Scrambled B twin | `g = rng([20261001, seed, 4])`; `perm = g.permutation(200_000)`; `B_scr = B_struct[perm]` | n/a (a permutation of the realized structured B vector) |
@@ -306,16 +362,40 @@ Notation: `rng(e)` is a fresh `default_rng(SeedSequence(e))`; observations are `
 
 Record separately for A and B and for every seed/arm:
 
-- total output spikes;
-- positive and negative reward-event counts;
-- total absolute weight change in each layer;
-- min/max final weight and bound hits;
+- total output spikes, and per output neuron (`O1`, `O0`);
+- positive and negative reward-event counts (a reward event is a transition with `r_t != 0`);
+- the both-silent fraction (`z1_t = z0_t = 0`), the both-fire fraction (`z1_t = z0_t = 1`), and the `O1`-only and `O0`-only fractions of training steps (report only, not a gate);
+- total absolute weight change in each layer, and for W2 per output row;
+- the phase-end weight extrema and bound hits as the separate `a_end_*` and `b_end_*` fields of section 8.1 (r2 serialized only the final values; r3 makes both sets mandatory);
 - reward and signed hidden-to-output `delta_w` for each reward event, or exact streaming sufficient statistics for their Pearson correlation;
-- `reward_signed_dw_out_corr` (same definition as Stage 1);
-- hidden and output firing rates;
+- `reward_signed_dw_out_corr` (Stage 1 definition: Pearson correlation, over reward events, between the reward and the signed change of the sum of all hidden-to-output weights on that transition; with two outputs the sum runs over all 40 W2 entries, both rows). Also reported, not gated, are the per-row correlations `reward_signed_dw_O1_corr` and `reward_signed_dw_O0_corr`;
+- hidden and output firing rates (each output separately);
 - SFA adaptation mean, maximum, and threshold contribution for SFA-on arms;
-- all held-out accuracies and the prediction-one fraction;
+- all held-out accuracies, the prediction-one fraction, and the section 5.3 tie/readout fractions;
 - the maximum weight difference for each freeze interval.
+
+### 8.1 Phase-end weight fields and schema completeness (r3)
+
+For every arm/seed row, the writer serializes two separate, complete field sets. These are snapshots of the live training network's weights; they are never taken from an evaluation copy:
+
+- `a_end_*`: captured on the live network after training step `199,999` completes and before the first B step (`200,000`) begins. That is the same instant and the same weights as the `A_pre`/`B_pre` checkpoint copies.
+- `b_end_*`: captured on the live network after training step `399,999` completes. That is the same instant and the same weights as the `B_post`/`A_post` checkpoint copies.
+
+Each set contains exactly these fields (`P` = `a_end` or `b_end`). Here `lo`/`hi` are the declared bounds: W1 `[-10, 10] mV`, W2 `[0, 10] mV`. A bound hit is an entry exactly equal (float64 `==`) to that bound.
+
+| Field | Meaning |
+|---|---|
+| `P_w1_min`, `P_w1_max` | min / max over all 40 W1 entries (mV) |
+| `P_w1_lower_hits`, `P_w1_upper_hits` | count of W1 entries `== -10.0` / `== 10.0` |
+| `P_w2_min`, `P_w2_max` | min / max over all 40 W2 entries (mV) |
+| `P_w2_lower_hits`, `P_w2_upper_hits` | count of W2 entries `== 0.0` / `== 10.0` |
+| `P_w2_O1_min`, `P_w2_O1_max`, `P_w2_O1_lower_hits`, `P_w2_O1_upper_hits` | the same four quantities over the 20 entries of W2 row `O1` |
+| `P_w2_O0_min`, `P_w2_O0_max`, `P_w2_O0_lower_hits`, `P_w2_O0_upper_hits` | the same four quantities over the 20 entries of W2 row `O0` |
+| `P_weights_sha256` | SHA-256 of the float64 bytes of W1 then W2 (C order) at capture |
+
+That is 17 fields per set and 34 per row. Every arm, including frozen-from-start, records both sets. In arms whose weights cannot change in a phase, the fields are still computed from the live weights and are never copied from another field.
+
+Schema-completeness assertion: before writing any row, the result writer checks that every `a_end_*` and `b_end_*` field above is present, finite, and of the declared type (float for min/max, non-negative int for hits, 64-hex string for the hash). It also checks that `P_w2_lower_hits == P_w2_O1_lower_hits + P_w2_O0_lower_hits`, and the same for the upper hits. If any check fails, the writer raises and emits no row. A run with any missing row is incomplete (section 13) and cannot pass. This turns the r2 process failure, where 9/100 rows had A-end values that could not be recovered, into a hard failure at write time instead of a gap discovered in review.
 
 The primary arm's mechanism sign-of-life gate passes separately in A and B only if:
 
@@ -421,7 +501,7 @@ For reporting, bootstrap retained-fraction and loss intervals are mandatory, but
 
 PASS only if all are true:
 
-1. every arm has exactly 60 trainable synaptic weights before and after the run;
+1. every arm has exactly 80 trainable synaptic weights before and after the run (r3: the constant follows the declared `[2, 20, 2]` architecture, 40 + 40; r2 read 60 for `[2, 20, 1]`; wording and logic unchanged; flagged in section 0 ledger #5 for review);
 2. the primary arm's live training network has exactly one initialization (section 5.1, before step 0) and zero calls to network, membrane, spike, eligibility, SFA, or weight reset after step 0 (initialization of a disposable evaluation copy per section 5.1 is not a call on the live network and is logged separately);
 3. the primary executes exactly 200,000 A steps followed immediately by 200,000 B steps, with R-STDP enabled on every eligible step;
 4. training-stream hashes do not equal either held-out-stream hash, and an access log shows zero held-out observations consumed by training;
@@ -448,7 +528,7 @@ After this spec is independently approved, implementation may run unit and deter
 Required tests:
 
 1. ALIF hand check: one emitted spike increments `a` by exactly 1, next threshold rises by exactly `1.12 mV`, and `a` decays by `exp(-1/200)` per 1 ms step.
-2. Ordering check: changing `x_t` cannot affect `z_t` before reward at transition `t -> t+1`.
+2. Ordering check: changing `x_t` cannot affect `z_t` (r3: either output, `z1_t` or `z0_t`) before reward at transition `t -> t+1`.
 3. No-reset check: instrumented primary shift records zero reset calls.
 4. Freeze checks: frozen-from-start changes zero weights; freeze-at-shift changes zero weights after the shift.
 5. Stream checks: A/XOR and B/XNOR equations hold against hand-computed fixtures; scrambled B preserves the exact symbol multiset.
@@ -459,7 +539,15 @@ Required tests:
 10. Stream-procedure check: on non-experimental seeds, streams and weights regenerated by the section 7.1 procedure are bit-identical across two independent constructions, and the held-out B stream's indices 0-1 equal the two context bits drawn from component 6.
 11. Bootstrap determinism: on a synthetic (non-experimental) 20-row table, every section 9.1 metric's interval is identical when metrics are computed in forward vs. reverse ID order, and metric 12 replicates equal the ratio recomputed from the same resampled rows.
 
-Performance smoke tests, seed screening, hyperparameter sweeps, or looking at partial seed outcomes before all 100 arm/seed jobs complete are prohibited.
+r3 additions (items 12–16):
+
+12. Rule-unchanged check (two-output path vs. qualified single-output core path). On a fixed short non-experimental fixture, record a pre/post spike history: input spikes, hidden spikes, both output spike trains `z1`, `z0`, and the scalar reward sequence `r_t` of section 3.1. Replay it through the r3 two-output network's unmodified `RSTDPPlasticity` objects. Separately, for each output `k` in `{O1, O0}`, replay through a single-output `[2, 20, 1]` `RSTDPPlasticity` on the qualified Stage 1 core path (`snn/core.py`, `credit="eligibility"`, section 4.2 parameters), with the same initial weights for that row, the same hidden spike history, that output's spike train as the post spikes, and the identical scalar `r_t` sequence. Assert at every step that W2 row `k`'s eligibility, traces, and weight after the update and clamp are bit-identical (float64 `==`) to the single-output run. Also assert that W1's update is bit-identical to a single-output run with the same input/hidden history and `r_t` sequence. This shows that only the readout and the reward's output term changed. The learning rule did not.
+13. Phase-end fields check (non-experimental seeds, short phases). Every emitted row contains every section 8.1 `a_end_*` and `b_end_*` field. In an instrumented run, `a_end_*`, including `a_end_weights_sha256`, equals the values recomputed from the live network's weights read immediately after the last A step and before the first B step. `b_end_*` equals the live weights after the last B step. A row with any section 8.1 field deleted is refused by the writer (negative test). In a plastic arm whose weights change during B, `a_end_*` differs from `b_end_*`.
+14. Tie-coin check. (a) Determinism: the four coin vectors regenerated by the section 7.1 procedure are bit-identical across two independent constructions. (b) Independence: they are unchanged when the training streams, the held-out streams, the weights, or the arm are changed (that is, they are a function of `(seed, c)` only), and they are bit-identical across all five arms for a seed. (c) Use: the coin is read only at tie indices of evaluations. With a forced-tie fixture (both outputs held silent), scored predictions equal `coin[i]` exactly. With a forced `O1`-only or `O0`-only fixture, the coin is never read. Training never reads a coin (access log). (d) Distinctness: the coin vectors and the new `O0` weight row are drawn from components `21`/`22`, and their SeedSequence states equal no state in components `1..6` or bootstrap `[20261001, 7, k]`.
+15. **Frozen-control fixture qualification (pre-run STOP condition).** After items 1–14 and 16 pass, and before any experimental seed runs, execute the frozen-from-start arm (section 6.2) only, unchanged and at full length: 400,000 training steps and the four 12,000-step held-out evaluations with the r3 readout and tie-coin, on the non-experimental seeds `1000..1019`, with the section 7.1 procedures. Compute the section 9.1 metrics 0–3 on these 20 rows with the section 9 bootstrap, using the same entropy `[20261001, 7, k]`. Check all three section 6.2 conditions: weights bitwise constant in 20/20 seeds; mean accuracy in `[0.45, 0.55]` at each checkpoint; two-sided 95% interval containing `0.50` at each checkpoint. If ANY condition fails at ANY checkpoint, the build card STOPS, runs no experimental seed, and returns to spec review with the qualification record. No retry, no different non-experimental seed set, no parameter change, and no partial experimental run is permitted. This step applies the existing validity rule early. It adds no arm and moves no threshold. It is the one predeclared exception to the prohibition below on looking at accuracy before the experimental run: it looks only at the frozen-from-start arm on non-experimental seeds, and its only permitted action is STOP or proceed unchanged. The qualification record (rows, intervals, verdict) is committed with the result package.
+16. r2-object identity: for a non-experimental seed, W1, W2 row `O1`, the A, structured B, and scrambled B training streams, and both held-out streams are bit-identical to those produced by the r2 (`ef85a15`) section 7.1 procedure.
+
+Apart from item 15, the following are prohibited: performance smoke tests, seed screening, hyperparameter sweeps, and looking at partial seed outcomes before all 100 arm/seed jobs complete.
 
 ## 12. Resource and wall-time estimate (Mac mini)
 
@@ -472,18 +560,25 @@ Workload:
 - four 12,000-step held-out evaluations per run (A/B pre and A/B post; the pre pair shares one checkpoint and the post pair shares one checkpoint) = 4,800,000 evaluation steps total;
 - total approximately 44.8 million SNN steps.
 
-The Stage 1 temporal core jobs took roughly 241–275 seconds for 400,000 steps while also re-running the independent anchor. Removing the anchor comparison but adding ALIF state and held-out evaluation gives a planning estimate of 300–450 seconds per Stage 2 arm/seed job.
+The Stage 1 temporal core jobs took roughly 241–275 seconds for 400,000 steps while also re-running the independent anchor. Removing the anchor comparison but adding ALIF state and held-out evaluation gave the r1/r2 planning estimate of 300–450 seconds per Stage 2 arm/seed job.
 
-At 5 workers, expected wall time is `1.7–2.5 hours`; budget `3 hours` including coordination, hashing, aggregation, and variance. Expected peak memory is `< 2 GiB` for five small float64 networks plus processes. Store event-correlation sufficient statistics rather than per-tick tensors; expected committed result package is `< 25 MiB`. Abort rather than swap if resident memory exceeds 8 GiB.
+r3 update (80 synapses, 2 outputs). Observed under r2 on this host (`results_stage2/summary.json`): 100 jobs in `3,317 s` wall at 5 workers, which is about 166 s per job, with total peak RSS `1.16 GiB`. The r2 jobs were cheap partly because the output was mostly silent: few reward events, so the per-event weight snapshot and correlation statistics rarely ran. r3 adds one 20-weight output row, a `(2, 20)` eligibility instead of `(1, 20)`, one tie-coin lookup per evaluation step, and the section 8/8.1 counters. Each is O(20) work per step and small next to the per-step Python/torch overhead. Reward events can occur on every non-tie step, though, so the per-event bookkeeping can run up to roughly every step. Planning estimate: 170–450 s per arm/seed job.
 
-These are planning estimates, not gates. Actual wall time, peak RSS, worker count, interruptions, and retries must be reported.
+- Experimental run: 100 jobs, about 44.8 million SNN steps (unchanged count); `1.0–2.5 h` at 5 workers.
+- Section 11 item 15 fixture qualification: 20 frozen-from-start jobs on seeds `1000..1019`, about 8.96 million steps; `0.2–0.5 h` at 5 workers. It runs before, and separately from, the experimental run.
+- Budget: `3.5 hours` in total, including both, coordination, hashing, aggregation, and variance. Expected peak memory remains `< 2 GiB`, and the committed result package `< 25 MiB` (the 34 section 8.1 fields per row add under 10 KiB in total). Abort rather than swap if resident memory exceeds 8 GiB.
+
+These are planning estimates, not gates. Actual wall time, peak RSS, worker count, interruptions, and retries must be reported, separately for the qualification step and the experimental run.
 
 ## 13. Frozen result schema and provenance
 
 The future result package must contain:
 
 - one JSON row for every one of the 100 arm/seed runs;
-- seed-level accuracies and prediction-one fractions at exactly the four checkpoints `A_pre`, `B_pre`, `B_post`, `A_post` (no initial-checkpoint field exists);
+- seed-level accuracies and prediction-one fractions at exactly the four checkpoints `A_pre`, `B_pre`, `B_post`, `A_post` (no initial-checkpoint field exists), with the section 5.3 tie/readout fractions;
+- every section 8.1 `a_end_*` and `b_end_*` field in every row, enforced by the schema-completeness assertion; per-output spike counts, +/- reward-event counts, and both-silent/both-fire fractions for A and B separately;
+- SHA-256 of the full initial W1/W2 and of the four tie-coin vectors per seed;
+- the section 11 item 15 fixture-qualification record (20 rows, metrics 0–3 with intervals, PASS/STOP), produced before the experimental run;
 - one bootstrap record per metric ID in section 9.1, sorted by ID, each containing ID, formula name, point estimate, the required interval bounds, the SeedSequence entropy `[20261001, 7, k]`, and (for ID 12) the count of undefined-denominator replicates;
 - sign-of-life metrics, freeze deltas, firing/SFA summaries, hashes, timing, and status;
 - aggregate point estimates and all required bootstrap intervals;
@@ -499,4 +594,11 @@ The gate code must be committed and pushed before the first experimental seed ru
 
 This card changes only `docs/STAGE2_SPEC.md`. Rollback is `git revert <spec-commit>`; no runtime or science artifact exists to remove.
 
-Next gate: Nora independently reviews this frozen document for roadmap fidelity, numerical closure, no-oracle timing, control sufficiency, and implementation ambiguity. Only after approval may a separate build card implement Stage 2. Stage 3, Stage 4, and Track 4 remain out of scope.
+r3 (`t_de6dcd58`) changes `docs/STAGE2_SPEC.md` (this text) and makes two non-science test-maintenance edits that the r3 edit forces:
+
+- `docs/STAGE2_SPEC_r2_ef85a15.md`: a byte-identical archive of the r2 spec (`git show ef85a15:docs/STAGE2_SPEC.md`, SHA-256 `0c1bbdba…ec87`). The r2 result package cites it.
+- `tests/test_stage2.py::test_spec_file_hash_is_frozen_ef85a15`: the test pinned the live spec file to the r2 hash, so freezing r3 necessarily broke it. It now pins the r2 archive to the r2 implementation's `SPEC_SHA256`. It also asserts that the r2 runner's preflight, which still hashes the live `docs/STAGE2_SPEC.md`, now sees a different hash and therefore refuses to run the r2 code against r3. No assertion was weakened.
+
+It does not touch r2's code (`snn/`, `run_stage2.py`, `d04fbd9`), its results (`results_stage2/`, `1418436`, `084aec8`), or `docs/STAGE2_IMPLEMENTATION_NOTES.md`, which stays the r2 code map. A later r3 build card must write its own implementation notes and code pin against the r3 spec hash. Rollback is `git revert <r3-spec-commit>`, which restores the r2 text and the original test exactly.
+
+Next gate: Nora independently reviews this frozen document for roadmap fidelity, numerical closure, no-oracle timing, control sufficiency, and implementation ambiguity, and adjudicates the section 0 items R1–R4. Only after approval may a separate build card implement Stage 2 r3, and that card must stop at section 11 item 15 if the fixture qualification fails. Stage 3, Stage 4, and Track 4 remain out of scope.
