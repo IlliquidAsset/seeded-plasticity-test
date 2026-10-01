@@ -592,11 +592,13 @@ The gate code must be committed and pushed before the first experimental seed ru
 
 ## 14. Freeze, rollback, and next gate
 
-This card changes only `docs/STAGE2_SPEC.md`. Rollback is `git revert <spec-commit>`; no runtime or science artifact exists to remove.
+r2 freeze record (historical; quoted verbatim from ef85a15, where "this card" is the r2 card, not r3):
 
-r3 (`t_de6dcd58`) changes `docs/STAGE2_SPEC.md` (this text) and makes two non-science test-maintenance edits that the r3 edit forces:
+> This card changes only `docs/STAGE2_SPEC.md`. Rollback is `git revert <spec-commit>`; no runtime or science artifact exists to remove.
 
-- `docs/STAGE2_SPEC_r2_ef85a15.md`: a byte-identical archive of the r2 spec (`git show ef85a15:docs/STAGE2_SPEC.md`, SHA-256 `0c1bbdba…ec87`). The r2 result package cites it.
+r3 (`t_de6dcd58`) changes exactly three paths: `docs/STAGE2_SPEC.md` (modified; this text), `docs/STAGE2_SPEC_r2_ef85a15.md` (added) and `tests/test_stage2.py` (modified). The last two are non-science test-maintenance edits that the r3 edit forces:
+
+- `docs/STAGE2_SPEC_r2_ef85a15.md`: a byte-identical archive of the r2 spec (`git show ef85a15:docs/STAGE2_SPEC.md`, SHA-256 `0c1bbdba…ec87`). It preserves the exact r2 bytes that the r2 result package identifies by path and hash: `results_stage2/provenance.json`, `results_stage2/summary.json` and `results_stage2/STAGE2_REPORT.md` cite `docs/STAGE2_SPEC.md` with SHA-256 `0c1bbdba…ec87`. The package does not cite this archive path. r3 adds the archive so those bytes stay available at a stable path after the live file changes.
 - `tests/test_stage2.py::test_spec_file_hash_is_frozen_ef85a15`: the test pinned the live spec file to the r2 hash, so freezing r3 necessarily broke it. It now pins the r2 archive to the r2 implementation's `SPEC_SHA256`. It also asserts that the r2 runner's preflight, which still hashes the live `docs/STAGE2_SPEC.md`, now sees a different hash and therefore refuses to run the r2 code against r3. No assertion was weakened.
 
 It does not touch r2's code (`snn/`, `run_stage2.py`, `d04fbd9`), its results (`results_stage2/`, `1418436`, `084aec8`), or `docs/STAGE2_IMPLEMENTATION_NOTES.md`, which stays the r2 code map. A later r3 build card must write its own implementation notes and code pin against the r3 spec hash. Rollback is `git revert <r3-spec-commit>`, which restores the r2 text and the original test exactly.
