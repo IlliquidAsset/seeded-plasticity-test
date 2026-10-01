@@ -33,11 +33,15 @@ def h(*parts) -> str:
 
 # ------------------------------------------------------------ D1 fixtures
 def d1_identity(seed):
-    return {
+    ident = {
         "initial_weights_sha256": h("w", seed),
         "train_input_hash": h("trainA", seed),
         "test_input_hash": h("testA", seed),
     }
+    for name in diag.D1_DECODERS:
+        for split in ("train", "test"):
+            ident[f"{name}_{split}_label_sha256"] = h("label", split, name, seed)
+    return ident
 
 
 def d1_decoder(seed, name, accuracy, lower):
@@ -51,7 +55,8 @@ def d1_decoder(seed, name, accuracy, lower):
         "lower_95": float(lower),
         "scored": diag.D1_TEST_ROWS,
         "decoder_config": dict(diag.D1_DECODER_CONFIG),
-        "train_label_sha256": h("label", name, seed),
+        "train_label_sha256": h("label", "train", name, seed),
+        "test_label_sha256": h("label", "test", name, seed),
         "mean": mean,
         "scale": scale,
         "normalization_sha256": diag.normalization_hash(mean, scale),
@@ -426,11 +431,8 @@ def test_r2_09_real_short_D1_row_satisfies_validator_on_fixture_seed():
     n_train, n_test = 2_600, 2_300
     row = diag.run_d1_seed(FIXTURE_SEED, n_train=n_train, n_test=n_test)
     row["status"] = "ok"
-    ident = {
-        "initial_weights_sha256": diag.sha256(*diag.initial_weights(FIXTURE_SEED)),
-        "train_input_hash": diag.sha256(diag.a_stream(FIXTURE_SEED, True, n_train)),
-        "test_input_hash": diag.sha256(diag.a_stream(FIXTURE_SEED, False, n_test)),
-    }
+    ident = diag.d1_object_hashes(FIXTURE_SEED, n_train=n_train, n_test=n_test)
+    assert ident["initial_weights_sha256"] == diag.sha256(*diag.initial_weights(FIXTURE_SEED))
     assert diag.validate_d1_row(row, ident, train_rows=n_train - 2_000, test_rows=n_test - 2_000) == []
     # The same real row is refused at spec lengths: short rows can never pass the package validator.
     assert any("train_rows" in v for v in diag.validate_d1_row(row, ident))

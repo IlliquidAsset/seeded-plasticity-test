@@ -190,6 +190,15 @@ def drive_hash_integrity(
 # ------------------------------------------------------- strict row validator
 ExpectedHashes = Mapping[Tuple[str, bool], Mapping[int, Mapping[str, Optional[str]]]]
 
+# The value run_condition_seed emits; any other top-level label is a schema error.
+CONDITION_DIAGNOSTIC_LABEL = "D2/D3/D4"
+# Fields the runner's job wrapper adds; nothing else may appear on a row.
+ROW_TRANSPORT_FIELDS = ("status", "worker_pid")
+
+
+def _strict_int(v: object) -> bool:
+    return isinstance(v, int) and not isinstance(v, bool)
+
 
 def validate_condition_row(
     row: Mapping[str, object],
@@ -214,13 +223,26 @@ def validate_condition_row(
     missing = [k for k in CONDITION_ROW_FIELDS if k not in row]
     if missing:
         return v + [f"{tag}: missing field(s) {missing}"]
+    unknown = sorted(set(row) - set(CONDITION_ROW_FIELDS) - set(ROW_TRANSPORT_FIELDS), key=str)
+    if unknown:
+        v.append(f"{tag}: undeclared field(s) {unknown}")
+    if "worker_pid" in row and not _strict_int(row["worker_pid"]):
+        v.append(f"{tag}: worker_pid is not int")
+    if row["diagnostic"] != CONDITION_DIAGNOSTIC_LABEL:
+        v.append(f"{tag}: diagnostic label {row['diagnostic']!r}, expected {CONDITION_DIAGNOSTIC_LABEL!r}")
     seed = row["seed"]
-    if not isinstance(seed, int) or isinstance(seed, bool):
+    if not _strict_int(seed):
         v.append(f"{tag}: seed is not int")
+    if not isinstance(row["condition"], str):
+        return v + [f"{tag}: condition label is not a string"]
     try:
-        plastic, task, drive = parse_condition(str(row["condition"]))
+        plastic, task, drive = parse_condition(row["condition"])
     except ValueError:
         return v + [f"{tag}: unknown condition label"]
+    if task not in ("A", "lag1"):
+        return v + [f"{tag}: unknown task {task!r}"]
+    if not (isinstance(row["plastic"], bool) and isinstance(row["drive"], bool) and isinstance(row["task"], str)):
+        v.append(f"{tag}: plastic/drive must be bool and task must be str")
     if (row["plastic"], row["task"], row["drive"]) != (plastic, task, drive):
         v.append(f"{tag}: plastic/task/drive fields disagree with condition label")
     for k in ("initial_weights_sha256", "final_weights_sha256", "train_stream_sha256", "eval_stream_sha256", "tie_coin_sha256"):
@@ -252,17 +274,30 @@ def validate_condition_row(
     emissing = [k for k in EVALUATION_FIELDS if k not in ev]
     if emissing:
         return v + [f"{tag}: evaluation missing field(s) {emissing}"]
+    eunknown = sorted(set(ev) - set(EVALUATION_FIELDS), key=str)
+    if eunknown:
+        v.append(f"{tag}: evaluation has undeclared field(s) {eunknown}")
+    # Every evaluation field is validated for type and range (spec 0.4, 3.3, 7.3).
+    scored_ok = _strict_int(ev["scored"]) and ev["scored"] == eval_scored
+    if not scored_ok:
+        v.append(f"{tag}: evaluation scored={ev['scored']!r}, expected int {eval_scored}")
     acc = ev["accuracy"]
     if not (isinstance(acc, float) and math.isfinite(acc) and 0.0 <= acc <= 1.0):
         v.append(f"{tag}: evaluation accuracy not a finite float in [0,1]")
-    if ev["scored"] != eval_scored or isinstance(ev["scored"], bool):
-        v.append(f"{tag}: evaluation scored={ev['scored']!r}, expected {eval_scored}")
+    elif abs(acc * eval_scored - round(acc * eval_scored)) > 1e-6:
+        v.append(f"{tag}: evaluation accuracy is not a count over {eval_scored} scored steps")
     if ev["weights_bitwise_constant"] is not True:
         v.append(f"{tag}: evaluation mutated weights")
+    # Tie-coin reads: one read per tie step across the whole evaluation
+    # window (warm-up included), so an int in [0, eval_len].
+    reads = ev["coin_reads"]
+    if not _strict_int(reads) or not 0 <= reads <= eval_len:
+        v.append(f"{tag}: evaluation coin_reads={reads!r} is not an int in [0, {eval_len}]")
+    start, end = ev["source_start_index"], ev["source_end_index"]
     if drive:
-        if (ev["source_start_index"], ev["source_end_index"]) != (phase_steps, phase_steps + eval_len - 1):
-            v.append(f"{tag}: evaluation drive indices not continuous {phase_steps}..{phase_steps + eval_len - 1}")
-    elif (ev["source_start_index"], ev["source_end_index"]) != (None, None):
+        if not (_strict_int(start) and _strict_int(end)) or (start, end) != (phase_steps, phase_steps + eval_len - 1):
+            v.append(f"{tag}: evaluation drive indices not continuous int {phase_steps}..{phase_steps + eval_len - 1}")
+    elif start is not None or end is not None:
         v.append(f"{tag}: no-drive evaluation consumed drive indices")
     cps = row["checkpoints"]
     try:

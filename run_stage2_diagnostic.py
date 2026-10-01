@@ -49,6 +49,7 @@ SCI_FILES = (
     "tools/stage2_diagnostic_ss_probe.py",
     "tests/test_stage2_diagnostic.py",
     "tests/test_stage2_diagnostic_package.py",
+    "tests/test_stage2_diagnostic_round3.py",
     "docs/STAGE2_SPEC.md",
     "docs/STAGE2_DIAGNOSTIC_SPEC.md",
     "docs/STAGE2_DIAGNOSTIC_IMPLEMENTATION_NOTES.md",
@@ -127,7 +128,11 @@ def parser() -> argparse.ArgumentParser:
     mode.add_argument("--run-diagnostic", action="store_true")
     p.add_argument("--approval-file", help="separate implementation-review APPROVE record (full run only)")
     p.add_argument("--workers", type=int, default=5)
-    p.add_argument("--out", default="results_stage2_diagnostic")
+    p.add_argument(
+        "--out",
+        default=None,
+        help="package directory; must not exist. Default: results_stage2_diagnostic/runs/<mode>-<utc>-<head>-pid<pid>",
+    )
     p.add_argument("--tests", default="not recorded")
     return p
 
@@ -356,8 +361,11 @@ def preflight(args: argparse.Namespace, mode: str, out: Path) -> Dict[str, objec
         "seeds": list(diag.DIAGNOSTIC_SEEDS) if mode == "diagnostic" else [4242],
         "maintained_tests": args.tests,
         "written_at": datetime.now(timezone.utc).isoformat(),
+        "output_dir": str(out),
     }
-    out.mkdir(parents=True, exist_ok=True)
+    # Fresh, exclusively created location: a prior full or partial package can
+    # never be reused, overwritten, or manifested into this run.
+    claim_fresh_run_dir(out)
     (out / "provenance.json").write_text(json.dumps(prov, indent=2, sort_keys=True, default=_jsonable) + "\n")
     if mode == "diagnostic":
         checks = (
@@ -446,7 +454,7 @@ def run_pool(
     t0 = time.time()
     rows: List[Dict[str, object]] = []
     ledger = out / f"{stage}.progress.jsonl"
-    ledger.write_text("")
+    ledger.open("x").close()  # exclusive: never reuse a prior run's ledger
     try:
         with executor_factory(workers) as pool:
             futures = [pool.submit(fn, job) for job in jobs]
@@ -489,7 +497,10 @@ def _row_key(row: Mapping[str, object]) -> Tuple[str, int, str]:
 
 
 def write_jsonl(path: Path, rows: Sequence[Mapping[str, object]]) -> None:
-    path.write_text("".join(json.dumps(r, sort_keys=True, default=_jsonable) + "\n" for r in rows))
+    """Exclusive create: a pre-existing file of the same name (another writer,
+    or a remnant) raises instead of being silently overwritten."""
+    with path.open("x") as handle:
+        handle.write("".join(json.dumps(r, sort_keys=True, default=_jsonable) + "\n" for r in rows))
 
 
 def write_stage_rows(out: Path, name: str, rows: Sequence[Mapping[str, object]], valid: bool) -> str:
@@ -505,9 +516,42 @@ def write_stage_rows(out: Path, name: str, rows: Sequence[Mapping[str, object]],
     return path.name
 
 
-def manifest(out: Path) -> None:
-    files = sorted(p for p in out.rglob("*") if p.is_file() and p.name != "SHA256SUMS")
-    (out / "SHA256SUMS").write_text("".join(f"{file_sha(p)}  {p.relative_to(out)}\n" for p in files))
+class StaleOutputError(SystemExit):
+    """Refusal to write a package into a location that already holds artifacts."""
+
+
+def default_run_dir(mode: str) -> Path:
+    """Run-unique package location; never the retained ss_probe directory itself."""
+    stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S%fZ")
+    head = git("rev-parse", "--short=12", "HEAD")
+    return ROOT / "results_stage2_diagnostic" / "runs" / f"{mode}-{stamp}-{head}-pid{os.getpid()}"
+
+
+def claim_fresh_run_dir(out: Path) -> Path:
+    """Create ``out`` exclusively. Any existing path (prior full package, a
+    hard-killed partial package, or the retained probe directory) is refused
+    before any provenance, marker, or stage file is written."""
+    if out.exists() or out.is_symlink():
+        raise StaleOutputError(f"refusing package: output location {out} already exists; packages require a fresh run-unique directory")
+    out.parent.mkdir(parents=True, exist_ok=True)
+    try:
+        out.mkdir(exist_ok=False)
+    except FileExistsError as exc:  # lost a race with another writer
+        raise StaleOutputError(f"refusing package: output location {out} appeared concurrently") from exc
+    return out
+
+
+def package_files(out: Path) -> List[str]:
+    return sorted(str(p.relative_to(out)) for p in out.rglob("*") if p.is_file() or p.is_symlink())
+
+
+def manifest(out: Path, names: Sequence[str]) -> None:
+    """SHA-256 manifest of exactly the declared artifacts, never a directory glob."""
+    names = sorted(set(names) - {"SHA256SUMS"})
+    for name in names:
+        if not (out / name).is_file():
+            raise AssertionError(f"declared artifact missing: {name}")
+    (out / "SHA256SUMS").write_text("".join(f"{file_sha(out / n)}  {n}\n" for n in names))
 
 
 # ------------------------------------------------------------- branch table
@@ -656,18 +700,62 @@ def finalize_package(
         "d1_claim_boundary": D1_CLAIM,
         "artifacts": sorted(set(artifacts) | {"summary.json", "branch_outcome.json", "provenance.json"}),
     }
+    # Exact-contents gate: the directory may hold only what this sequence
+    # declared. Anything else (written by another process mid-run) makes the
+    # package STOP_INVALID, is named but never manifested, and every stage
+    # record is redacted because the location can no longer be trusted.
+    present = set(package_files(out))
+    declared = set(summary["artifacts"]) - {"summary.json"}  # type: ignore[arg-type]
+    unexpected = sorted(present - declared - {"summary.json", "SHA256SUMS"})
+    missing = sorted(declared - present)
+    if unexpected or missing:
+        reason = f"package directory contents differ from declared artifacts: unexpected={unexpected} missing={missing}"
+        branch = branch_outcome(None, incomplete=True)
+        summary["branch_outcome"] = branch
+        summary["package_summary"] = plain_language(branch, statuses)
+        summary["run_metadata"]["incomplete_reason"] = reason  # type: ignore[index]
+        summary["unexpected_artifacts"] = unexpected
+        summary["missing_artifacts"] = missing
+        summary["artifacts"] = sorted((declared - set(missing)) | {"summary.json"})
     problems = validate_package_summary(summary)
     if problems:
         raise AssertionError(f"package summary incomplete: {problems}")
     (out / "summary.json").write_text(json.dumps(summary, indent=2, sort_keys=True, default=_jsonable) + "\n")
     (out / "branch_outcome.json").write_text(json.dumps({"statuses": dict(statuses), **branch}, indent=2, sort_keys=True) + "\n")
-    manifest(out)
+    manifest(out, summary["artifacts"])  # type: ignore[arg-type]
     print(f"PACKAGE FROZEN branch_outcome={branch['code']} table_row={branch['table_row']}", flush=True)
     return summary
 
 
 # ------------------------------------------------------------- diagnostic
 Executer = Callable[[str, Callable[..., Dict[str, object]], Sequence[object]], Tuple[List[Dict[str, object]], Dict[str, object]]]
+
+
+def _provenance_text(provenance: Mapping[str, object]) -> str:
+    return json.dumps(provenance, indent=2, sort_keys=True, default=_jsonable) + "\n"
+
+
+def prepare_package_dir(out: Path, provenance: Mapping[str, object]) -> None:
+    """Accept only a fresh location, or one holding exactly this run's provenance.
+
+    - ``out`` absent: created exclusively, then this run's provenance written.
+    - ``out`` present: its contents must be exactly ``provenance.json`` and that
+      file must be byte-identical to this run's provenance (which carries a
+      unique ``written_at``). Any other content, such as a prior full package,
+      a hard-killed partial package, or a stray outcome file, is refused before
+      any marker, ledger, or stage file is written, and nothing is modified.
+    """
+    if not out.exists() and not out.is_symlink():
+        claim_fresh_run_dir(out)
+        (out / "provenance.json").write_text(_provenance_text(provenance))
+        return
+    if out.is_symlink() or not out.is_dir():
+        raise StaleOutputError(f"refusing package: {out} is not a fresh directory")
+    present = package_files(out)
+    if present != ["provenance.json"]:
+        raise StaleOutputError(f"refusing package: {out} already holds {present}; packages require a fresh run-unique directory")
+    if (out / "provenance.json").read_text() != _provenance_text(provenance):
+        raise StaleOutputError(f"refusing package: {out}/provenance.json belongs to a different run")
 
 
 def write_incomplete_marker(out: Path) -> None:
@@ -704,11 +792,18 @@ def run_diagnostic(
     from snn import stage2_diagnostic as diag
     from snn import stage2_diagnostic_stats as dstat
 
+    # Fail closed before anything is written: the package location must be
+    # fresh (or hold only this run's own provenance from preflight).
+    prepare_package_dir(out, provenance)
+
     seeds = tuple(diag.DIAGNOSTIC_SEEDS if seeds is None else seeds)
     n_boot = dstat.N_BOOT if n_boot is None else n_boot
     d1_identity = d1_identity or diag.d1_object_hashes
     condition_identity = condition_identity or diag.condition_object_hashes
+    artifacts: List[str] = []
+
     def _default_execute(stage, fn, jobs):
+        artifacts.append(f"{stage}.progress.jsonl")  # declared before the ledger exists
         return run_pool(fn, jobs, args.workers, stage, out)
 
     run_stage: Executer = execute or _default_execute  # type: ignore[assignment]
@@ -716,7 +811,6 @@ def run_diagnostic(
     run_meta: List[Dict[str, object]] = []
     stages: Dict[str, object] = {}
     statuses: Dict[str, object] = {"D1": None, "D2": None, "D3": None, "D4": None}
-    artifacts: List[str] = []
     identities: Dict[Tuple[str, bool], Dict[int, Mapping[str, Optional[str]]]] = {}
 
     def ids(task: str, drive: bool) -> Dict[int, Mapping[str, Optional[str]]]:
@@ -733,7 +827,6 @@ def run_diagnostic(
     def stop(reason: Optional[str] = None) -> Dict[str, object]:
         return finalize_package(out, provenance, stages, statuses, run_meta, artifacts, incomplete_reason=reason)
 
-    out.mkdir(parents=True, exist_ok=True)
     write_incomplete_marker(out)
     try:
         # ---- D1
@@ -824,18 +917,23 @@ def run_shakedown(out: Path) -> None:
         "effective_parameter_mismatches": params["mismatches"],
     }
     (out / "shakedown.json").write_text(json.dumps(result, indent=2, sort_keys=True) + "\n")
-    manifest(out)
+    manifest(out, ["provenance.json", "shakedown.json"])
     print(json.dumps(result, sort_keys=True))
 
 
 def main() -> None:
     args = parser().parse_args()
-    out = Path(args.out)
     if args.ss_probe:
+        # The retained collision probe lives at its own fixed, manifest-verified
+        # location and is read back by ``verified_probe``; it is never a package.
+        out = Path(args.out) if args.out else ROOT / "results_stage2_diagnostic"
         command = [sys.executable, str(ROOT / "tools" / "stage2_diagnostic_ss_probe.py"), "--out", str(out / "ss_probe.json")]
         subprocess.run(command, cwd=ROOT, check=True)
         return
     mode = "diagnostic" if args.run_diagnostic else "shakedown"
+    out = Path(args.out) if args.out else default_run_dir(mode)
+    if out.exists() or out.is_symlink():  # refuse before preflight writes anything
+        raise StaleOutputError(f"refusing package: output location {out} already exists; packages require a fresh run-unique directory")
     provenance = preflight(args, mode, out)
     if args.shakedown:
         run_shakedown(out)

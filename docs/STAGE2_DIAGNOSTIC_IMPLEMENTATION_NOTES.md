@@ -97,6 +97,54 @@ non-diagnostic shakedown, and the section 3.2 identity probe.
    stage record carry per-seed training-normalization and coefficient
    SHA-256 values. Tests: `test_r2_18` to `test_r2_21`.
 
+## Review round 3 corrections (Nora, comment on t_53bf2d59, candidate 94da118)
+
+1. Stale result-directory contamination. A package is now built only in a
+   fresh location. `--out` defaults to the run-unique
+   `results_stage2_diagnostic/runs/<mode>-<utc>-<head>-pid<pid>`. The CLI
+   refuses any existing `--out` before preflight writes anything, preflight
+   creates the directory exclusively (`claim_fresh_run_dir`), and
+   `run_diagnostic` -> `prepare_package_dir` accepts only an absent directory
+   or one holding exactly this run's own byte-identical `provenance.json`. Any
+   prior full package, hard-killed partial package, or stray outcome file is
+   refused with nothing written, removed, or manifested. Stage rows and
+   progress ledgers are created with exclusive-create, so they never overwrite
+   a file. `manifest(out, names)` hashes exactly the declared artifacts, not a
+   directory glob. `finalize_package` compares the directory with the declared
+   artifact list and turns any undeclared or missing file into `STOP_INVALID`,
+   naming the stray file but never manifesting it. The retained collision
+   probe stays at its fixed, manifest-verified location
+   (`results_stage2_diagnostic/ss_probe.json` + `SHA256SUMS`) and is read
+   through `verified_probe` as an explicit verified input; that directory can
+   never be used as a package location. Tests: `test_r3_01` to `test_r3_09`
+   (Nora's probe scenario, prior full package then D1 stop, in-process and real
+   `os._exit` hard kill then rerun, mid-run injection, ledger reuse).
+2. D1 label identity. The coordinator (`d1_object_hashes`) now derives
+   expected label hashes for both decoders and both splits by slicing the
+   regenerated input stream directly, independently of `d1_labels` and of the
+   worker: A is `x[2000:]` (`x_t`), the positive control is `x[1999:-1]`
+   (`x_(t-1)`). Rows carry `train_label_sha256` and `test_label_sha256` for
+   each decoder, and `validate_d1_row` requires exact equality. A coordinator
+   identity missing any label hash is itself INVALID. Tests: `test_r3_10`
+   (arbitrary distinct digest on each decoder/split, INVALID and stops after
+   D1), `test_r3_11` (swapped labels), `test_r3_12`, `test_r3_13` (hand-built
+   element-by-element labels on fixture seed 4242, the real producer agrees,
+   and a current-input "prior" label is refused).
+3. Condition-row schema semantics. `validate_condition_row` now enforces the
+   top-level `diagnostic == "D2/D3/D4"`, rejects undeclared row and evaluation
+   fields, requires strict bool/int/str types, and validates every evaluation
+   field: `scored` int equal to 10,000, `accuracy` a finite float count over
+   the scored steps, `weights_bitwise_constant is True`, `coin_reads` an int
+   in `[0, 12,000]` (one read per tie step over the evaluation window), and
+   int drive indices 200,000..211,999 or both `None` without drive.
+   Checkpoint rows additionally require `diagnostic == "D2"`, rates in
+   `[0, 1000]` Hz, `checkpoint_index` in range, min <= mean <= max weights,
+   and no undeclared fields. D1 rows and decoders reject undeclared fields.
+   Tests: `test_r3_14` (22 single mutations each force D3 INVALID and stop
+   before D4), `test_r3_15` (D2), `test_r3_16`/`test_r3_17` (D4), `test_r3_18`
+   (real short rows for both tasks, P/F0, with and without drive, still pass
+   the strict validator on fixture seed 4242).
+
 All readout thresholds are unchanged spec values; they are now read from one
 `THRESHOLDS` table that the preflight checks against the spec transcription.
 

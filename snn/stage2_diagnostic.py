@@ -486,6 +486,7 @@ def run_d1_seed(seed: int, *, n_train: int = PHASE_STEPS, n_test: int = EVAL_LEN
             "scored": int(correctness.size),
             "decoder_config": dict(D1_DECODER_CONFIG),
             "train_label_sha256": sha256(np.asarray(train[field][tr], dtype=np.int8)),
+            "test_label_sha256": sha256(np.asarray(test[field][te], dtype=np.int8)),
             "mean": fitted.mean.tolist(),
             "scale": fitted.scale.tolist(),
             "normalization_sha256": normalization_hash(fitted.mean, fitted.scale),
@@ -507,13 +508,40 @@ def coefficients_hash(coefficients: Sequence[Sequence[float]], intercept: Sequen
     return sha256(np.asarray(coefficients, dtype=np.float64), np.asarray(intercept, dtype=np.float64))
 
 
-def d1_object_hashes(seed: int) -> Dict[str, str]:
-    """Coordinator-side D1 identities, constructed without a network transition."""
+def d1_object_hashes(seed: int, *, n_train: int = PHASE_STEPS, n_test: int = EVAL_LEN) -> Dict[str, str]:
+    """Coordinator-side D1 identities, constructed without a network transition.
+
+    Expected label hashes are derived here by direct slicing of the regenerated
+    input stream, independently of ``d1_labels`` and of the worker: the A label
+    on scored rows t>=2000 is ``x_t`` (``x[2000:]``) and the positive-control
+    label is the prior input ``x_(t-1)`` (``x[1999:-1]``). The package
+    validator requires the stored decoder label hashes to equal these exactly
+    (spec 4.3, section 11 item 5). Keyword lengths are for short construction
+    tests only; the runner always uses the spec defaults.
+    """
+    x_train = np.ascontiguousarray(a_stream(seed, True, n_train), dtype=np.int8)
+    x_test = np.ascontiguousarray(a_stream(seed, False, n_test), dtype=np.int8)
+    w = D1_WARMUP
     return {
         "initial_weights_sha256": sha256(*initial_weights(seed)),
-        "train_input_hash": sha256(a_stream(seed, True)),
-        "test_input_hash": sha256(a_stream(seed, False)),
+        "train_input_hash": sha256(x_train),
+        "test_input_hash": sha256(x_test),
+        "A_train_label_sha256": sha256(np.ascontiguousarray(x_train[w:])),
+        "A_test_label_sha256": sha256(np.ascontiguousarray(x_test[w:])),
+        "positive_prior_train_label_sha256": sha256(np.ascontiguousarray(x_train[w - 1 : -1])),
+        "positive_prior_test_label_sha256": sha256(np.ascontiguousarray(x_test[w - 1 : -1])),
     }
+
+
+D1_IDENTITY_FIELDS = (
+    "initial_weights_sha256",
+    "train_input_hash",
+    "test_input_hash",
+    "A_train_label_sha256",
+    "A_test_label_sha256",
+    "positive_prior_train_label_sha256",
+    "positive_prior_test_label_sha256",
+)
 
 
 # ----------------------------------------------------------- D1 validation
@@ -538,6 +566,7 @@ D1_DECODER_FIELDS = (
     "scored",
     "decoder_config",
     "train_label_sha256",
+    "test_label_sha256",
     "mean",
     "scale",
     "normalization_sha256",
@@ -584,6 +613,9 @@ def validate_d1_row(
     if missing:
         v.append(f"{tag}: missing field(s) {missing}")
         return v
+    unknown = sorted(set(row) - set(D1_ROW_FIELDS) - {"status", "worker_pid"}, key=str)
+    if unknown:
+        v.append(f"{tag}: undeclared field(s) {unknown}")
     if row["diagnostic"] != "D1":
         v.append(f"{tag}: diagnostic label {row['diagnostic']!r}")
     if not isinstance(seed, int) or isinstance(seed, bool):
@@ -598,6 +630,9 @@ def validate_d1_row(
     if expected is None:
         v.append(f"{tag}: no coordinator identity supplied")
     else:
+        absent = [k for k in D1_IDENTITY_FIELDS if not _is_hash(expected.get(k))]
+        if absent:
+            v.append(f"{tag}: coordinator identity lacks {absent}")
         for k in ("initial_weights_sha256", "train_input_hash", "test_input_hash"):
             if row[k] != expected.get(k):
                 v.append(f"{tag}: {k} differs from coordinator identity")
@@ -620,6 +655,9 @@ def validate_d1_row(
         if dmissing:
             v.append(f"{dtag}: missing field(s) {dmissing}")
             continue
+        dunknown = sorted(set(d) - set(D1_DECODER_FIELDS), key=str)
+        if dunknown:
+            v.append(f"{dtag}: undeclared field(s) {dunknown}")
         if not _finite_unit(d["accuracy"]):
             v.append(f"{dtag}: accuracy is not a finite float in [0,1]")
         elif abs(d["accuracy"] * test_rows - round(d["accuracy"] * test_rows)) > 1e-6:
@@ -631,8 +669,13 @@ def validate_d1_row(
         config = d["decoder_config"]
         if not isinstance(config, Mapping) or dict(config) != D1_DECODER_CONFIG:
             v.append(f"{dtag}: decoder configuration differs from spec 4.4")
-        if not _is_hash(d["train_label_sha256"]):
-            v.append(f"{dtag}: train_label_sha256 is not a SHA-256 hex digest")
+        for split in ("train", "test"):
+            key = f"{split}_label_sha256"
+            if not _is_hash(d[key]):
+                v.append(f"{dtag}: {key} is not a SHA-256 hex digest")
+            elif expected is not None and d[key] != expected.get(f"{name}_{key}"):
+                # A: x_t on scored rows; positive_prior: x_(t-1). Derived independently by the coordinator.
+                v.append(f"{dtag}: {key} differs from coordinator-derived {'x_t' if name == 'A' else 'x_(t-1)'} label identity")
         mean_ok = _finite_vector(d["mean"], D1_FEATURE_DIM)
         scale_ok = _finite_vector(d["scale"], D1_FEATURE_DIM)
         if not (mean_ok and scale_ok):
@@ -799,6 +842,9 @@ def validate_checkpoint_row(row: Mapping[str, object]) -> None:
     missing = [k for k in CHECKPOINT_FIELDS if k not in row]
     if missing:
         raise CheckpointSchemaError(f"missing field(s): {', '.join(missing)}")
+    unknown = sorted(set(row) - set(CHECKPOINT_FIELDS), key=str)
+    if unknown:
+        raise CheckpointSchemaError(f"undeclared field(s): {', '.join(map(str, unknown))}")
     ints = ("seed", "checkpoint_index", "step_index", "w1_lower_hits", "w1_upper_hits", "w2_lower_hits", "w2_upper_hits")
     for k in ints:
         if not isinstance(row[k], int) or isinstance(row[k], bool):
@@ -822,8 +868,22 @@ def validate_checkpoint_row(row: Mapping[str, object]) -> None:
     )
     if any(not isinstance(row[k], float) or not math.isfinite(row[k]) for k in floats):
         raise CheckpointSchemaError("non-finite or non-float numeric field")
+    if row["diagnostic"] != "D2":
+        raise CheckpointSchemaError(f"checkpoint diagnostic label {row['diagnostic']!r}, expected 'D2'")
+    if not isinstance(row["condition"], str):
+        raise CheckpointSchemaError("checkpoint condition is not a string")
+    if not 0 <= row["checkpoint_index"] < N_CHECKPOINTS:
+        raise CheckpointSchemaError("checkpoint_index out of range")
+    # Rates are spike counts per 1 ms step over a 1,000-step window, in Hz.
+    if any(not 0.0 <= row[k] <= 1000.0 for k in ("hidden_rate_hz", "output_rate_hz_O1", "output_rate_hz_O0", "output_layer_rate_hz")):
+        raise CheckpointSchemaError("rate out of range [0, 1000] Hz")
     if not 0.0 <= row["both_silent_fraction"] <= 1.0:
         raise CheckpointSchemaError("both_silent_fraction out of range")
+    for layer in ("w1", "w2"):
+        lo, mean, hi = row[f"{layer}_min"], row[f"{layer}_mean"], row[f"{layer}_max"]
+        tol = 1e-9 * max(1.0, abs(lo), abs(hi))  # float mean of equal values may round by an ulp
+        if not (lo <= hi and lo - tol <= mean <= hi + tol):
+            raise CheckpointSchemaError(f"{layer} min/mean/max ordering violated")
     limits = {"w1_lower_hits": 40, "w1_upper_hits": 40, "w2_lower_hits": 40, "w2_upper_hits": 40}
     if any(not 0 <= row[k] <= hi for k, hi in limits.items()):
         raise CheckpointSchemaError("bound hit count out of range")
