@@ -1,0 +1,199 @@
+rate/mstdp seed=0 plastic=True success=True margin=+126 corr=0.37131986561010194 identical=True core=257s
+rate/mstdp seed=0 plastic=False success=False margin=-32 corr=None identical=True core=227s
+rate/mstdp seed=1 plastic=True success=True margin=+152 corr=0.4011144112436805 identical=True core=255s
+rate/mstdp seed=1 plastic=False success=False margin=-14 corr=None identical=True core=226s
+rate/mstdp seed=2 plastic=True success=True margin=+92 corr=0.38212271872859777 identical=True core=255s
+rate/mstdp seed=2 plastic=False success=False margin=-46 corr=None identical=True core=210s
+rate/mstdp seed=3 plastic=True success=True margin=+146 corr=0.38635691156007174 identical=True core=251s
+rate/mstdp seed=3 plastic=False success=False margin=-56 corr=None identical=True core=221s
+rate/mstdp seed=4 plastic=True success=True margin=+74 corr=0.409850466299677 identical=True core=242s
+rate/mstdp seed=4 plastic=False success=False margin=-88 corr=None identical=True core=220s
+rate/mstdp seed=5 plastic=True success=True margin=+88 corr=0.35479000837698743 identical=True core=244s
+rate/mstdp seed=5 plastic=False success=False margin=-62 corr=None identical=True core=216s
+rate/mstdp seed=6 plastic=True success=True margin=+164 corr=0.3423883449226754 identical=True core=239s
+rate/mstdp seed=6 plastic=False success=False margin=-18 corr=None identical=True core=214s
+rate/mstdp seed=7 plastic=True success=True margin=+142 corr=0.40922507915511486 identical=True core=239s
+rate/mstdp seed=7 plastic=False success=False margin=-32 corr=None identical=True core=216s
+rate/mstdp seed=8 plastic=True success=True margin=+118 corr=0.3107028921189648 identical=True core=239s
+rate/mstdp seed=8 plastic=False success=False margin=-52 corr=None identical=True core=214s
+rate/mstdp seed=9 plastic=True success=True margin=+130 corr=0.3587115200667521 identical=True core=240s
+rate/mstdp seed=9 plastic=False success=False margin=-60 corr=None identical=True core=213s
+rate/mstdp seed=10 plastic=True success=True margin=+62 corr=0.3096350537027298 identical=True core=235s
+rate/mstdp seed=10 plastic=False success=False margin=-40 corr=None identical=True core=212s
+rate/mstdp seed=11 plastic=True success=True margin=+108 corr=0.35587709703060333 identical=True core=243s
+rate/mstdp seed=11 plastic=False success=False margin=+0 corr=None identical=True core=214s
+rate/mstdp seed=12 plastic=True success=True margin=+98 corr=0.3266982823330879 identical=True core=240s
+rate/mstdp seed=12 plastic=False success=False margin=-68 corr=None identical=True core=213s
+rate/mstdp seed=13 plastic=True success=True margin=+82 corr=0.3572072946266836 identical=True core=243s
+rate/mstdp seed=13 plastic=False success=False margin=-54 corr=None identical=True core=211s
+rate/mstdp seed=14 plastic=True success=True margin=+90 corr=0.3162423393113084 identical=True core=238s
+rate/mstdp seed=14 plastic=False success=False margin=-40 corr=None identical=True core=213s
+rate/mstdp seed=15 plastic=True success=True margin=+98 corr=0.3407090982920321 identical=True core=240s
+rate/mstdp seed=15 plastic=False success=False margin=-40 corr=None identical=True core=214s
+rate/mstdp seed=16 plastic=True success=True margin=+124 corr=0.4219829067706622 identical=True core=240s
+rate/mstdp seed=16 plastic=False success=False margin=-50 corr=None identical=True core=211s
+rate/mstdp seed=17 plastic=True success=True margin=+100 corr=0.38631986038765515 identical=True core=238s
+rate/mstdp seed=17 plastic=False success=False margin=-58 corr=None identical=True core=208s
+rate/mstdp seed=18 plastic=True success=True margin=+92 corr=0.3283679010306869 identical=True core=239s
+rate/mstdp seed=18 plastic=False success=False margin=-74 corr=None identical=True core=214s
+rate/mstdp seed=19 plastic=True success=True margin=+86 corr=0.3513684778405247 identical=True core=243s
+rate/mstdp seed=19 plastic=False success=False margin=-26 corr=None identical=True core=217s
+rate/mstdpet seed=0 plastic=True success=True margin=+100 corr=0.5736179273836893 identical=True core=242s
+rate/mstdpet seed=0 plastic=False success=False margin=-32 corr=None identical=True core=216s
+rate/mstdpet seed=1 plastic=True success=True margin=+108 corr=0.5764972647030382 identical=True core=240s
+rate/mstdpet seed=1 plastic=False success=False margin=-14 corr=None identical=True core=209s
+rate/mstdpet seed=2 plastic=True success=True margin=+92 corr=0.5125848068254815 identical=True core=234s
+rate/mstdpet seed=2 plastic=False success=False margin=-46 corr=None identical=True core=214s
+rate/mstdpet seed=3 plastic=True success=True margin=+96 corr=0.48954346832753 identical=True core=244s
+rate/mstdpet seed=3 plastic=False success=False margin=-56 corr=None identical=True core=219s
+rate/mstdpet seed=4 plastic=True success=True margin=+76 corr=0.5482181475788458 identical=True core=243s
+rate/mstdpet seed=4 plastic=False success=False margin=-88 corr=None identical=True core=216s
+rate/mstdpet seed=5 plastic=True success=True margin=+64 corr=0.5368285274955483 identical=True core=235s
+rate/mstdpet seed=5 plastic=False success=False margin=-62 corr=None identical=True core=212s
+rate/mstdpet seed=6 plastic=True success=True margin=+96 corr=0.40486336935571354 identical=True core=239s
+rate/mstdpet seed=6 plastic=False success=False margin=-18 corr=None identical=True core=213s
+rate/mstdpet seed=7 plastic=True success=True margin=+106 corr=0.5386475966051907 identical=True core=238s
+rate/mstdpet seed=7 plastic=False success=False margin=-32 corr=None identical=True core=215s
+rate/mstdpet seed=8 plastic=True success=True margin=+104 corr=0.4604539946380618 identical=True core=241s
+rate/mstdpet seed=8 plastic=False success=False margin=-52 corr=None identical=True core=216s
+rate/mstdpet seed=9 plastic=True success=True margin=+86 corr=0.5364869388763477 identical=True core=239s
+rate/mstdpet seed=9 plastic=False success=False margin=-60 corr=None identical=True core=212s
+rate/mstdpet seed=10 plastic=True success=True margin=+100 corr=0.47280302100271837 identical=True core=241s
+rate/mstdpet seed=10 plastic=False success=False margin=-40 corr=None identical=True core=214s
+rate/mstdpet seed=11 plastic=True success=True margin=+106 corr=0.5369561083517872 identical=True core=240s
+rate/mstdpet seed=11 plastic=False success=False margin=+0 corr=None identical=True core=213s
+rate/mstdpet seed=12 plastic=True success=True margin=+70 corr=0.41802617469076364 identical=True core=241s
+rate/mstdpet seed=12 plastic=False success=False margin=-68 corr=None identical=True core=208s
+rate/mstdpet seed=13 plastic=True success=True margin=+92 corr=0.49072412466551146 identical=True core=238s
+rate/mstdpet seed=13 plastic=False success=False margin=-54 corr=None identical=True core=216s
+rate/mstdpet seed=14 plastic=True success=True margin=+92 corr=0.5033903393820273 identical=True core=239s
+rate/mstdpet seed=14 plastic=False success=False margin=-40 corr=None identical=True core=213s
+rate/mstdpet seed=15 plastic=True success=False margin=-26 corr=0.37988796782255574 identical=True core=234s
+rate/mstdpet seed=15 plastic=False success=False margin=-40 corr=None identical=True core=210s
+rate/mstdpet seed=16 plastic=True success=True margin=+102 corr=0.5031713431251177 identical=True core=235s
+rate/mstdpet seed=16 plastic=False success=False margin=-50 corr=None identical=True core=209s
+rate/mstdpet seed=17 plastic=True success=True margin=+86 corr=0.5710145505924542 identical=True core=235s
+rate/mstdpet seed=17 plastic=False success=False margin=-58 corr=None identical=True core=213s
+rate/mstdpet seed=18 plastic=True success=True margin=+60 corr=0.378513801971192 identical=True core=241s
+rate/mstdpet seed=18 plastic=False success=False margin=-74 corr=None identical=True core=215s
+rate/mstdpet seed=19 plastic=True success=True margin=+108 corr=0.3840199280349986 identical=True core=239s
+rate/mstdpet seed=19 plastic=False success=False margin=-26 corr=None identical=True core=213s
+temporal/mstdp seed=0 plastic=True success=True margin=+34 corr=0.8867010843374852 identical=True core=220s
+temporal/mstdp seed=0 plastic=False success=False margin=-2 corr=None identical=True core=208s
+temporal/mstdp seed=1 plastic=True success=True margin=+14 corr=0.937947214799011 identical=True core=225s
+temporal/mstdp seed=1 plastic=False success=True margin=+12 corr=None identical=True core=206s
+temporal/mstdp seed=2 plastic=True success=True margin=+18 corr=0.9107351421442547 identical=True core=224s
+temporal/mstdp seed=2 plastic=False success=False margin=-2 corr=None identical=True core=202s
+temporal/mstdp seed=3 plastic=True success=True margin=+2 corr=0.9807441473907956 identical=True core=215s
+temporal/mstdp seed=3 plastic=False success=False margin=-2 corr=None identical=True core=204s
+temporal/mstdp seed=4 plastic=True success=True margin=+16 corr=0.9172208894654832 identical=True core=224s
+temporal/mstdp seed=4 plastic=False success=True margin=+10 corr=None identical=True core=207s
+temporal/mstdp seed=5 plastic=True success=True margin=+18 corr=0.8873584614071477 identical=True core=230s
+temporal/mstdp seed=5 plastic=False success=True margin=+10 corr=None identical=True core=208s
+temporal/mstdp seed=6 plastic=True success=True margin=+18 corr=0.85191132917663 identical=True core=228s
+temporal/mstdp seed=6 plastic=False success=True margin=+6 corr=None identical=True core=208s
+temporal/mstdp seed=7 plastic=True success=True margin=+4 corr=0.9623910363027263 identical=True core=227s
+temporal/mstdp seed=7 plastic=False success=True margin=+4 corr=None identical=True core=205s
+temporal/mstdp seed=8 plastic=True success=True margin=+22 corr=0.8825177659284965 identical=True core=221s
+temporal/mstdp seed=8 plastic=False success=True margin=+6 corr=None identical=True core=203s
+temporal/mstdp seed=9 plastic=True success=True margin=+52 corr=0.8502931294623632 identical=True core=232s
+temporal/mstdp seed=9 plastic=False success=True margin=+14 corr=None identical=True core=212s
+temporal/mstdp seed=10 plastic=True success=True margin=+6 corr=0.8937823592558306 identical=True core=228s
+temporal/mstdp seed=10 plastic=False success=True margin=+18 corr=None identical=True core=207s
+temporal/mstdp seed=11 plastic=True success=True margin=+24 corr=0.8297604705784872 identical=True core=222s
+temporal/mstdp seed=11 plastic=False success=False margin=+0 corr=None identical=True core=201s
+temporal/mstdp seed=12 plastic=True success=True margin=+10 corr=0.8714965118455982 identical=True core=222s
+temporal/mstdp seed=12 plastic=False success=True margin=+2 corr=None identical=True core=207s
+temporal/mstdp seed=13 plastic=True success=True margin=+26 corr=0.8752543813895284 identical=True core=228s
+temporal/mstdp seed=13 plastic=False success=True margin=+14 corr=None identical=True core=209s
+temporal/mstdp seed=14 plastic=True success=True margin=+12 corr=0.9131535959557242 identical=True core=231s
+temporal/mstdp seed=14 plastic=False success=True margin=+12 corr=None identical=True core=209s
+temporal/mstdp seed=15 plastic=True success=True margin=+36 corr=0.9263917170931104 identical=True core=225s
+temporal/mstdp seed=15 plastic=False success=True margin=+6 corr=None identical=True core=203s
+temporal/mstdp seed=16 plastic=True success=True margin=+14 corr=0.8929134738207014 identical=True core=224s
+temporal/mstdp seed=16 plastic=False success=True margin=+12 corr=None identical=True core=204s
+temporal/mstdp seed=17 plastic=True success=True margin=+18 corr=0.8124971728802489 identical=True core=222s
+temporal/mstdp seed=17 plastic=False success=True margin=+6 corr=None identical=True core=209s
+temporal/mstdp seed=18 plastic=True success=True margin=+6 corr=0.9286958218175082 identical=True core=224s
+temporal/mstdp seed=18 plastic=False success=True margin=+2 corr=None identical=True core=206s
+temporal/mstdp seed=19 plastic=True success=True margin=+16 corr=0.9438448735391506 identical=True core=227s
+temporal/mstdp seed=19 plastic=False success=True margin=+4 corr=None identical=True core=207s
+temporal/mstdpet seed=0 plastic=True success=True margin=+34 corr=0.6632131652388153 identical=True core=228s
+temporal/mstdpet seed=0 plastic=False success=False margin=-2 corr=None identical=True core=208s
+temporal/mstdpet seed=1 plastic=True success=True margin=+44 corr=0.6101418088314249 identical=True core=221s
+temporal/mstdpet seed=1 plastic=False success=True margin=+12 corr=None identical=True core=205s
+temporal/mstdpet seed=2 plastic=True success=True margin=+30 corr=0.7505607044687409 identical=True core=223s
+temporal/mstdpet seed=2 plastic=False success=False margin=-2 corr=None identical=True core=203s
+temporal/mstdpet seed=3 plastic=True success=True margin=+28 corr=0.7562946364347236 identical=True core=219s
+temporal/mstdpet seed=3 plastic=False success=False margin=-2 corr=None identical=True core=206s
+temporal/mstdpet seed=4 plastic=True success=True margin=+20 corr=0.6715396149286679 identical=True core=222s
+temporal/mstdpet seed=4 plastic=False success=True margin=+10 corr=None identical=True core=206s
+temporal/mstdpet seed=5 plastic=True success=True margin=+22 corr=0.7432853086500109 identical=True core=231s
+temporal/mstdpet seed=5 plastic=False success=True margin=+10 corr=None identical=True core=213s
+temporal/mstdpet seed=6 plastic=True success=True margin=+10 corr=0.7171843735169199 identical=True core=227s
+temporal/mstdpet seed=6 plastic=False success=True margin=+6 corr=None identical=True core=210s
+temporal/mstdpet seed=7 plastic=True success=True margin=+34 corr=0.7061997704010093 identical=True core=227s
+temporal/mstdpet seed=7 plastic=False success=True margin=+4 corr=None identical=True core=207s
+temporal/mstdpet seed=8 plastic=True success=True margin=+32 corr=0.7512265274449148 identical=True core=221s
+temporal/mstdpet seed=8 plastic=False success=True margin=+6 corr=None identical=True core=210s
+temporal/mstdpet seed=9 plastic=True success=True margin=+34 corr=0.5915161093910198 identical=True core=228s
+temporal/mstdpet seed=9 plastic=False success=True margin=+14 corr=None identical=True core=211s
+temporal/mstdpet seed=10 plastic=True success=True margin=+30 corr=0.7391452946182132 identical=True core=230s
+temporal/mstdpet seed=10 plastic=False success=True margin=+18 corr=None identical=True core=209s
+temporal/mstdpet seed=11 plastic=True success=True margin=+34 corr=0.7408440457099637 identical=True core=223s
+temporal/mstdpet seed=11 plastic=False success=False margin=+0 corr=None identical=True core=207s
+temporal/mstdpet seed=12 plastic=True success=True margin=+34 corr=0.7445027303203111 identical=True core=223s
+temporal/mstdpet seed=12 plastic=False success=True margin=+2 corr=None identical=True core=212s
+temporal/mstdpet seed=13 plastic=True success=True margin=+30 corr=0.698455653268404 identical=True core=229s
+temporal/mstdpet seed=13 plastic=False success=True margin=+14 corr=None identical=True core=211s
+temporal/mstdpet seed=14 plastic=True success=True margin=+30 corr=0.7433122403535688 identical=True core=229s
+temporal/mstdpet seed=14 plastic=False success=True margin=+12 corr=None identical=True core=213s
+temporal/mstdpet seed=15 plastic=True success=True margin=+20 corr=0.7573889466797178 identical=True core=228s
+temporal/mstdpet seed=15 plastic=False success=True margin=+6 corr=None identical=True core=211s
+temporal/mstdpet seed=16 plastic=True success=True margin=+32 corr=0.805737769451463 identical=True core=228s
+temporal/mstdpet seed=16 plastic=False success=True margin=+12 corr=None identical=True core=213s
+temporal/mstdpet seed=17 plastic=True success=True margin=+26 corr=0.7646885594652535 identical=True core=233s
+temporal/mstdpet seed=17 plastic=False success=True margin=+6 corr=None identical=True core=206s
+temporal/mstdpet seed=18 plastic=True success=True margin=+38 corr=0.7079449318914675 identical=True core=224s
+temporal/mstdpet seed=18 plastic=False success=True margin=+2 corr=None identical=True core=205s
+temporal/mstdpet seed=19 plastic=True success=True margin=+34 corr=0.6970859753646171 identical=True core=211s
+temporal/mstdpet seed=19 plastic=False success=True margin=+4 corr=None identical=True core=196s
+{
+  "rate_mstdp": {
+    "core_trained_successes": 20,
+    "core_frozen_successes": 0,
+    "G1_pass": true,
+    "G2_pass": true,
+    "G3a_pass": true,
+    "G3b_pass": true,
+    "GROUP_PASS": true
+  },
+  "rate_mstdpet": {
+    "core_trained_successes": 19,
+    "core_frozen_successes": 0,
+    "G1_pass": true,
+    "G2_pass": true,
+    "G3a_pass": true,
+    "G3b_pass": true,
+    "GROUP_PASS": true
+  },
+  "temporal_mstdp": {
+    "core_trained_successes": 20,
+    "core_frozen_successes": 16,
+    "G1_pass": true,
+    "G2_pass": true,
+    "G3a_pass": true,
+    "G3b_pass": true,
+    "GROUP_PASS": true
+  },
+  "temporal_mstdpet": {
+    "core_trained_successes": 20,
+    "core_frozen_successes": 16,
+    "G1_pass": true,
+    "G2_pass": true,
+    "G3a_pass": true,
+    "G3b_pass": true,
+    "GROUP_PASS": true
+  }
+}
+CORE_PASS True
