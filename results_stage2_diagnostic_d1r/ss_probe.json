@@ -1,0 +1,366 @@
+{
+  "base_probe_code_path": "tools/stage2_diagnostic_ss_probe.py",
+  "base_probe_code_sha256": "ab3dbac8a08fc7108b52a8963202145d4b8acb97ac6eba3720df5c4c21734f58",
+  "counts": {
+    "legacy_records": 704,
+    "legacy_unique_entropy_tuples": 698,
+    "legacy_unique_states": 698,
+    "new_records": 120,
+    "new_unique_entropy_tuples": 120,
+    "new_unique_states": 120
+  },
+  "decision": "PASS",
+  "generate_state_words": 8,
+  "identity_state_sha256": "78fb3a3a604e5e5617cb5bb224a95e9cbf8ea0b45c77484b476fe05ae14c8706",
+  "legacy_only_duplicate_count": 6,
+  "legacy_only_entropy_duplicate_groups": [
+    {
+      "key": [
+        20261001,
+        7,
+        1
+      ],
+      "members": [
+        {
+          "entropy": [
+            20261001,
+            7,
+            1
+          ],
+          "name": "legacy/object/seed=7/component=1"
+        },
+        {
+          "entropy": [
+            20261001,
+            7,
+            1
+          ],
+          "name": "legacy/bootstrap/k=1"
+        }
+      ]
+    },
+    {
+      "key": [
+        20261001,
+        7,
+        2
+      ],
+      "members": [
+        {
+          "entropy": [
+            20261001,
+            7,
+            2
+          ],
+          "name": "legacy/object/seed=7/component=2"
+        },
+        {
+          "entropy": [
+            20261001,
+            7,
+            2
+          ],
+          "name": "legacy/bootstrap/k=2"
+        }
+      ]
+    },
+    {
+      "key": [
+        20261001,
+        7,
+        3
+      ],
+      "members": [
+        {
+          "entropy": [
+            20261001,
+            7,
+            3
+          ],
+          "name": "legacy/object/seed=7/component=3"
+        },
+        {
+          "entropy": [
+            20261001,
+            7,
+            3
+          ],
+          "name": "legacy/bootstrap/k=3"
+        }
+      ]
+    },
+    {
+      "key": [
+        20261001,
+        7,
+        4
+      ],
+      "members": [
+        {
+          "entropy": [
+            20261001,
+            7,
+            4
+          ],
+          "name": "legacy/object/seed=7/component=4"
+        },
+        {
+          "entropy": [
+            20261001,
+            7,
+            4
+          ],
+          "name": "legacy/bootstrap/k=4"
+        }
+      ]
+    },
+    {
+      "key": [
+        20261001,
+        7,
+        5
+      ],
+      "members": [
+        {
+          "entropy": [
+            20261001,
+            7,
+            5
+          ],
+          "name": "legacy/object/seed=7/component=5"
+        },
+        {
+          "entropy": [
+            20261001,
+            7,
+            5
+          ],
+          "name": "legacy/bootstrap/k=5"
+        }
+      ]
+    },
+    {
+      "key": [
+        20261001,
+        7,
+        6
+      ],
+      "members": [
+        {
+          "entropy": [
+            20261001,
+            7,
+            6
+          ],
+          "name": "legacy/object/seed=7/component=6"
+        },
+        {
+          "entropy": [
+            20261001,
+            7,
+            6
+          ],
+          "name": "legacy/bootstrap/k=6"
+        }
+      ]
+    }
+  ],
+  "legacy_only_state_duplicate_groups": [
+    {
+      "key": [
+        102316032,
+        1765328211,
+        3107267286,
+        1697209402,
+        3069834080,
+        1545611947,
+        3100770737,
+        818661560
+      ],
+      "members": [
+        {
+          "entropy": [
+            20261001,
+            7,
+            3
+          ],
+          "name": "legacy/object/seed=7/component=3"
+        },
+        {
+          "entropy": [
+            20261001,
+            7,
+            3
+          ],
+          "name": "legacy/bootstrap/k=3"
+        }
+      ]
+    },
+    {
+      "key": [
+        1640050113,
+        486931131,
+        2189622799,
+        3703831112,
+        531065175,
+        3219478571,
+        3995352585,
+        1281559304
+      ],
+      "members": [
+        {
+          "entropy": [
+            20261001,
+            7,
+            4
+          ],
+          "name": "legacy/object/seed=7/component=4"
+        },
+        {
+          "entropy": [
+            20261001,
+            7,
+            4
+          ],
+          "name": "legacy/bootstrap/k=4"
+        }
+      ]
+    },
+    {
+      "key": [
+        219456194,
+        2415799837,
+        3064015908,
+        1750861536,
+        4119815209,
+        3058877457,
+        3898469880,
+        3060714786
+      ],
+      "members": [
+        {
+          "entropy": [
+            20261001,
+            7,
+            2
+          ],
+          "name": "legacy/object/seed=7/component=2"
+        },
+        {
+          "entropy": [
+            20261001,
+            7,
+            2
+          ],
+          "name": "legacy/bootstrap/k=2"
+        }
+      ]
+    },
+    {
+      "key": [
+        2384187345,
+        2939998645,
+        4055310344,
+        1899177406,
+        3045954615,
+        4146159048,
+        1962295465,
+        2180353752
+      ],
+      "members": [
+        {
+          "entropy": [
+            20261001,
+            7,
+            1
+          ],
+          "name": "legacy/object/seed=7/component=1"
+        },
+        {
+          "entropy": [
+            20261001,
+            7,
+            1
+          ],
+          "name": "legacy/bootstrap/k=1"
+        }
+      ]
+    },
+    {
+      "key": [
+        4154061164,
+        2786537559,
+        3347145517,
+        3892629899,
+        1855054916,
+        3467473181,
+        2121570248,
+        1704832466
+      ],
+      "members": [
+        {
+          "entropy": [
+            20261001,
+            7,
+            6
+          ],
+          "name": "legacy/object/seed=7/component=6"
+        },
+        {
+          "entropy": [
+            20261001,
+            7,
+            6
+          ],
+          "name": "legacy/bootstrap/k=6"
+        }
+      ]
+    },
+    {
+      "key": [
+        51872086,
+        3380592064,
+        3700031785,
+        1669046571,
+        3547588338,
+        2324326901,
+        3724971173,
+        869076813
+      ],
+      "members": [
+        {
+          "entropy": [
+            20261001,
+            7,
+            5
+          ],
+          "name": "legacy/object/seed=7/component=5"
+        },
+        {
+          "entropy": [
+            20261001,
+            7,
+            5
+          ],
+          "name": "legacy/bootstrap/k=5"
+        }
+      ]
+    }
+  ],
+  "new_entropy_collision_groups": [],
+  "new_state_collision_groups": [],
+  "new_vs_legacy_entropy_collisions": [],
+  "new_vs_legacy_state_collisions": [],
+  "numpy_version": "1.26.4",
+  "probe": "D1R",
+  "probe_code_path": "tools/stage2_diagnostic_d1r_ss_probe.py",
+  "probe_code_sha256": "67185d8cc33100157b93f4061ccec92bfe5f80e192c9b221d573c323f5e97b8f",
+  "reproduces_spec_section_3_3": true,
+  "schema_version": 1,
+  "seed_ranges_disjoint": true,
+  "seeds_new": [
+    2100,
+    2119
+  ],
+  "spec": "docs/STAGE2_DIAGNOSTIC_D1R_SPEC.md section 3.3"
+}
