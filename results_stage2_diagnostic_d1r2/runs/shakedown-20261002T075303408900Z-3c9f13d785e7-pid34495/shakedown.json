@@ -1,0 +1,51 @@
+{
+  "d1r2_seed": false,
+  "decoders_fitted": [
+    "pipeline"
+  ],
+  "effective_parameter_mismatches": [],
+  "effective_parameters_match_spec": true,
+  "item15_pipeline_reaches_0_99": true,
+  "item16_both_converged": true,
+  "item16_network_convergence_only": {
+    "A": {
+      "converged": true,
+      "n_iter": 1927,
+      "warnings": []
+    },
+    "network_positive": {
+      "converged": true,
+      "n_iter": 1610,
+      "warnings": []
+    }
+  },
+  "item16_no_accuracy_or_prediction_fields": true,
+  "lengths": {
+    "test_rows": 10000,
+    "test_stream": 12000,
+    "train_rows": 198000,
+    "train_stream": 200000
+  },
+  "mode": "shakedown",
+  "nesting_ok": true,
+  "network_decoders_fitted": [
+    "A",
+    "network_positive"
+  ],
+  "network_feature_dim": 460,
+  "note": "Construction checks on non-diagnostic fixture seed 4242 only. Pipeline is scored for item 15. The two network decoders are fit for convergence only for item 16; predict is never called and no network accuracy, correctness vector, or bound is computed or recorded.",
+  "pass": true,
+  "peak_rss_single_process_bytes": 2836508672,
+  "pipeline_converged": true,
+  "pipeline_feature_dim": 46,
+  "pipeline_heldout_accuracy": 1.0,
+  "pipeline_n_iter": [
+    26
+  ],
+  "reward_computed": false,
+  "row_valid_for_pipeline_only": true,
+  "row_violations": [],
+  "seed": 4242,
+  "wall_seconds": 465.47833919525146,
+  "weights_constant": true
+}
