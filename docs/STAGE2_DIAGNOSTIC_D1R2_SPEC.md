@@ -1,6 +1,6 @@
 # Stage 2 diagnostic D1R2: final D1 harness attempt (solver budget repair) specification
 
-**Status:** FROZEN CANDIDATE, document only. Two pre-freeze findings (effective solver ceiling; worst-case wall projection) were ruled by Amanda, `t_bbc93d9c`: both carried as disclosed in sections 6.1, 6.2, and 10, with no setting changed. No D1R2 construction run, seed, decoder fit, or datum may exist until Nora independently approves the frozen bytes, a separate implementation card is approved, and a separate run card authorizes execution.  
+**Status:** FROZEN CANDIDATE, document only. Two pre-freeze findings (effective solver ceiling; worst-case wall projection) were ruled by Amanda, `t_bbc93d9c`: both carried as disclosed in sections 6.1, 6.2, and 10, with no setting changed. Revised after Nora review round 2 (`t_aafbc69b`): the section 6.3 per-decoder schema is total (all three decoder slots on every row and every branch, every warning attributed), with consistent updates to sections 2, 6.2, 7, 11, and 12; no setting, threshold, seed, or rule changed. No D1R2 construction run, seed, decoder fit, or datum may exist until Nora independently approves the frozen bytes, a separate implementation card is approved, and a separate run card authorizes execution.  
 **Task/directive:** Project AIB Kanban `t_aafbc69b`; stored task-body SHA-256 (raw DB bytes) `77b60e90aa1e61f175336f9afe4c9d7cf0bb21ace57f2e60a1202a3a4d597bdd`.  
 **Governing proposal:** Amanda, `t_90a2f636`, `STAGE2_D1R2_NEXT_STEP_PROPOSAL.md`, SHA-256 `fd2988e4dbf16398f56b7b371981f08ee974af84866c8b15238c0baed7e32f80`.  
 **Triggering verdict:** Nora, `t_75929454`, APPROVE of D1R `INVALID`, branch `STOP_D1R_INVALID`, table row 1, package `results_stage2_diagnostic_d1r/runs/d1r-20261002T003314006433Z-a953291091d5-pid18595` at `34aae46`.  
@@ -46,7 +46,7 @@ L2 logistic regression with `C = 1.0` is strictly convex, so each fit has exactl
 | SeedSequence namespace component | `31` | `32`, for every D1R2 object (section 3.1) |
 | `max_iter` (all three decoders) | `2000` | `20000`, fixed before data (section 6.1) |
 | Convergence rule | `n_iter < 2000`; ConvergenceWarning raised as error | `n_iter < 20000` **and** no `ConvergenceWarning`, else `INVALID` (section 6.2). No fallback solver, warm start, retry, or `tol` change |
-| Per-decoder diagnostics | error text only; failing decoder not identified | every row, including on the `INVALID` branch, records per decoder (`pipeline`, `network_positive`, `A`): `n_iter`, converged flag, and whether that decoder raised a warning, with its category and first two message lines (section 6.3) |
+| Per-decoder diagnostics | error text only; failing decoder not identified | every one of the 20 rows, on every branch including `INVALID`, carries all three decoder slots (`pipeline`, `network_positive`, `A`), never omitted: attempted and completed flags, `stop_reason`, nullable `n_iter`, converged flag, a `ConvergenceWarning` flag, every captured warning attributed to its decoder (category, phase, first two message lines), and any fit error (section 6.3) |
 | Stop-loss | ban on repair only after row 3 | any D1R2 `INVALID` or `INVALID_PIPELINE` closes harness repair; D1 returns to Kendrick; no D1R3 (section 9) |
 | Resource section | 2d9efd8 section 10 | re-estimated for the new budget, including the every-fit-capped worst case (section 10) |
 | Shakedown | 2d9efd8 section 11 items 1-15 | carried, plus proposed item 16, a convergence-only check on fixture seed `4242` (section 11) |
@@ -124,27 +124,44 @@ No `maxfun` argument is added; the decoder call is 2d9efd8 section 2 with only `
 
 ### 6.2 Convergence rule
 
-A decoder fit is converged iff `n_iter < 20000` **and** the fit raised no `ConvergenceWarning`. Otherwise that decoder is non-converged, the seed is `INVALID`, and D1R2 is `INVALID` under section 6.3's first bullet and section 9 row 1.
+A decoder fit is converged iff `n_iter < 20000` **and** the fit raised no `ConvergenceWarning`. Otherwise that decoder is non-converged, the seed is `INVALID`, and D1R2 is `INVALID` under the first bullet of the status rule (2d9efd8 section 6.3, restated in section 6 above) and section 9 row 1.
 
-Both clauses are required. In the installed stack a fit can stop on scipy's function-evaluation limit with `n_iter < 20000`; that stop sets lbfgs status 1 and raises `ConvergenceWarning` ("STOP: TOTAL NO. OF F,G EVALUATIONS EXCEEDS LIMIT"), so only the warning clause catches it (section 6.1, effective ceiling).
+Both clauses are required. In the installed stack a fit can stop on scipy's function-evaluation limit with `n_iter < 20000`; that stop sets lbfgs status 1 and raises `ConvergenceWarning` ("STOP: TOTAL NO. OF F,G EVALUATIONS EXCEEDS LIMIT"), so only the warning clause catches it (section 6.1, effective ceiling). A fit that does not complete (exception, termination, or never attempted) has no `n_iter` and is non-converged.
 
 No fallback solver, no warm start, no retry, no `tol` change, no change of `C`, no rescaling beyond the frozen standardization, no seed substitution. A non-converged fit is never re-run.
 
-### 6.3 Per-decoder convergence diagnostics (every row, every branch)
+### 6.3 Per-decoder convergence diagnostics (every row, every branch, all three slots)
 
-Each worker fits all three decoders for its seed even if an earlier decoder fails to converge (a `ConvergenceWarning` is captured and recorded, not raised before the remaining decoders are fitted). Each row then carries, for each of `pipeline`, `network_positive`, `A`:
+**Totality.** The package always contains exactly 20 rows, one per seed `2200..2219`, on every branch including `INVALID` and `INVALID_PIPELINE`. Every row always contains exactly three decoder slots, keyed `pipeline`, `network_positive`, `A`. No slot is ever omitted, whatever happened to the seed: convergence failure, fit exception, upstream exception, invariant failure, worker crash, six-hour wall stop, RSS abort, or a seed never started. A missing row, a missing slot, or a slot that fails this schema is itself a section 7 item 6 failure (`INVALID`, row 1).
 
-- `n_iter` (integer);
-- `converged` (boolean, section 6.2 rule);
-- `convergence_warning` (boolean), and if true `warning_category` and the first two lines of the warning message (these lines name the lbfgs stop reason, iterations versus function evaluations).
+**Fit order and continuation.** Each worker fits the decoders in the 2d9efd8 order (`pipeline`, `network_positive`, `A`). A `ConvergenceWarning` is captured and recorded, never raised. An exception inside one decoder's standardization or fit is caught and recorded in that decoder's slot, and the remaining decoders are still attempted whenever their features and labels were built. Invariant checks never skip a decoder fit. A decoder is not attempted only when its inputs could not be built (an upstream exception in stream generation, feature capture, or label construction) or the worker stopped before reaching it.
 
-These fields are outcome-free and are retained on every branch, including `INVALID` and `INVALID_PIPELINE`. On the `INVALID` branch they are the only per-decoder fields written: accuracy, lower bound, coefficients, intercept, coefficient hash, and any readout stay redacted exactly as by the 2d9efd8 outcome-free finalizer. The progress ledger stays outcome-free and may carry these convergence fields. A seed that fails for a reason other than convergence (exception, invariant) records the exception text and the convergence fields of every decoder fitted before the failure.
+**Slot schema.** Each of the three slots has exactly these fields:
+
+| Field | Type | Rule |
+|---|---|---|
+| `attempted` | boolean | true iff standardization for this decoder was entered |
+| `completed` | boolean | true iff `fit` returned; `completed` implies `attempted` |
+| `stop_reason` | enum | exactly one of, first applicable wins: `converged`; `iteration_limit` (`n_iter >= 20000`, or a `ConvergenceWarning` naming "ITERATIONS REACHED LIMIT"); `evaluation_limit` (a `ConvergenceWarning` naming "F,G EVALUATIONS EXCEEDS LIMIT"); `other_convergence_warning` (any other `ConvergenceWarning`); `fit_exception` (exception in this decoder's standardization or fit); `not_attempted_upstream_failure`; `terminated_wall_stop`; `terminated_rss_abort`; `worker_lost` (worker died without writing its row); `seed_not_started` (wall stop or RSS abort before the seed began) |
+| `n_iter` | integer or null | `int(n_iter_[0])` when `completed`; null otherwise |
+| `converged` | boolean | section 6.2: true iff `completed`, `n_iter < 20000`, and no `ConvergenceWarning` in this slot; false in every other case, including every slot that did not complete |
+| `convergence_warning` | boolean | true iff `warnings` contains an entry whose category is `sklearn.exceptions.ConvergenceWarning` or a subclass |
+| `warnings` | list, possibly empty | every warning captured while this decoder's scope was active, in emission order, each as `{category, phase, message_head}`: `category` is the fully qualified class name; `phase` is one of `standardize`, `fit`, `predict_score`; `message_head` is the first two lines of the message, each truncated to 300 characters. Capture uses `warnings.catch_warnings(record=True)` with `simplefilter("always")`, so repeats are not suppressed |
+| `fit_error` | object or null | for `fit_exception`: `{exception_type, phase, message_head}` with the same truncation; for `terminated_*` and `worker_lost`: `{exception_type: null, phase: null, message_head: <coordinator stop text>}`; null otherwise |
+
+**Attribution.** A decoder's scope opens immediately before its standardization and closes after its scoring, so every warning raised by that decoder's standardization, fit, or predict-and-score is attributed to that decoder and only that decoder. A warning raised outside all three scopes (stream generation, feature capture, label construction) is recorded in the row-level list `non_decoder_warnings`, with the same entry shape and `phase` one of `streams`, `capture`, `labels`. Every warning is therefore attributed either to exactly one decoder or explicitly to no decoder.
+
+**Validity.** The validity rule is section 6.2 only: a slot is valid iff `converged` is true. A warning of any category other than `ConvergenceWarning` is recorded and attributed but does not by itself change validity; the other section 7 invariants (for example item 5, finiteness) still apply independently. Any slot with `converged = false`, for any reason, makes the seed and D1R2 `INVALID`.
+
+**Rows the worker cannot write.** The worker appends outcome-free ledger events when each decoder scope opens and closes, carrying that slot's schema fields (never an accuracy, bound, prediction, coefficient, or intercept). If a worker dies, or the coordinator ends the run at the six-hour stop or the 12 GiB abort, the coordinator writes the missing rows from the ledger: slots closed in the ledger carry their ledger fields; the slot open at termination has `attempted = true`, `completed = false`, `n_iter = null`, `converged = false`, and `stop_reason` `terminated_wall_stop`, `terminated_rss_abort`, or `worker_lost`; slots never opened have `attempted = false`, `completed = false`, `n_iter = null`, `converged = false`, and `stop_reason` `not_attempted_upstream_failure`, the matching `terminated_*` or `worker_lost` reason, or `seed_not_started`. Each row records `row_source` (`worker` or `coordinator_from_ledger`) and a row-level `seed_error` (`{exception_type, phase, message_head}` for an upstream exception, else null).
+
+**Outcome redaction.** All fields above are outcome-free and are retained on every branch, including `INVALID` and `INVALID_PIPELINE`. On the `INVALID` branch they are the only per-decoder fields written: accuracy, scored predictions, correctness vector, lower bound, coefficients, intercept, coefficient hash, and any readout stay redacted exactly as by the 2d9efd8 outcome-free finalizer. In addition, on the `INVALID` branch `message_head` is set to null for every `warnings` or `fit_error` entry with `phase = predict_score` (category, phase, and exception type are kept), so no text produced while scoring held-out rows reaches disk. The progress ledger stays outcome-free and carries only these schema fields.
 
 ## 7. Integrity invariants (any failure is INVALID)
 
 2d9efd8 section 7 items 1-8, with seeds `2200..2219`, and item 6 replaced by:
 
-6. All three decoders converged under section 6.2 (`n_iter < 20000` and no `ConvergenceWarning`) in 20/20 seeds, and every row carries the section 6.3 fields for all three decoders.
+6. Exactly 20 rows are present, each with all three section 6.3 decoder slots (`pipeline`, `network_positive`, `A`) present and schema-valid, never omitted; and all 60 slots have `converged = true` under section 6.2 (`completed`, `n_iter < 20000`, and no `ConvergenceWarning`). A missing row, a missing slot, a schema-invalid slot, or any slot with `converged = false` is `INVALID`.
 
 ## 8. Run order and stop conditions
 
@@ -193,13 +210,13 @@ Result package under 25 MiB as 2d9efd8 section 10. Actual worker count, wall tim
 2d9efd8 section 11 items 1-15 carried with namespace 32 and seeds `2200..2219`. Item 13 adds the D1R implementation and its tests to "remain unchanged", plus the 2d9efd8 hash pin. Additional required construction tests:
 
 - 11a. Every decoder is constructed with `max_iter=20000` and every other argument as 2d9efd8 section 2.
-- 11b. On synthetic fixtures (no D1R2 seed): a fit that stops at the iteration limit, and a fit that stops at the function-evaluation limit with `n_iter < 20000`, are each recorded non-converged and make the seed `INVALID`; all three decoders are still fitted and their section 6.3 fields recorded; no outcome field reaches disk on the `INVALID` branch.
+- 11b. On synthetic fixtures (no D1R2 seed): a fit that stops at the iteration limit, and a fit that stops at the function-evaluation limit with `n_iter < 20000`, are each recorded non-converged with the matching `stop_reason` and make the seed `INVALID`; all three decoders are still fitted and all three section 6.3 slots recorded; a fit exception in one decoder yields `fit_exception` in that slot while the other two are still attempted; an upstream exception yields three `not_attempted_upstream_failure` slots; a simulated worker loss, wall stop, and RSS abort each yield 20 rows with three schema-valid slots each via `coordinator_from_ledger`; a non-`ConvergenceWarning` warning (for example a `RuntimeWarning`) emitted inside one decoder's scope is attributed to that decoder only, and one emitted during capture lands in `non_decoder_warnings`; a row missing any slot fails section 7 item 6; no outcome field, and no `predict_score` message text, reaches disk on the `INVALID` branch.
 - 11c. The branch table reaches every row on synthetic row fixtures, and rows 1 and 2 carry the stop-loss action text.
 
 **Proposed item 16, for Nora to accept or reject (not in force unless accepted):** a convergence-only check on the non-diagnostic fixture seed `4242`, at full 2d9efd8 section 2 lengths, fitting the two 460-dim network decoders with the D1R2 settings and recording only `n_iter`, converged flag, and warnings. Network accuracies are not computed (no `predict` on test rows, no correctness vector, no bound) and not recorded. Pass = both converge under section 6.2. If it fails, block to Amanda; the cap is never raised again. Rationale: it is the only pre-data check that the 460-dim fits converge in practice at this budget. Cost: about two 460-dim fits on one seed. Residual risk for Nora to weigh: seed 4242 uses the same frozen r3 architecture, so a failure would be informative about convergence but carries no accuracy.
 
 ## 12. Result package, claim boundary, no-oracle statement, and next gate
 
-2d9efd8 section 12, with the section 6.3 per-decoder convergence fields added to every row on every branch, effective parameters including `max_iter = 20000` (nominal), the effective scipy L-BFGS-B `maxfun = 15000` (default, not passed by scikit-learn), scikit-learn `1.7.2`, scipy `1.15.3` (the versions this spec's effective-ceiling statement was verified against; the run records the installed versions), and the branch code with stop-loss action text. No-oracle statement and claim boundary unchanged.
+2d9efd8 section 12, with exactly 20 rows on every branch, each carrying all three section 6.3 decoder slots (the full slot schema, never omitted), `row_source`, `seed_error`, and `non_decoder_warnings`, effective parameters including `max_iter = 20000` (nominal), the effective scipy L-BFGS-B `maxfun = 15000` (default, not passed by scikit-learn), scikit-learn `1.7.2`, scipy `1.15.3` (the versions this spec's effective-ceiling statement was verified against; the run records the installed versions), and the branch code with stop-loss action text. No-oracle statement and claim boundary unchanged.
 
 Next gate: Nora independently reviews the frozen document for numeric closure, preservation of every carried 2d9efd8 element, the convergence rule and diagnostics, the stop-loss, the collision probe, the resource projection, and proposed item 16. This document authorizes no run.
