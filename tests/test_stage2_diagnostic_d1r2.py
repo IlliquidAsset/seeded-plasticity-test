@@ -926,6 +926,10 @@ def _warning_capture(x, w1, w2):
     return _syn_capture(x, w1, w2)
 
 
+class DerivedSolverWarning(ConvergenceWarning):
+    """ConvergenceWarning subclass whose class name does not end in ``ConvergenceWarning`` (spec 6.3 subclass rule)."""
+
+
 class FakeLR:
     """Synthetic decoder model with scripted solver outcomes (fixture only)."""
 
@@ -948,6 +952,8 @@ class FakeLR:
             warnings.warn(ConvergenceWarning(EVAL_TEXT))
         if m == "other_cw":
             warnings.warn(ConvergenceWarning("synthetic other convergence warning"))
+        if m == "derived_cw":
+            warnings.warn(DerivedSolverWarning("synthetic derived convergence warning"))
         self.coef_ = np.zeros((1, z.shape[1]))
         self.coef_[0, 0] = 1.0
         self.intercept_ = np.zeros(1)
@@ -1391,3 +1397,111 @@ def test_d1r2_11_16_committed_shakedown_record_is_fixture_only_and_convergence_o
         for line in (run / "SHA256SUMS").read_text().splitlines():
             digest, name = line.split("  ", 1)
             assert hashlib.sha256((run / name).read_bytes()).hexdigest() == digest
+
+
+# 11b (Nora round 1 correction): spec 6.3 "ConvergenceWarning or a subclass" uses real issubclass semantics.
+def test_d1r2_11b_convergence_warning_subclass_with_other_name_is_non_converged_worker_and_ledger(tmp_path):
+    assert issubclass(DerivedSolverWarning, ConvergenceWarning) and not DerivedSolverWarning.__name__.endswith("ConvergenceWarning")
+    assert d1r2.is_convergence_category(DerivedSolverWarning) is True
+    assert d1r2.is_convergence_category(RuntimeWarning) is False
+    category = f"{DerivedSolverWarning.__module__}.{DerivedSolverWarning.__qualname__}"
+    assert d1r2.classify_category_name(category) is True
+    assert d1r2.classify_category_name("builtins.RuntimeWarning") is False
+    assert d1r2.classify_category_name("sklearn.exceptions.ConvergenceWarning") is True
+    assert d1r2.classify_category_name("no_such_module_x.Unknown") is None
+
+    # Worker-written slot (Nora's reproduction: subclass warning, n_iter_ = [1], seed ID 9001).
+    class OneIter(FakeLR):
+        def fit(self, z, y):
+            super().fit(z, y)
+            self.n_iter_ = np.array([1], dtype=np.int32)
+            return self
+
+    ledger = tmp_path / "worker.jsonl"
+    g = np.random.default_rng(0)
+    xtr, ytr = g.random((200, 4)), (g.random(200) > 0.5).astype(np.int8)
+    slot, _, _ = d1r2.fit_decoder_slot("network_positive", xtr, ytr, xtr[:50], ytr[:50], 9001, ledger_path=ledger,
+                                       model_factory=lambda **kw: OneIter("derived_cw", **kw))
+    assert slot["warnings"] == [{"category": category, "phase": "fit", "message_head": "synthetic derived convergence warning"}]
+    assert slot["n_iter"] == 1 and slot["completed"] is True
+    assert slot["convergence_warning"] is True and slot["converged"] is False
+    assert slot["stop_reason"] == "other_convergence_warning"
+    assert d1r2.validate_slot("network_positive", slot) == []
+    # The exact mislabel Nora observed is rejected by the validator.
+    mislabel = {**copy.deepcopy(slot), "stop_reason": "converged", "converged": True, "convergence_warning": False}
+    assert d1r2.validate_slot("network_positive", mislabel)
+    # The classification is durable: the ledger warning event carries the issubclass result.
+    events = d1r2.read_ledger(ledger)[0]
+    warn_events = [e for e in events if e.get("event") == "warning"]
+    assert len(warn_events) == 1 and warn_events[0]["category"] == category and warn_events[0]["convergence_warning"] is True
+    close = [e for e in events if e.get("event") == "scope_close"][0]
+    assert close["slot"]["convergence_warning"] is True and close["slot"]["stop_reason"] == "other_convergence_warning"
+
+    # Through the full producer and package: the subclass makes the seed and D1R2 INVALID.
+    row = _produce(9001, "ok", "derived_cw", "ok", ledger=tmp_path / "row.jsonl")
+    s = row["decoder_slots"]["network_positive"]
+    assert s["stop_reason"] == "other_convergence_warning" and s["converged"] is False and s["convergence_warning"] is True
+    assert d1r2.validate_row_schema(row) == []
+    assert d1r2.validate_ledger_match(row, d1r2.read_ledger(tmp_path / "row.jsonl")[0]) == []
+    assert any("non-converged" in v for v in _short_violations(row))
+    summary, out, rows = _run_ledger_pkg(tmp_path, "derived_pkg", LEDGER_SEEDS, modes={LEDGER_SEEDS[0]: ("ok", "derived_cw", "ok")})
+    assert summary["status"] == "INVALID" and summary["branch"]["code"] == "STOP_D1R2_INVALID" and summary["branch"]["table_row"] == 1
+    assert rows[0]["row_source"] == "worker" and rows[0]["decoder_slots"]["network_positive"]["stop_reason"] == "other_convergence_warning"
+    _assert_no_outcome_on_disk(out)
+
+    # Coordinator reconstruction uses the durable classification, not the class name.
+    # (a) Open slot at termination: scope_open + subclass warning event, no scope_close.
+    # The category string is deliberately unresolvable in the coordinator process, so only the
+    # durable ledger flag can classify it; with the flag, reconstruction reaches the worker's result.
+    foreign = "__worker_only__.DerivedSolverWarning"
+    assert d1r2.classify_category_name(foreign) is None
+    seed = LEDGER_SEEDS[0]
+    open_events = [
+        {"event": "seed_started", "seed": seed},
+        {"event": "scope_open", "seed": seed, "decoder": "pipeline"},
+        {"event": "scope_close", "seed": seed, "decoder": "pipeline", "slot": copy.deepcopy(_produce(seed, "ok", "ok", "ok")["decoder_slots"]["pipeline"])},
+        {"event": "scope_open", "seed": seed, "decoder": "network_positive"},
+        {"event": "warning", "seed": seed, "decoder": "network_positive", "category": foreign, "phase": "fit",
+         "message_head": "synthetic derived convergence warning", "convergence_warning": True},
+    ]
+    for reason in ("worker_lost", "terminated_wall_stop", "terminated_rss_abort"):
+        rec = d1r2.reconstruct_rows_from_ledger(open_events, reason, [seed])[0]
+        o = rec["decoder_slots"]["network_positive"]
+        assert o["stop_reason"] == reason and o["attempted"] is True and o["completed"] is False and o["n_iter"] is None
+        assert o["converged"] is False and o["convergence_warning"] is True
+        assert o["warnings"] == [{"category": foreign, "phase": "fit", "message_head": "synthetic derived convergence warning"}]
+        assert d1r2.validate_row_schema(rec) == [] and d1r2.validate_ledger_match(rec, open_events) == []
+    # (b) Open slot whose real subclass warning was written by the real hook, then the worker died.
+    ledger_open = tmp_path / "open.jsonl"
+
+    class DiesAfterWarning(FakeLR):
+        def fit(self, z, y):
+            warnings.warn(DerivedSolverWarning("synthetic derived convergence warning"))
+            raise KeyboardInterrupt  # BaseException: escapes the slot like a killed worker, no scope_close
+
+    with pytest.raises(KeyboardInterrupt):
+        d1r2.fit_decoder_slot("A", xtr, ytr, xtr[:50], ytr[:50], seed, ledger_path=ledger_open,
+                              model_factory=lambda **kw: DiesAfterWarning("ok", **kw))
+    durable = d1r2.read_ledger(ledger_open)[0]
+    assert [e["event"] for e in durable] == ["scope_open", "warning"] and durable[1]["convergence_warning"] is True
+    rec = d1r2.reconstruct_rows_from_ledger([{"event": "seed_started", "seed": seed}, *durable], "worker_lost", [seed])[0]
+    o = rec["decoder_slots"]["A"]
+    assert o["stop_reason"] == "worker_lost" and o["convergence_warning"] is True and o["converged"] is False
+    assert o["warnings"][0]["category"] == category and d1r2.validate_slot("A", o) == []
+    # (c) A ledger-closed slot: the reconstructed convergence_warning is re-derived from the durable events.
+    closed_events = [{"event": "seed_started", "seed": 9001}, *d1r2.read_ledger(tmp_path / "row.jsonl")[0]]
+    rec = d1r2.reconstruct_rows_from_ledger(closed_events, "worker_lost", [9001])[0]
+    c = rec["decoder_slots"]["network_positive"]
+    assert c["stop_reason"] == "other_convergence_warning" and c["convergence_warning"] is True and c["converged"] is False
+    assert d1r2.validate_row_schema(rec) == []
+    # Fail closed: a ledger warning event without its boolean classification is flagged by the ledger cross-check,
+    # and an unresolvable category without a durable flag is classified as a convergence warning.
+    stripped = [{k: v for k, v in e.items() if k != "convergence_warning"} for e in d1r2.read_ledger(tmp_path / "row.jsonl")[0]]
+    assert any("convergence classification" in v for v in d1r2.validate_ledger_match(row, stripped))
+    unflagged = [{k: v for k, v in e.items() if k != "convergence_warning"} for e in open_events]
+    o = d1r2.reconstruct_rows_from_ledger(unflagged, "worker_lost", [seed])[0]["decoder_slots"]["network_positive"]
+    assert o["convergence_warning"] is True and o["converged"] is False
+    # A durable False flag from the hook is respected for an ordinary warning (no false invalidation).
+    ordinary = [*open_events[:4], {**open_events[4], "category": "builtins.RuntimeWarning", "convergence_warning": False}]
+    o = d1r2.reconstruct_rows_from_ledger(ordinary, "worker_lost", [seed])[0]["decoder_slots"]["network_positive"]
+    assert o["convergence_warning"] is False

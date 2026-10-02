@@ -42,7 +42,7 @@ execution), and the section 8 step 1 shakedown on fixture seed 4242.
 |---|---|
 | 1-15 (carried) | `test_d1r2_11_01` .. `test_d1r2_11_15` (item 10 also `test_d1r2_11_10b`) |
 | 11a | `test_d1r2_11a_every_decoder_constructed_with_max_iter_20000_and_frozen_arguments` |
-| 11b | `test_d1r2_11b_slot_schema_stop_reasons_attribution_reconstruction_and_redaction` |
+| 11b | `test_d1r2_11b_slot_schema_stop_reasons_attribution_reconstruction_and_redaction`, `test_d1r2_11b_convergence_warning_subclass_with_other_name_is_non_converged_worker_and_ledger` (Nora round 1) |
 | 11c | `test_d1r2_11c_branch_table_reaches_every_row_and_rows_1_2_carry_stop_loss` (6 cases) |
 | 11d | `test_d1r2_11d_run_preflight_collision_finalizer_writes_20_preflight_rows` |
 | 11e | `test_d1r2_11e_warning_then_termination_reconstruction_by_sigkill_wall_and_rss` |
@@ -68,6 +68,22 @@ execution), and the section 8 step 1 shakedown on fixture seed 4242.
    and only `n_iter`, `converged`, and `warnings` are recorded.
 5. The run preflight re-executes the committed probe in-process at the run's
    code hash; the shakedown uses the retained, manifest-verified output.
+6. ConvergenceWarning classification (section 6.3, "or a subclass"; Nora
+   round 1 correction). The `showwarning` hook computes
+   `issubclass(category, sklearn.exceptions.ConvergenceWarning)` on the real
+   class and writes it on every ledger `warning` event as the boolean
+   `convergence_warning`, before the hook returns, so it is as durable as the
+   warning itself. Worker-written slots use the in-memory result; coordinator
+   reconstruction (open and closed slots) uses the durable ledger boolean, so
+   both reach the same result after worker termination. The slot's
+   `warnings` entries keep exactly the frozen `{category, phase,
+   message_head}` shape. Where no recorded boolean is available (the row
+   validator, or a ledger event without it), the fully qualified name is
+   resolved to its class and tested with `issubclass`; a name that does not
+   resolve is classified as a ConvergenceWarning (fail closed: the slot can
+   only become non-converged). The ledger cross-check rejects a warning
+   event without its boolean and a slot whose `convergence_warning` differs
+   from the durable classification.
 
 ## Fail-closed package behaviour carried
 

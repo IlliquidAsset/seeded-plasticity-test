@@ -7,9 +7,11 @@ D1R2 seed is refused unless the separately authorized runner calls it.
 
 from __future__ import annotations
 
+import importlib
 import json
 import math
 import os
+import sys
 import warnings
 from pathlib import Path
 from typing import Callable, Dict, List, Mapping, Optional, Sequence, Tuple
@@ -261,17 +263,91 @@ def append_ledger_event(path: Optional[Path], event: Mapping[str, object]) -> No
         os.close(fd)
 
 
+def is_convergence_category(category: object) -> bool:
+    """Spec 6.3: ``sklearn.exceptions.ConvergenceWarning`` or any subclass (real issubclass)."""
+    return isinstance(category, type) and issubclass(category, ConvergenceWarning)
+
+
+def _resolve_category(name: object) -> Optional[type]:
+    """Resolve a fully qualified category name to its class; None if it does not resolve exactly.
+
+    A submodule is imported only when its top-level package is already loaded
+    in this process (for example a scipy or sklearn submodule), so a benign
+    library warning is never misclassified merely because its submodule was
+    not yet imported by the coordinator, and no new top-level package is ever
+    imported from a ledger string. Names that still do not resolve (classes
+    defined in a local scope, a foreign ``__main__``) return None.
+    """
+    if not isinstance(name, str) or not name or "<" in name:
+        return None
+    parts = name.split(".")
+    for cut in range(len(parts) - 1, 0, -1):
+        module_name = ".".join(parts[:cut])
+        obj: object = sys.modules.get(module_name)
+        if obj is None and parts[0] in sys.modules and parts[0] != "__main__":
+            try:
+                obj = importlib.import_module(module_name)
+            except Exception:
+                obj = None
+        if obj is None:
+            continue
+        try:
+            for attr in parts[cut:]:
+                obj = getattr(obj, attr)
+        except AttributeError:
+            continue
+        if isinstance(obj, type) and _category_name(obj) == name:
+            return obj
+    return None
+
+
+def classify_category_name(name: object) -> Optional[bool]:
+    """issubclass(resolved class, ConvergenceWarning); None when the name does not resolve."""
+    cls = _resolve_category(name)
+    return None if cls is None else is_convergence_category(cls)
+
+
+def _entry_flags(entries: Sequence[Mapping[str, object]], recorded: Optional[Sequence[object]] = None) -> List[bool]:
+    """Per-entry ConvergenceWarning classification (spec 6.3: the class or any subclass).
+
+    ``recorded`` holds the exact ``issubclass(category, ConvergenceWarning)``
+    result the emitting hook computed on the real class (worker memory, or the
+    durable ledger ``warning`` event); when it is a boolean it is used as is.
+    Without a recorded boolean the fully qualified name is resolved to its
+    class and tested with ``issubclass``; a name that does not resolve is
+    classified as a convergence warning, so an unclassifiable warning can
+    only make a slot non-converged (fail closed).
+    """
+    if recorded is not None and len(recorded) != len(entries):
+        raise ValueError("warning classifications do not align with warning entries")
+    out: List[bool] = []
+    for index, entry in enumerate(entries):
+        flag = None if recorded is None else recorded[index]
+        if isinstance(flag, bool):
+            out.append(flag)
+            continue
+        resolved = classify_category_name(entry.get("category") if isinstance(entry, Mapping) else None)
+        out.append(True if resolved is None else resolved)
+    return out
+
+
 def _warning_call(
     fn: Callable[[], object], *, seed: int, decoder: Optional[str], phase: str,
     ledger_path: Optional[Path], captured: List[Dict[str, object]],
+    flags: Optional[List[bool]] = None,
 ) -> object:
     def showwarning(message, category, filename, lineno, file=None, line=None):
         entry = {"category": _category_name(category), "phase": phase, "message_head": _message_head(message)}
+        is_cw = is_convergence_category(category)
         ledger_entry = dict(entry)
         if phase == "predict_score":
             ledger_entry["message_head"] = None
-        append_ledger_event(ledger_path, {"event": "warning", "seed": seed, "decoder": decoder, **ledger_entry})
+        append_ledger_event(ledger_path, {
+            "event": "warning", "seed": seed, "decoder": decoder, **ledger_entry, "convergence_warning": is_cw,
+        })
         captured.append(entry)
+        if flags is not None:
+            flags.append(is_cw)
 
     with warnings.catch_warnings():
         warnings.simplefilter("always")
@@ -308,18 +384,23 @@ def empty_slot(stop_reason: str, *, attempted: bool = False, fit_error: Optional
     }
 
 
-def _convergence_warnings(entries: Sequence[Mapping[str, object]]) -> List[Mapping[str, object]]:
-    suffix = ".ConvergenceWarning"
-    return [w for w in entries if str(w.get("category", "")).endswith(suffix)]
+def _convergence_warnings(
+    entries: Sequence[Mapping[str, object]], recorded: Optional[Sequence[object]] = None,
+) -> List[Mapping[str, object]]:
+    """Entries whose category is ConvergenceWarning or any subclass (spec 6.3)."""
+    return [w for w, flag in zip(entries, _entry_flags(entries, recorded)) if flag]
 
 
-def _warning_stop(entries: Sequence[Mapping[str, object]], n_iter: Optional[int]) -> str:
-    messages = "\n".join(str(w.get("message_head") or "") for w in _convergence_warnings(entries)).upper()
+def _warning_stop(
+    entries: Sequence[Mapping[str, object]], n_iter: Optional[int], recorded: Optional[Sequence[object]] = None,
+) -> str:
+    conv = _convergence_warnings(entries, recorded)
+    messages = "\n".join(str(w.get("message_head") or "") for w in conv).upper()
     if n_iter is not None and n_iter >= MAX_ITER or "ITERATIONS REACHED LIMIT" in messages:
         return "iteration_limit"
     if "F,G EVALUATIONS EXCEEDS LIMIT" in messages:
         return "evaluation_limit"
-    if _convergence_warnings(entries):
+    if conv:
         return "other_convergence_warning"
     return "converged"
 
@@ -339,6 +420,7 @@ def fit_decoder_slot(
     """Fit one fixed decoder and return its total section-6.3 slot."""
     append_ledger_event(ledger_path, {"event": "scope_open", "seed": seed, "decoder": name})
     captured: List[Dict[str, object]] = []
+    cw_flags: List[bool] = []  # exact issubclass(category, ConvergenceWarning), aligned with ``captured``
     fitted: Optional[diag.FittedDecoder] = None
     correctness: Optional[np.ndarray] = None
     fit_error: Optional[Dict[str, object]] = None
@@ -357,13 +439,13 @@ def fit_decoder_slot(
 
         x, y, mean, scale, z = _warning_call(
             standardize, seed=seed, decoder=name, phase=phase,
-            ledger_path=ledger_path, captured=captured,
+            ledger_path=ledger_path, captured=captured, flags=cw_flags,
         )
         phase = "fit"
         model = model_factory(**DECODER_CONFIG)
         _warning_call(
             lambda: model.fit(z, y), seed=seed, decoder=name, phase=phase,
-            ledger_path=ledger_path, captured=captured,
+            ledger_path=ledger_path, captured=captured, flags=cw_flags,
         )
         fit_returned = True
         n_iter = int(np.asarray(model.n_iter_).reshape(-1)[0])
@@ -376,7 +458,7 @@ def fit_decoder_slot(
             phase = "predict_score"
             pred = _warning_call(
                 lambda: fitted.predict(test_features), seed=seed, decoder=name, phase=phase,
-                ledger_path=ledger_path, captured=captured,
+                ledger_path=ledger_path, captured=captured, flags=cw_flags,
             )
             correctness = np.asarray(pred) == np.asarray(test_y, dtype=np.int8)
             score_returned = True
@@ -386,11 +468,11 @@ def fit_decoder_slot(
     except Exception as exc:
         fit_error = {"exception_type": f"{type(exc).__module__}.{type(exc).__qualname__}", "phase": phase, "message_head": _message_head(exc)}
 
-    conv_warning = bool(_convergence_warnings(captured))
+    conv_warning = bool(_convergence_warnings(captured, cw_flags))
     if not fit_returned:
         reason = "fit_exception"
     else:
-        reason = _warning_stop(captured, n_iter)
+        reason = _warning_stop(captured, n_iter, cw_flags)
         if reason == "converged" and not score_returned:
             reason = "score_exception"
     completed = bool(fit_returned and score_returned)
@@ -662,14 +744,14 @@ def reconstruct_rows_from_ledger(
         slots: Dict[str, object] = {}
         for name in DECODERS:
             closed = [event for event in own if event.get("event") == "scope_close" and event.get("decoder") == name]
-            warnings_for_slot = [
-                {key: event.get(key) for key in ("category", "phase", "message_head")}
-                for event in own if event.get("event") == "warning" and event.get("decoder") == name
-            ]
+            slot_events = [event for event in own if event.get("event") == "warning" and event.get("decoder") == name]
+            warnings_for_slot = [{key: event.get(key) for key in ("category", "phase", "message_head")} for event in slot_events]
+            # Durable per-warning issubclass result written by the hook (spec 6.3 subclass rule).
+            conv_warning = bool(_convergence_warnings(warnings_for_slot, [event.get("convergence_warning") for event in slot_events]))
             if closed and isinstance(closed[-1].get("slot"), Mapping):
                 slot = dict(closed[-1]["slot"])  # type: ignore[arg-type]
                 slot["warnings"] = warnings_for_slot
-                slot["convergence_warning"] = bool(_convergence_warnings(warnings_for_slot))
+                slot["convergence_warning"] = conv_warning
             else:
                 opened = any(event.get("event") == "scope_open" and event.get("decoder") == name for event in own)
                 if upstream and not opened:
@@ -681,7 +763,7 @@ def reconstruct_rows_from_ledger(
                         "exception_type": None, "phase": None, "message_head": _message_head(stop_text),
                     })
                     slot["warnings"] = warnings_for_slot
-                    slot["convergence_warning"] = bool(_convergence_warnings(warnings_for_slot))
+                    slot["convergence_warning"] = conv_warning
             slots[name] = slot
         row["decoder_slots"] = slots
         rows.append(row)
@@ -928,9 +1010,18 @@ def validate_ledger_match(row: Mapping[str, object], events: Sequence[Mapping[st
     for decoder in (*DECODERS, None):
         actual = row["non_decoder_warnings"] if decoder is None else row["decoder_slots"][decoder]["warnings"]
         actual = [{**warning, "message_head": None if warning["phase"] == "predict_score" else warning["message_head"]} for warning in actual]
-        durable = [{key: event.get(key) for key in ("category", "phase", "message_head")} for event in warnings_by_seed if event.get("decoder") == decoder]
+        events_for = [event for event in warnings_by_seed if event.get("decoder") == decoder]
+        durable = [{key: event.get(key) for key in ("category", "phase", "message_head")} for event in events_for]
         if actual != durable:
             out.append(f"seed={row.get('seed')} decoder={decoder}: warnings differ from ledger")
+            continue
+        flags = [event.get("convergence_warning") for event in events_for]
+        if not all(isinstance(flag, bool) for flag in flags):
+            out.append(f"seed={row.get('seed')} decoder={decoder}: ledger warning lacks its convergence classification")
+        elif decoder is not None:
+            durable_cw = bool(_convergence_warnings(durable, flags))
+            if row["decoder_slots"][decoder]["convergence_warning"] != durable_cw:
+                out.append(f"seed={row.get('seed')} decoder={decoder}: convergence_warning differs from the durable ledger classification")
     return out
 
 
