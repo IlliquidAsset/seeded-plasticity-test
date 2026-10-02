@@ -331,6 +331,54 @@ def _entry_flags(entries: Sequence[Mapping[str, object]], recorded: Optional[Seq
     return out
 
 
+def validated_entry_flags(
+    entries: Sequence[object], recorded: Optional[Sequence[object]] = None,
+) -> Tuple[List[bool], List[str]]:
+    """Schema-side ConvergenceWarning classification for a slot's ``warnings`` (spec 6.3).
+
+    The authoritative classification is the durable one: the boolean the
+    emitting hook computed with ``issubclass`` on the real class and wrote to
+    the ledger ``warning`` event (``recorded``, aligned with ``entries``).
+    Validation consumes it exactly as coordinator reconstruction does, so a
+    reconstructed slot and its validator always agree. Without a recorded
+    boolean the fully qualified name is resolved and tested with
+    ``issubclass``. Fail closed: a classification that is neither recorded nor
+    resolvable, a recorded list that does not align with the entries, or a
+    recorded boolean that contradicts the resolved class is a problem
+    (schema-invalid, section 7 item 6), never a silent guess.
+    Returns (flags used for derivation, problems).
+    """
+    problems: List[str] = []
+    if recorded is not None and len(recorded) != len(entries):
+        return [True] * len(entries), ["warning classifications do not align with the durable ledger warning events"]
+    flags: List[bool] = []
+    for index, entry in enumerate(entries):
+        flag = None if recorded is None else recorded[index]
+        resolved = classify_category_name(entry.get("category") if isinstance(entry, Mapping) else None)
+        if isinstance(flag, bool):
+            if resolved is not None and resolved != flag:
+                problems.append(f"warning {index}: durable convergence classification contradicts the resolved category class")
+            flags.append(flag)
+        elif resolved is not None:
+            flags.append(resolved)
+        else:
+            problems.append(f"warning {index}: convergence classification unavailable (no durable classification and category does not resolve)")
+            flags.append(True)
+    return flags, problems
+
+
+def ledger_classifications(events: Sequence[Mapping[str, object]]) -> Dict[Tuple[object, str], List[object]]:
+    """Durable per-warning classification by (seed, decoder), in ledger order (decoder warnings only).
+
+    Missing booleans are kept as ``None`` so the schema validator fails closed on them.
+    """
+    out: Dict[Tuple[object, str], List[object]] = {}
+    for event in events:
+        if event.get("event") == "warning" and event.get("decoder") in DECODERS:
+            out.setdefault((event.get("seed"), str(event.get("decoder"))), []).append(event.get("convergence_warning"))
+    return out
+
+
 def _warning_call(
     fn: Callable[[], object], *, seed: int, decoder: Optional[str], phase: str,
     ledger_path: Optional[Path], captured: List[Dict[str, object]],
@@ -810,7 +858,9 @@ def validate_warning(value: object, decoder: bool = True) -> List[str]:
     return out
 
 
-def validate_slot(name: str, value: object) -> List[str]:
+def validate_slot(name: str, value: object, recorded: Optional[Sequence[object]] = None) -> List[str]:
+    """Section 6.3 slot schema. ``recorded`` is the durable ledger classification of this
+    slot's warnings (``ledger_classifications``); see ``validated_entry_flags``."""
     tag = f"decoder slot {name}"
     if not isinstance(value, Mapping):
         return [f"{tag}: not a mapping"]
@@ -830,7 +880,9 @@ def validate_slot(name: str, value: object) -> List[str]:
         warns = []
     for warning in warns:
         out.extend(f"{tag}: {v}" for v in validate_warning(warning))
-    derived_warning = bool(_convergence_warnings(warns))
+    flags, flag_problems = validated_entry_flags(warns, recorded)
+    out.extend(f"{tag}: {v}" for v in flag_problems)
+    derived_warning = any(flags)
     if not isinstance(value["converged"], bool) or not isinstance(value["convergence_warning"], bool) or value["convergence_warning"] != derived_warning:
         out.append(f"{tag}: convergence flags invalid")
     err = value["fit_error"]
@@ -867,7 +919,7 @@ def validate_slot(name: str, value: object) -> List[str]:
     if reason == "converged" and err is not None:
         out.append(f"{tag}: converged slot carries an exception")
     if reason in {"iteration_limit", "evaluation_limit", "other_convergence_warning", "score_exception", "converged"} and _is_int(n_iter):
-        want = _warning_stop(warns, n_iter)
+        want = _warning_stop(warns, n_iter, flags)
         if want == "converged" and not completed:
             want = "score_exception"
         if want != reason:
@@ -925,7 +977,8 @@ def validate_decoder(name: str, value: object, expected: Optional[Mapping[str, s
     return out
 
 
-def validate_row_schema(row: object) -> List[str]:
+def validate_row_schema(row: object, classifications: Optional[Mapping[Tuple[object, str], Sequence[object]]] = None) -> List[str]:
+    """Row schema; ``classifications`` is ``ledger_classifications(events)`` when the durable ledger exists."""
     if not isinstance(row, Mapping):
         return ["D1R2 row is not a mapping"]
     tag = f"D1R2 seed={row.get('seed')}"
@@ -948,7 +1001,8 @@ def validate_row_schema(row: object) -> List[str]:
         out.append(f"{tag}: decoder_slots must be exactly {list(DECODERS)}")
     else:
         for name in DECODERS:
-            out.extend(f"{tag}: {v}" for v in validate_slot(name, slots[name]))
+            recorded = None if classifications is None else list(classifications.get((row["seed"], name), []))
+            out.extend(f"{tag}: {v}" for v in validate_slot(name, slots[name], recorded))
     return out
 
 
@@ -956,8 +1010,9 @@ def validate_row(
     row: Mapping[str, object], expected: Optional[Mapping[str, str]],
     train_rows: int = TRAIN_ROWS, test_rows: int = TEST_ROWS,
     decoders: Sequence[str] = DECODERS,
+    classifications: Optional[Mapping[Tuple[object, str], Sequence[object]]] = None,
 ) -> List[str]:
-    out = validate_row_schema(row)
+    out = validate_row_schema(row, classifications)
     if out:
         return out
     tag = f"D1R2 seed={row['seed']}"
@@ -1025,7 +1080,10 @@ def validate_ledger_match(row: Mapping[str, object], events: Sequence[Mapping[st
     return out
 
 
-def validate_package(rows: Sequence[Mapping[str, object]], expected: Optional[Mapping[int, Mapping[str, str]]], seeds: Sequence[int] = D1R2_SEEDS) -> List[str]:
+def validate_package(
+    rows: Sequence[Mapping[str, object]], expected: Optional[Mapping[int, Mapping[str, str]]], seeds: Sequence[int] = D1R2_SEEDS,
+    classifications: Optional[Mapping[Tuple[object, str], Sequence[object]]] = None,
+) -> List[str]:
     out: List[str] = []
     seen = [row.get("seed") if isinstance(row, Mapping) else None for row in rows]
     if len(rows) != len(seeds): out.append(f"D1R2: {len(rows)} rows, expected {len(seeds)}")
@@ -1035,7 +1093,7 @@ def validate_package(rows: Sequence[Mapping[str, object]], expected: Optional[Ma
     if expected is None: out.append("D1R2: coordinator identities absent")
     for row in rows:
         seed = row.get("seed") if isinstance(row, Mapping) else None
-        out.extend(validate_row(row, None if expected is None else expected.get(seed)))
+        out.extend(validate_row(row, None if expected is None else expected.get(seed), classifications=classifications))
     return out
 
 
@@ -1113,6 +1171,7 @@ def summarize(
     expected: Optional[Mapping[int, Mapping[str, str]]],
     probe_pass: bool,
     seeds: Sequence[int] = D1R2_SEEDS,
+    classifications: Optional[Mapping[Tuple[object, str], Sequence[object]]] = None,
 ) -> Dict[str, object]:
     """Section 6.3 status and section 9 branch, mechanically and fail-closed.
 
@@ -1120,7 +1179,7 @@ def summarize(
     finding returns INVALID with no readout computed. Under INVALID_PIPELINE
     the network readouts are not computed (section 9 row 2: no science reading).
     """
-    violations = validate_package(rows, expected, seeds)
+    violations = validate_package(rows, expected, seeds, classifications)
     if not probe_pass:
         violations = ["D1R: collision probe not verified PASS"] + violations
     empty = {"pipeline": None, "network_positive": None, "A": None}

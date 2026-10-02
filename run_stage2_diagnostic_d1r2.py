@@ -759,7 +759,8 @@ def run_d1r2(
         ledger_present = event_ledger.exists()
         _declare_run_ledgers()
         rows, replaced = complete_rows(rows, events, torn, seeds, ledger_present)
-        summary = d1r2.summarize(rows, expected, True, seeds)
+        # Section 6.3: schema validation consumes the durable per-warning classification.
+        summary = d1r2.summarize(rows, expected, True, seeds, d1r2.ledger_classifications(events) if ledger_present else None)
         problems = list(replaced)
         if malformed:
             # Section 6.3: a malformed interior ledger line makes the run INVALID.
@@ -791,7 +792,7 @@ def run_d1r2(
         write_jsonl(out / name, [d1r2.redact_invalid_row(row) for row in rows])
         if name not in artifacts:
             artifacts.append(name)
-        summary = d1r2.summarize(rows, expected, True, seeds)
+        summary = d1r2.summarize(rows, expected, True, seeds, d1r2.ledger_classifications(events))
         if malformed:
             summary = invalid_summary(summary, f"progress ledger has malformed interior line(s) {malformed}")
         return finalize_package(out, provenance, summary, rows, run_meta, artifacts, incomplete_reason=f"exception during sequence: {type(exc).__name__} ({reason})")
@@ -826,6 +827,7 @@ def complete_rows(
     from snn import stage2_diagnostic_d1r2 as d1r2
 
     notes: List[str] = []
+    classifications = d1r2.ledger_classifications(events) if ledger_present else None
     by_seed: Dict[int, Dict[str, object]] = {}
     for row in rows:
         seed = row.get("seed") if isinstance(row, Mapping) else None
@@ -838,7 +840,7 @@ def complete_rows(
     out: List[Dict[str, object]] = []
     for seed in seeds:
         row = by_seed.get(seed)
-        problems = ["no row"] if row is None else d1r2.validate_row_schema(row)
+        problems = ["no row"] if row is None else d1r2.validate_row_schema(row, classifications)
         if row is not None and not problems and row.get("status", "ok") != "ok":
             problems = [f"job status {row.get('status')!r}: {row.get('error')}"]
         if problems:

@@ -1290,6 +1290,16 @@ def test_d1r2_11e_warning_then_termination_reconstruction_by_sigkill_wall_and_rs
     assert d1r2.validate_ledger_match(bad, events)
     bad["status"] = "ok"
     completed, notes = runner.complete_rows([bad], events, False, [seed])
+    # With the durable classification the stripped slot no longer aligns with the ledger, so the row is
+    # schema-invalid and replaced from the ledger (forcing INVALID); without it, it is kept as status error.
+    assert notes and completed[0]["row_source"] == "coordinator_from_ledger" and d1r2.validate_row(completed[0], None)
+    assert completed[0]["decoder_slots"]["network_positive"]["warnings"] == row["decoder_slots"]["network_positive"]["warnings"]
+    completed, notes = runner.complete_rows([copy.deepcopy(bad)], events, False, [seed], ledger_present=False)
+    assert completed[0]["row_source"] == "worker" and not notes  # no ledger: nothing to cross-check here
+    kept = copy.deepcopy(row)
+    kept["status"] = "ok"
+    kept["decoder_slots"]["network_positive"]["warnings"][0]["message_head"] = "tampered"
+    completed, notes = runner.complete_rows([kept], events, False, [seed])
     assert completed[0]["status"] == "error" and notes and d1r2.validate_row(completed[0], None)
     # Torn final line: reconstructed with ledger_torn_tail = true.
     torn = tmp_path / "torn.jsonl"
@@ -1470,7 +1480,9 @@ def test_d1r2_11b_convergence_warning_subclass_with_other_name_is_non_converged_
         assert o["stop_reason"] == reason and o["attempted"] is True and o["completed"] is False and o["n_iter"] is None
         assert o["converged"] is False and o["convergence_warning"] is True
         assert o["warnings"] == [{"category": foreign, "phase": "fit", "message_head": "synthetic derived convergence warning"}]
-        assert d1r2.validate_row_schema(rec) == [] and d1r2.validate_ledger_match(rec, open_events) == []
+        assert d1r2.validate_row_schema(rec, d1r2.ledger_classifications(open_events)) == []
+        assert d1r2.validate_ledger_match(rec, open_events) == []
+        assert any("classification unavailable" in v for v in d1r2.validate_row_schema(rec))  # no durable flag: fail closed
     # (b) Open slot whose real subclass warning was written by the real hook, then the worker died.
     ledger_open = tmp_path / "open.jsonl"
 
@@ -1505,3 +1517,146 @@ def test_d1r2_11b_convergence_warning_subclass_with_other_name_is_non_converged_
     ordinary = [*open_events[:4], {**open_events[4], "category": "builtins.RuntimeWarning", "convergence_warning": False}]
     o = d1r2.reconstruct_rows_from_ledger(ordinary, "worker_lost", [seed])[0]["decoder_slots"]["network_positive"]
     assert o["convergence_warning"] is False
+
+
+# 11b (Nora round 2 correction): schema validation and coordinator reconstruction consume the same durable
+# per-warning ConvergenceWarning classification (spec 6.3 lines 148, 154, 158).
+def _boundary_job(job) -> dict:
+    """Process-pool fixture job (synthetic only). The warning classes exist only inside this worker call
+    (qualname contains ``<locals>``), so the coordinator can never resolve them by name; only the durable
+    ledger boolean, computed by the hook with real ``issubclass``, can classify them."""
+    seed, ledger, kind = job
+
+    class WorkerOnlyOrdinaryWarning(UserWarning):
+        pass
+
+    class WorkerOnlyDerivedWarning(ConvergenceWarning):
+        pass
+
+    cls = {"ordinary": WorkerOnlyOrdinaryWarning, "derived": WorkerOnlyDerivedWarning}.get(kind)
+
+    class Emits(FakeLR):
+        def fit(self, z, y):
+            if cls is not None:
+                warnings.warn(cls(f"worker-only {kind} warning"))
+            return super().fit(z, y)
+
+    calls = []
+
+    def factory(**config):
+        calls.append(config)
+        return Emits("ok", **config) if len(calls) == 2 else FakeLR("ok", **config)  # network_positive only
+
+    row = d1r2.run_d1r2_seed(seed, n_train=SHORT_TRAIN, n_test=SHORT_TEST, capture=_syn_capture, ledger_path=Path(ledger), model_factory=factory)
+    row["status"], row["worker_pid"] = "ok", os.getpid()
+    return row
+
+
+def test_d1r2_11b_durable_classification_is_consumed_coherently_by_reconstruction_and_schema_validation(tmp_path, monkeypatch):
+    seed = LEDGER_SEEDS[0]
+    ordinary_name, derived_name = "__worker_only__.DerivedOrdinaryWarning", "__worker_only__.DerivedSolverWarning"
+    assert d1r2.classify_category_name(ordinary_name) is None and d1r2.classify_category_name(derived_name) is None
+
+    def open_events(category, flag=None):
+        warning = {"event": "warning", "seed": seed, "decoder": "network_positive", "category": category, "phase": "fit",
+                   "message_head": "worker-only warning"}
+        if flag is not None:
+            warning["convergence_warning"] = flag
+        return [{"event": "seed_started", "seed": seed}, {"event": "scope_open", "seed": seed, "decoder": "network_positive"}, warning]
+
+    # (a) Nora's exact reproduction: unresolvable ordinary warning, durable False -> schema-valid reconstructed row.
+    events = open_events(ordinary_name, False)
+    cls_map = d1r2.ledger_classifications(events)
+    assert cls_map == {(seed, "network_positive"): [False]}
+    for reason in ("worker_lost", "terminated_wall_stop", "terminated_rss_abort"):
+        row = d1r2.reconstruct_rows_from_ledger(events, reason, [seed])[0]
+        slot = row["decoder_slots"]["network_positive"]
+        assert {k: slot[k] for k in ("stop_reason", "converged", "convergence_warning")} == {"stop_reason": reason, "converged": False, "convergence_warning": False}
+        assert d1r2.validate_slot("network_positive", slot, [False]) == []
+        assert d1r2.validate_row_schema(row, cls_map) == []
+        assert d1r2.validate_ledger_match(row, events) == []
+        # The warning itself does not change validity; the slot is non-converged only because it was open at termination.
+        assert slot["warnings"] == [{"category": ordinary_name, "phase": "fit", "message_head": "worker-only warning"}]
+    # The same row through the runner's coordinator path: summarize consumes the ledger classification.
+    rows = d1r2.reconstruct_rows_from_ledger(events, "worker_lost", LEDGER_SEEDS)
+    summary = d1r2.summarize(rows, None, True, LEDGER_SEEDS, cls_map)
+    assert summary["status"] == "INVALID" and not any("convergence flags" in v or "classification" in v for v in summary["violations"])
+
+    # (b) Unresolvable ConvergenceWarning subclass, durable True -> non-converged and schema-valid.
+    events = open_events(derived_name, True)
+    cls_map = d1r2.ledger_classifications(events)
+    row = d1r2.reconstruct_rows_from_ledger(events, "worker_lost", [seed])[0]
+    slot = row["decoder_slots"]["network_positive"]
+    assert slot["convergence_warning"] is True and slot["converged"] is False and slot["stop_reason"] == "worker_lost"
+    assert d1r2.validate_row_schema(row, cls_map) == [] and d1r2.validate_ledger_match(row, events) == []
+    # A slot claiming the opposite of the durable classification is rejected in both directions.
+    flipped = copy.deepcopy(row)
+    flipped["decoder_slots"]["network_positive"]["convergence_warning"] = False
+    assert any("convergence flags invalid" in v for v in d1r2.validate_row_schema(flipped, cls_map))
+    assert d1r2.validate_ledger_match(flipped, events)
+
+    # (c) Missing durable classification stays fail closed: reconstruction treats it as a convergence warning
+    # and the schema validator reports the classification as unavailable (schema-invalid, INVALID row 1).
+    for category in (ordinary_name, derived_name):
+        events = open_events(category, None)
+        cls_map = d1r2.ledger_classifications(events)
+        assert cls_map == {(seed, "network_positive"): [None]}
+        row = d1r2.reconstruct_rows_from_ledger(events, "worker_lost", [seed])[0]
+        assert row["decoder_slots"]["network_positive"]["convergence_warning"] is True
+        assert any("classification unavailable" in v for v in d1r2.validate_row_schema(row, cls_map))
+        assert any("classification unavailable" in v for v in d1r2.validate_row_schema(row))
+        assert any("convergence classification" in v for v in d1r2.validate_ledger_match(row, events))
+        rows = d1r2.reconstruct_rows_from_ledger(events, "worker_lost", LEDGER_SEEDS)
+        assert d1r2.summarize(rows, None, True, LEDGER_SEEDS, cls_map)["branch"]["table_row"] == 1
+    # A durable boolean that contradicts a resolvable class, or a misaligned classification list, is also schema-invalid.
+    events = open_events("sklearn.exceptions.ConvergenceWarning", False)
+    row = d1r2.reconstruct_rows_from_ledger(events, "worker_lost", [seed])[0]
+    assert any("contradicts" in v for v in d1r2.validate_row_schema(row, d1r2.ledger_classifications(events)))
+    assert any("do not align" in v for v in d1r2.validate_slot("network_positive", row["decoder_slots"]["network_positive"], [False, False]))
+
+    # (d) Worker-written rows crossing the real worker/coordinator process boundary.
+    ident = d1r2.object_hashes(seed, n_train=SHORT_TRAIN, n_test=SHORT_TEST)
+    for kind in ("ordinary", "derived"):
+        ledger = tmp_path / f"boundary_{kind}.jsonl"
+        with ProcessPoolExecutor(max_workers=1) as pool:
+            row = pool.submit(_boundary_job, (seed, str(ledger), kind)).result()
+        events = d1r2.read_ledger(ledger)[0]
+        cls_map = d1r2.ledger_classifications(events)
+        slot = row["decoder_slots"]["network_positive"]
+        assert len(slot["warnings"]) == 1 and "<locals>.WorkerOnly" in slot["warnings"][0]["category"]
+        assert d1r2.classify_category_name(slot["warnings"][0]["category"]) is None  # unresolvable in the coordinator
+        assert cls_map[(seed, "network_positive")] == [kind == "derived"]
+        assert d1r2.validate_ledger_match(row, events) == []
+        if kind == "ordinary":
+            # Actual issubclass False survives validation: the row is fully valid, outcomes included.
+            assert slot["stop_reason"] == "converged" and slot["converged"] is True and slot["convergence_warning"] is False
+            assert d1r2.validate_row(row, ident, train_rows=SHORT_TRAIN_ROWS, test_rows=SHORT_TEST_ROWS, classifications=cls_map) == []
+        else:
+            assert slot["stop_reason"] == "other_convergence_warning" and slot["converged"] is False and slot["convergence_warning"] is True
+            assert d1r2.validate_row_schema(row, cls_map) == []
+            assert any("non-converged" in v for v in d1r2.validate_row(row, ident, train_rows=SHORT_TRAIN_ROWS, test_rows=SHORT_TEST_ROWS, classifications=cls_map))
+        # Without the durable classification the validator fails closed rather than guessing.
+        assert any("classification unavailable" in v for v in d1r2.validate_row_schema(row))
+
+    # (e) The same boundary through the runner: run_pool workers, complete_rows, summarize, finalizer.
+    # The worker row is kept (not replaced), and no classification or convergence-flag finding appears.
+    for kind in ("ordinary", "derived"):
+        out = tmp_path / f"pkg_{kind}"
+        ledger = out / "D1R2.events.jsonl"
+
+        def ex(fn, jobs, ledger=ledger, kind=kind):
+            return runner.run_pool(_boundary_job, [(s, str(ledger), kind if s == seed else "none") for s in jobs], 2, ledger.parent,
+                                   executor_factory=lambda n: ProcessPoolExecutor(max_workers=n), watch=_Watch(), wall_limit=600.0)
+
+        summary = runner.run_d1r2(SimpleNamespace(workers=2), out, PROV, execute=ex, seeds=LEDGER_SEEDS,
+                                  identity=lambda s: d1r2.object_hashes(s, n_train=SHORT_TRAIN, n_test=SHORT_TEST))
+        violations = summary["violations"]
+        assert not any("replaced" in v or "classification" in v or "convergence flags" in v or "differ from the durable" in v for v in violations)
+        rows = [json.loads(l) for l in (out / "d1r2_rows.invalid_redacted.jsonl").read_text().splitlines()]
+        assert len(rows) == 20 and {r["row_source"] for r in rows} == {"worker"}
+        cls_map = d1r2.ledger_classifications(d1r2.read_ledger(ledger)[0])
+        assert all(d1r2.validate_row_schema({**r, "decoders": {}}, cls_map) == [] for r in rows)
+        s0 = rows[0]["decoder_slots"]["network_positive"]
+        assert s0["convergence_warning"] is (kind == "derived") and s0["converged"] is (kind == "ordinary")
+        assert summary["branch"]["code"] == "STOP_D1R2_INVALID"  # short synthetic lengths only; never a D1R2 datum
+        _assert_no_outcome_on_disk(out)

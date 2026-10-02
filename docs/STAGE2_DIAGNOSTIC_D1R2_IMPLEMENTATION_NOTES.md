@@ -42,7 +42,7 @@ execution), and the section 8 step 1 shakedown on fixture seed 4242.
 |---|---|
 | 1-15 (carried) | `test_d1r2_11_01` .. `test_d1r2_11_15` (item 10 also `test_d1r2_11_10b`) |
 | 11a | `test_d1r2_11a_every_decoder_constructed_with_max_iter_20000_and_frozen_arguments` |
-| 11b | `test_d1r2_11b_slot_schema_stop_reasons_attribution_reconstruction_and_redaction`, `test_d1r2_11b_convergence_warning_subclass_with_other_name_is_non_converged_worker_and_ledger` (Nora round 1) |
+| 11b | `test_d1r2_11b_slot_schema_stop_reasons_attribution_reconstruction_and_redaction`, `test_d1r2_11b_convergence_warning_subclass_with_other_name_is_non_converged_worker_and_ledger` (Nora round 1), `test_d1r2_11b_durable_classification_is_consumed_coherently_by_reconstruction_and_schema_validation` (Nora round 2) |
 | 11c | `test_d1r2_11c_branch_table_reaches_every_row_and_rows_1_2_carry_stop_loss` (6 cases) |
 | 11d | `test_d1r2_11d_run_preflight_collision_finalizer_writes_20_preflight_rows` |
 | 11e | `test_d1r2_11e_warning_then_termination_reconstruction_by_sigkill_wall_and_rss` |
@@ -77,13 +77,26 @@ execution), and the section 8 step 1 shakedown on fixture seed 4242.
    reconstruction (open and closed slots) uses the durable ledger boolean, so
    both reach the same result after worker termination. The slot's
    `warnings` entries keep exactly the frozen `{category, phase,
-   message_head}` shape. Where no recorded boolean is available (the row
-   validator, or a ledger event without it), the fully qualified name is
-   resolved to its class and tested with `issubclass`; a name that does not
-   resolve is classified as a ConvergenceWarning (fail closed: the slot can
-   only become non-converged). The ledger cross-check rejects a warning
-   event without its boolean and a slot whose `convergence_warning` differs
-   from the durable classification.
+   message_head}` shape. The ledger cross-check rejects a warning event
+   without its boolean and a slot whose `convergence_warning` differs from
+   the durable classification.
+7. One classification for reconstruction and validation (Nora round 2
+   correction). The schema validator (`validate_slot`, `validate_row_schema`,
+   `validate_row`, `validate_package`, `summarize`) consumes the same durable
+   ledger classification as `reconstruct_rows_from_ledger`, passed as
+   `ledger_classifications(events)` keyed by (seed, decoder) in ledger order.
+   The runner passes it in `complete_rows` and both `summarize` calls whenever
+   the run ledger exists. `validated_entry_flags` uses the durable boolean when
+   present; otherwise it resolves the fully qualified name and applies
+   `issubclass`. It fails closed, as a schema finding (section 7 item 6,
+   INVALID row 1) and never as a silent guess, when a classification is
+   neither durable nor resolvable, when the durable list does not align with
+   the slot's warnings, or when a durable boolean contradicts a resolvable
+   class. Reconstruction of an open slot with a missing boolean still sets
+   `convergence_warning = true`. A warning outside the ConvergenceWarning
+   hierarchy, durable false, therefore no longer changes validity even when
+   its class cannot be resolved in the coordinator. Test:
+   `test_d1r2_11b_durable_classification_is_consumed_coherently_by_reconstruction_and_schema_validation`.
 
 ## Fail-closed package behaviour carried
 
