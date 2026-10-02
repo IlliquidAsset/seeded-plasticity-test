@@ -1,0 +1,105 @@
+{
+  "construction": {
+    "checks": {
+      "F0_weights_constant": true,
+      "all_rows_refused_at_spec_lengths": true,
+      "all_rows_schema_valid_at_short_lengths": true,
+      "common_drive_across_with_drive_conditions": true,
+      "d2_onset_mechanically_derivable": true,
+      "drive_absent_without_drive": true,
+      "evaluation_nonmutating": true,
+      "initial_weights_identical_across_conditions": true,
+      "paired_objects_identical_within_task": true,
+      "seven_conditions": true
+    },
+    "pass": true,
+    "per_row": {
+      "F0_A+drive": {
+        "checkpoints": 2,
+        "drive_sha256": "ce6bacc357169370a81d35b7ecba1658b28ee634c09abe31e208cb2a1828429d",
+        "evaluation_nonmutating": true,
+        "initial_weights_sha256": "c62b82b57242335417370dbc0169adaa6ad929267bf84a4307f1337d7eb23398",
+        "rejected_at_spec_lengths": true,
+        "schema_problems_at_short_lengths": [],
+        "train_stream_sha256": "cddbd748a420bf07b46a9e87ad066ea04ee56547950a09957a871a5b8c77f842",
+        "weights_bitwise_constant": true
+      },
+      "F0_A-no": {
+        "checkpoints": 2,
+        "drive_sha256": null,
+        "evaluation_nonmutating": true,
+        "initial_weights_sha256": "c62b82b57242335417370dbc0169adaa6ad929267bf84a4307f1337d7eb23398",
+        "rejected_at_spec_lengths": true,
+        "schema_problems_at_short_lengths": [],
+        "train_stream_sha256": "cddbd748a420bf07b46a9e87ad066ea04ee56547950a09957a871a5b8c77f842",
+        "weights_bitwise_constant": true
+      },
+      "F0_lag1-no": {
+        "checkpoints": 2,
+        "drive_sha256": null,
+        "evaluation_nonmutating": true,
+        "initial_weights_sha256": "c62b82b57242335417370dbc0169adaa6ad929267bf84a4307f1337d7eb23398",
+        "rejected_at_spec_lengths": true,
+        "schema_problems_at_short_lengths": [],
+        "train_stream_sha256": "5e65419323e572109db7edf2f6060d1de366ffefc7577b2f21c2e45e99e23f9a",
+        "weights_bitwise_constant": true
+      },
+      "P_A+drive": {
+        "checkpoints": 2,
+        "drive_sha256": "ce6bacc357169370a81d35b7ecba1658b28ee634c09abe31e208cb2a1828429d",
+        "evaluation_nonmutating": true,
+        "initial_weights_sha256": "c62b82b57242335417370dbc0169adaa6ad929267bf84a4307f1337d7eb23398",
+        "rejected_at_spec_lengths": true,
+        "schema_problems_at_short_lengths": [],
+        "train_stream_sha256": "cddbd748a420bf07b46a9e87ad066ea04ee56547950a09957a871a5b8c77f842",
+        "weights_bitwise_constant": false
+      },
+      "P_A-no": {
+        "checkpoints": 2,
+        "drive_sha256": null,
+        "evaluation_nonmutating": true,
+        "initial_weights_sha256": "c62b82b57242335417370dbc0169adaa6ad929267bf84a4307f1337d7eb23398",
+        "rejected_at_spec_lengths": true,
+        "schema_problems_at_short_lengths": [],
+        "train_stream_sha256": "cddbd748a420bf07b46a9e87ad066ea04ee56547950a09957a871a5b8c77f842",
+        "weights_bitwise_constant": false
+      },
+      "P_lag1+drive": {
+        "checkpoints": 2,
+        "drive_sha256": "ce6bacc357169370a81d35b7ecba1658b28ee634c09abe31e208cb2a1828429d",
+        "evaluation_nonmutating": true,
+        "initial_weights_sha256": "c62b82b57242335417370dbc0169adaa6ad929267bf84a4307f1337d7eb23398",
+        "rejected_at_spec_lengths": true,
+        "schema_problems_at_short_lengths": [],
+        "train_stream_sha256": "5e65419323e572109db7edf2f6060d1de366ffefc7577b2f21c2e45e99e23f9a",
+        "weights_bitwise_constant": false
+      },
+      "P_lag1-no": {
+        "checkpoints": 2,
+        "drive_sha256": null,
+        "evaluation_nonmutating": true,
+        "initial_weights_sha256": "c62b82b57242335417370dbc0169adaa6ad929267bf84a4307f1337d7eb23398",
+        "rejected_at_spec_lengths": true,
+        "schema_problems_at_short_lengths": [],
+        "train_stream_sha256": "5e65419323e572109db7edf2f6060d1de366ffefc7577b2f21c2e45e99e23f9a",
+        "weights_bitwise_constant": false
+      }
+    }
+  },
+  "d1r2_gate_pass": true,
+  "d1r2_or_decoder_modules_loaded": [],
+  "diagnostic_seed": false,
+  "effective_parameter_mismatches": [],
+  "effective_parameters_match_spec": true,
+  "lengths": {
+    "eval": 2300,
+    "eval_warmup": 2000,
+    "train": 2000
+  },
+  "mode": "shakedown",
+  "note": "Construction checks on non-diagnostic fixture seed 4242 at short lengths through the approved worker body. No accuracy, rate, interval, or readout is recorded. Not a D2-D4 datum.",
+  "pass": true,
+  "seed": 4242,
+  "ss_probe_pass": true,
+  "wall_seconds": 9.689913988113403
+}

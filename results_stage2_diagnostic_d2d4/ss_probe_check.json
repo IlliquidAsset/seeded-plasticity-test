@@ -1,0 +1,61 @@
+{
+  "counts": {
+    "legacy_records": 475,
+    "legacy_unique_entropy_tuples": 469,
+    "legacy_unique_states": 469,
+    "new_records": 229,
+    "new_unique_entropy_tuples": 229,
+    "new_unique_states": 229
+  },
+  "decision": "PASS",
+  "execution": "ebb90e74 section 3.2 probe re-executed in memory",
+  "identity_state_sha256": "2f6b54fb03e2a6378cd203a3f84e21ef62d4967e2e8fa5008104fc3c8abbdeef",
+  "known_legacy_only_duplicate_count": 6,
+  "namespace_31_32_probes_with_namespace_30_as_legacy": {
+    "results_stage2_diagnostic_d1r": {
+      "decision": "PASS",
+      "identity_state_sha256": "78fb3a3a604e5e5617cb5bb224a95e9cbf8ea0b45c77484b476fe05ae14c8706",
+      "new_vs_legacy_collisions": [
+        0,
+        0
+      ],
+      "output_sha256": "5a4f7c3dc03b624d984add2c789f38a21ece7884cbc5604179caa9793411cf0c"
+    },
+    "results_stage2_diagnostic_d1r2": {
+      "decision": "PASS",
+      "identity_state_sha256": "4d8dd8b477aa2615bc14f66ed11223d0995c10df0985919577bacc9648b6848e",
+      "new_vs_legacy_collisions": [
+        0,
+        0
+      ],
+      "output_sha256": "5a293367a61fcfd0c62e7f46bd3e316151c420fa3b019386ea60e5e130cd14fb"
+    }
+  },
+  "new_collisions": [
+    0,
+    0,
+    0,
+    0
+  ],
+  "numpy_version": "1.26.4",
+  "pass": true,
+  "probe_code_sha256": "ab3dbac8a08fc7108b52a8963202145d4b8acb97ac6eba3720df5c4c21734f58",
+  "retained": {
+    "code_sha256": "ab3dbac8a08fc7108b52a8963202145d4b8acb97ac6eba3720df5c4c21734f58",
+    "counts": {
+      "legacy_records": 475,
+      "legacy_unique_entropy_tuples": 469,
+      "legacy_unique_states": 469,
+      "new_records": 229,
+      "new_unique_entropy_tuples": 229,
+      "new_unique_states": 229
+    },
+    "decision": "PASS",
+    "identity_state_sha256": "2f6b54fb03e2a6378cd203a3f84e21ef62d4967e2e8fa5008104fc3c8abbdeef",
+    "known_legacy_only_duplicate_count": 6,
+    "numpy_version": "1.26.4",
+    "output_sha256": "1d848fa5a1616e562cb8a48079cc9a412625726d702c323175dfec042827cc9e",
+    "pass": true
+  },
+  "retained_identity_state_sha256": "2f6b54fb03e2a6378cd203a3f84e21ef62d4967e2e8fa5008104fc3c8abbdeef"
+}
