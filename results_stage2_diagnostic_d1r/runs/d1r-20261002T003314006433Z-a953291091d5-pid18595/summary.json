@@ -1,0 +1,448 @@
+{
+  "artifacts": [
+    "D1R.progress.jsonl",
+    "branch_outcome.json",
+    "d1r_rows.invalid_redacted.jsonl",
+    "provenance.json",
+    "summary.json"
+  ],
+  "branch": {
+    "action": "STOP. Return to implementation/spec review. No science reading. No D2-D4, no r4.",
+    "code": "STOP_D1R_INVALID",
+    "condition": "Collision-probe failure, any section 7 invariant failure, any INVALID decoder or seed, or incomplete package",
+    "table_row": 1
+  },
+  "branch_outcome": {
+    "action": "STOP. Return to implementation/spec review. No science reading. No D2-D4, no r4.",
+    "code": "STOP_D1R_INVALID",
+    "condition": "Collision-probe failure, any section 7 invariant failure, any INVALID decoder or seed, or incomplete package",
+    "table_row": 1
+  },
+  "claim_boundary": "Passing D1R does not pass Stage 2. D1R is only linear decodability under one frozen spike-only feature map, one split, and one decoder. REPRESENTATION_LIMITED is a bounded operational label: the strongest spike-only linear readout this spec permits did not clear the unchanged bar; it is not a proof that no readout could. None of D1R's outcomes establishes general learning, continual learning, developmental progress, biological equivalence, or an r4 result, and none changes a Stage 2 gate, control, validity rule, or the Stage 1 rule.",
+  "collision_probe": {
+    "code_sha256": "67185d8cc33100157b93f4061ccec92bfe5f80e192c9b221d573c323f5e97b8f",
+    "counts": {
+      "legacy_records": 704,
+      "legacy_unique_entropy_tuples": 698,
+      "legacy_unique_states": 698,
+      "new_records": 120,
+      "new_unique_entropy_tuples": 120,
+      "new_unique_states": 120
+    },
+    "decision": "PASS",
+    "identity_state_sha256": "78fb3a3a604e5e5617cb5bb224a95e9cbf8ea0b45c77484b476fe05ae14c8706",
+    "legacy_only_duplicate_count": 6,
+    "numpy_version": "1.26.4",
+    "output_sha256": "5a4f7c3dc03b624d984add2c789f38a21ece7884cbc5604179caa9793411cf0c",
+    "pass": true
+  },
+  "effective_parameter_mismatches": [],
+  "effective_parameters": {
+    "K": 19,
+    "block_length": 100,
+    "block_percentile": 5,
+    "block_resamples": 10000,
+    "bootstrap_entropy": "[20261001, seed, 31, 60, q]; q=1 A, q=2 network_positive",
+    "count_window_steps": 20,
+    "decoder": {
+      "C": 1.0,
+      "class_weight": null,
+      "fit_intercept": true,
+      "max_iter": 2000,
+      "penalty": "l2",
+      "solver": "lbfgs",
+      "tol": 1e-08
+    },
+    "decoders": [
+      "pipeline",
+      "network_positive",
+      "A"
+    ],
+    "dt_ms": 1.0,
+    "ebb90e74_sha256": "7e6ada6109924df0c31bc49de97082699a032549887fd8b0411c45e2902981bf",
+    "feature_map": "phiR_t = concat(count20_t, trace20_t, trace25_t, h_t, h_(t-1), ..., h_(t-19)) of hidden spikes present before x_t is integrated; 460 dims",
+    "hidden_beta_a_mv": 1.12,
+    "hidden_tau_a_ms": 200.0,
+    "labels": {
+      "A": "x_t = x[2000:]",
+      "network_positive": "x_(t-1) = x[1999:-1]",
+      "pipeline": "x_(t-1) = x[1999:-1]"
+    },
+    "layer_sizes": [
+      2,
+      20,
+      2
+    ],
+    "max_workers": 3,
+    "namespace": 31,
+    "network_feature_dim": 460,
+    "noise_p": 0.1,
+    "pipeline_feature_dim": 46,
+    "pipeline_map": "psi_t = the same operator on u_t = ONEHOT[x_(t-1)] (u_0 = 0), width 2; 46 dims",
+    "prediction_threshold": 0.5,
+    "root_entropy": 20261001,
+    "rss_limit_bytes": 12884901888,
+    "seeds": [
+      2100,
+      2101,
+      2102,
+      2103,
+      2104,
+      2105,
+      2106,
+      2107,
+      2108,
+      2109,
+      2110,
+      2111,
+      2112,
+      2113,
+      2114,
+      2115,
+      2116,
+      2117,
+      2118,
+      2119
+    ],
+    "spec_commit": "2d9efd8e4269057620607725a3bd615db22796f2",
+    "spec_sha256": "c1f03efefd203f65b0409793e1adc848ff22a3522d8692d634918efd0870a743",
+    "stage2_spec_sha256": "695cfaa4a23c31d31b22891eb611ac70ec5cdfdb092bef4245fc5ad6853131cd",
+    "standardization": "training mean and population std (ddof=0); zero-variance scale 1.0",
+    "tau_m_ms": [
+      20.0,
+      20.0
+    ],
+    "test_rows": 10000,
+    "test_stream_len": 12000,
+    "thresholds": {
+      "fail_median_below": 0.55,
+      "lower_bound_reference": 0.5,
+      "pass_median_accuracy": 0.7,
+      "pass_min_lower_bounds_gt_half": 15,
+      "pipeline_pass_median_accuracy": 0.99
+    },
+    "trace20_decay": 0.951229424500714,
+    "trace25_decay": 0.9607894391523232,
+    "train_rows": 198000,
+    "train_stream_len": 200000,
+    "v_reset_mv": [
+      -70.0,
+      -70.0
+    ],
+    "v_rest_mv": [
+      -70.0,
+      -70.0
+    ],
+    "v_thresh_mv": [
+      -54.0,
+      -54.0
+    ],
+    "w1_init": "U(-10,10) mV, [20261001, seed, 31, 1] first draw",
+    "w2_O0_init": "U(0,10) mV, [20261001, seed, 31, 21]",
+    "w2_O1_init": "U(0,10) mV, [20261001, seed, 31, 1] second draw",
+    "wall_limit_seconds": 21600,
+    "warmup_rows": 2000
+  },
+  "effective_parameters_match_spec": true,
+  "network_claim": "Network positive control and A decoder: under the fixed split, the single D1R exact-lag spike feature map, preprocessing, and L2 logistic decoder, x_(t-1) (respectively the noisy A target x_t) was or was not linearly decodable from the hidden spikes of the frozen random r3 network.",
+  "no_oracle": "The target is used only as an offline decoder label after feature capture. It is never a network input, hidden-state label, plasticity feature, state reset, initialization signal, or internal policy or world-model component. No reward is computed and no weight changes. No LLM logic enters the network, the feature path, the decoder, or the simulator.",
+  "package_summary": {
+    "branch": "STOP_D1R_INVALID",
+    "next_action": "STOP. Return to implementation/spec review. No science reading. No D2-D4, no r4.",
+    "not_supported": [
+      "the network can or cannot represent A at all",
+      "any nonlinear-decoder, voltage-state, trained-weight, architecture-wide, or learning-rule claim",
+      "passing Stage 2, re-scoring r2/r3, or reinterpreting the D1 results on seeds 2000..2019",
+      "general or continual learning, developmental progress, or biological equivalence",
+      "any r4 result, D2-D4 result, retuning, or post-data change to K, the map, or the decoder"
+    ],
+    "status": "INVALID",
+    "supported": [
+      "Nothing beyond the invalidity itself: the sequence stopped before any decision-bearing readout could be inspected."
+    ],
+    "table_row": 1
+  },
+  "per_seed": {},
+  "pipeline_claim": "Pipeline: under the fixed split, the pipeline-control map, preprocessing, and L2 logistic decoder, x_(t-1) was or was not recovered from the input-layer spike encoding at the D1R timing (validity of the code path only).",
+  "provenance": {
+    "approval": {
+      "d1r_spec_commit": "2d9efd8e4269057620607725a3bd615db22796f2",
+      "d1r_spec_sha256": "c1f03efefd203f65b0409793e1adc848ff22a3522d8692d634918efd0870a743",
+      "decision": "APPROVE",
+      "ebb90e74_sha256": "7e6ada6109924df0c31bc49de97082699a032549887fd8b0411c45e2902981bf",
+      "implementation_commit": "a953291091d586bb49b324f60128ebaab7fc45b8",
+      "materialized_at": "2026-10-01",
+      "materialized_by": "ethan (transcription only of Nora t_64ba9cb4 completion summary/metadata plus the t_75929454 run-authorization card id)",
+      "nora_verdict_verbatim": "APPROVE. Candidate a953291091d586bb49b324f60128ebaab7fc45b8 corrects the section 10 stop: focused tests reproduce bounded deadline enforcement, queued-work cancellation, real worker-process termination, and outcome-free INVALID finalization; three repeated focused runs passed and the maintained suite passed 371 tests in 309.44 seconds. This approves implementation only and authorizes no D1R run.",
+      "review_card": "t_64ba9cb4",
+      "review_lens": "execution",
+      "review_round": 2,
+      "reviewer": "nora",
+      "run_authorization_card": "t_75929454",
+      "run_authorization_source": "Kanban card t_75929454 (project-aib), the separate run authorization required by D1R spec section 8, under Kendrick decision t_61f7cf65 ('Option 1, diagnose first') and ebb90e74 section 10 row 2. Nora's t_64ba9cb4 verdict approves implementation only; run authority comes from t_75929454, not from Nora.",
+      "run_authorized": true,
+      "stage2_spec_sha256": "695cfaa4a23c31d31b22891eb611ac70ec5cdfdb092bef4245fc5ad6853131cd"
+    },
+    "argv": [
+      "/Users/aib-agent/miniforge3/envs/aib310/bin/python",
+      "run_stage2_diagnostic_d1r.py",
+      "--run-d1r",
+      "--approval-file",
+      "/Users/kendrick/.hermes/kanban/boards/project-aib/workspaces/t_75929454/approval-nora-a953291-run-t_75929454.json",
+      "--workers",
+      "3",
+      "--tests",
+      "aib310 pytest -q -p no:cacheprovider: 371 passed in 306.18s; step1 shakedown seed 4242 PASS (pipeline 1.0, n_iter 28, peak RSS 1801957376); ss_probe PASS byte-identical 5a4f7c3d"
+    ],
+    "argv_display": "/Users/aib-agent/miniforge3/envs/aib310/bin/python run_stage2_diagnostic_d1r.py --run-d1r --approval-file /Users/kendrick/.hermes/kanban/boards/project-aib/workspaces/t_75929454/approval-nora-a953291-run-t_75929454.json --workers 3 --tests 'aib310 pytest -q -p no:cacheprovider: 371 passed in 306.18s; step1 shakedown seed 4242 PASS (pipeline 1.0, n_iter 28, peak RSS 1801957376); ss_probe PASS byte-identical 5a4f7c3d'",
+    "branch": "v0.3.0-calibrated",
+    "code_commit": "a953291091d586bb49b324f60128ebaab7fc45b8",
+    "code_commit_equals_upstream": true,
+    "collision_probe": {
+      "code_sha256": "67185d8cc33100157b93f4061ccec92bfe5f80e192c9b221d573c323f5e97b8f",
+      "counts": {
+        "legacy_records": 704,
+        "legacy_unique_entropy_tuples": 698,
+        "legacy_unique_states": 698,
+        "new_records": 120,
+        "new_unique_entropy_tuples": 120,
+        "new_unique_states": 120
+      },
+      "decision": "PASS",
+      "identity_state_sha256": "78fb3a3a604e5e5617cb5bb224a95e9cbf8ea0b45c77484b476fe05ae14c8706",
+      "legacy_only_duplicate_count": 6,
+      "numpy_version": "1.26.4",
+      "output_sha256": "5a4f7c3dc03b624d984add2c789f38a21ece7884cbc5604179caa9793411cf0c",
+      "pass": true
+    },
+    "d1r_spec_commit": "2d9efd8e4269057620607725a3bd615db22796f2",
+    "d1r_spec_sha256_at_run": "c1f03efefd203f65b0409793e1adc848ff22a3522d8692d634918efd0870a743",
+    "d1r_spec_sha256_frozen": "c1f03efefd203f65b0409793e1adc848ff22a3522d8692d634918efd0870a743",
+    "d1r_spec_unchanged": true,
+    "ebb90e74_sha256_at_run": "7e6ada6109924df0c31bc49de97082699a032549887fd8b0411c45e2902981bf",
+    "ebb90e74_sha256_frozen": "7e6ada6109924df0c31bc49de97082699a032549887fd8b0411c45e2902981bf",
+    "ebb90e74_unchanged": true,
+    "effective_parameter_mismatches": [],
+    "effective_parameters": {
+      "K": 19,
+      "block_length": 100,
+      "block_percentile": 5,
+      "block_resamples": 10000,
+      "bootstrap_entropy": "[20261001, seed, 31, 60, q]; q=1 A, q=2 network_positive",
+      "count_window_steps": 20,
+      "decoder": {
+        "C": 1.0,
+        "class_weight": null,
+        "fit_intercept": true,
+        "max_iter": 2000,
+        "penalty": "l2",
+        "solver": "lbfgs",
+        "tol": 1e-08
+      },
+      "decoders": [
+        "pipeline",
+        "network_positive",
+        "A"
+      ],
+      "dt_ms": 1.0,
+      "ebb90e74_sha256": "7e6ada6109924df0c31bc49de97082699a032549887fd8b0411c45e2902981bf",
+      "feature_map": "phiR_t = concat(count20_t, trace20_t, trace25_t, h_t, h_(t-1), ..., h_(t-19)) of hidden spikes present before x_t is integrated; 460 dims",
+      "hidden_beta_a_mv": 1.12,
+      "hidden_tau_a_ms": 200.0,
+      "labels": {
+        "A": "x_t = x[2000:]",
+        "network_positive": "x_(t-1) = x[1999:-1]",
+        "pipeline": "x_(t-1) = x[1999:-1]"
+      },
+      "layer_sizes": [
+        2,
+        20,
+        2
+      ],
+      "max_workers": 3,
+      "namespace": 31,
+      "network_feature_dim": 460,
+      "noise_p": 0.1,
+      "pipeline_feature_dim": 46,
+      "pipeline_map": "psi_t = the same operator on u_t = ONEHOT[x_(t-1)] (u_0 = 0), width 2; 46 dims",
+      "prediction_threshold": 0.5,
+      "root_entropy": 20261001,
+      "rss_limit_bytes": 12884901888,
+      "seeds": [
+        2100,
+        2101,
+        2102,
+        2103,
+        2104,
+        2105,
+        2106,
+        2107,
+        2108,
+        2109,
+        2110,
+        2111,
+        2112,
+        2113,
+        2114,
+        2115,
+        2116,
+        2117,
+        2118,
+        2119
+      ],
+      "spec_commit": "2d9efd8e4269057620607725a3bd615db22796f2",
+      "spec_sha256": "c1f03efefd203f65b0409793e1adc848ff22a3522d8692d634918efd0870a743",
+      "stage2_spec_sha256": "695cfaa4a23c31d31b22891eb611ac70ec5cdfdb092bef4245fc5ad6853131cd",
+      "standardization": "training mean and population std (ddof=0); zero-variance scale 1.0",
+      "tau_m_ms": [
+        20.0,
+        20.0
+      ],
+      "test_rows": 10000,
+      "test_stream_len": 12000,
+      "thresholds": {
+        "fail_median_below": 0.55,
+        "lower_bound_reference": 0.5,
+        "pass_median_accuracy": 0.7,
+        "pass_min_lower_bounds_gt_half": 15,
+        "pipeline_pass_median_accuracy": 0.99
+      },
+      "trace20_decay": 0.951229424500714,
+      "trace25_decay": 0.9607894391523232,
+      "train_rows": 198000,
+      "train_stream_len": 200000,
+      "v_reset_mv": [
+        -70.0,
+        -70.0
+      ],
+      "v_rest_mv": [
+        -70.0,
+        -70.0
+      ],
+      "v_thresh_mv": [
+        -54.0,
+        -54.0
+      ],
+      "w1_init": "U(-10,10) mV, [20261001, seed, 31, 1] first draw",
+      "w2_O0_init": "U(0,10) mV, [20261001, seed, 31, 21]",
+      "w2_O1_init": "U(0,10) mV, [20261001, seed, 31, 1] second draw",
+      "wall_limit_seconds": 21600,
+      "warmup_rows": 2000
+    },
+    "effective_parameters_match_spec": true,
+    "environment": {
+      "CONDA_DEFAULT_ENV": null,
+      "CONDA_PREFIX": null,
+      "MKL_NUM_THREADS": "1",
+      "OMP_NUM_THREADS": "1",
+      "OPENBLAS_NUM_THREADS": "1",
+      "PYTHONHASHSEED": "0",
+      "VIRTUAL_ENV": null
+    },
+    "host": {
+      "cpu_count": 6,
+      "hostname": "Kendricks-Mac-mini.local",
+      "machine": "x86_64",
+      "platform": "macOS-15.7.4-x86_64-i386-64bit",
+      "processor": "i386"
+    },
+    "maintained_tests": "aib310 pytest -q -p no:cacheprovider: 371 passed in 306.18s; step1 shakedown seed 4242 PASS (pipeline 1.0, n_iter 28, peak RSS 1801957376); ss_probe PASS byte-identical 5a4f7c3d",
+    "mode": "d1r",
+    "numpy": "1.26.4",
+    "output_dir": "/Users/kendrick/Projects/pure-snn-learning/results_stage2_diagnostic_d1r/runs/d1r-20261002T003314006433Z-a953291091d5-pid18595",
+    "psutil": "7.2.2",
+    "python": "3.10.20 | packaged by conda-forge | (main, Mar  5 2026, 16:59:46) [Clang 19.1.7 ]",
+    "schema_version": 1,
+    "scientific_files": [
+      "snn/core.py",
+      "snn/stage2.py",
+      "snn/stage2_r3.py",
+      "snn/stage2_diagnostic.py",
+      "snn/stage2_diagnostic_stats.py",
+      "snn/stage2_diagnostic_d1r.py",
+      "run_stage2.py",
+      "run_stage2_diagnostic.py",
+      "run_stage2_diagnostic_d1r.py",
+      "tools/stage2_diagnostic_ss_probe.py",
+      "tools/stage2_diagnostic_d1r_ss_probe.py",
+      "tests/test_stage2_diagnostic_d1r.py",
+      "docs/STAGE2_SPEC.md",
+      "docs/STAGE2_DIAGNOSTIC_SPEC.md",
+      "docs/STAGE2_DIAGNOSTIC_D1R_SPEC.md",
+      "docs/STAGE2_DIAGNOSTIC_D1R_IMPLEMENTATION_NOTES.md"
+    ],
+    "scientific_files_clean": true,
+    "scientific_files_status": "",
+    "seeds": [
+      2100,
+      2101,
+      2102,
+      2103,
+      2104,
+      2105,
+      2106,
+      2107,
+      2108,
+      2109,
+      2110,
+      2111,
+      2112,
+      2113,
+      2114,
+      2115,
+      2116,
+      2117,
+      2118,
+      2119
+    ],
+    "sklearn": "1.7.2",
+    "stage2_spec_sha256_at_run": "695cfaa4a23c31d31b22891eb611ac70ec5cdfdb092bef4245fc5ad6853131cd",
+    "stage2_spec_sha256_frozen": "695cfaa4a23c31d31b22891eb611ac70ec5cdfdb092bef4245fc5ad6853131cd",
+    "stage2_spec_unchanged": true,
+    "torch": "2.2.2",
+    "upstream_tracking_ref_sha": "a953291091d586bb49b324f60128ebaab7fc45b8",
+    "workers": 3,
+    "written_at": "2026-10-02T00:33:16.715555+00:00"
+  },
+  "readouts": {
+    "A": null,
+    "network_positive": null,
+    "pipeline": null
+  },
+  "run_metadata": {
+    "incomplete_reason": null,
+    "interruptions": 0,
+    "peak_rss_single_process_bytes": 2738458624,
+    "peak_rss_total_bytes": 7126728704,
+    "retries": 0,
+    "stages": [
+      {
+        "finished_at": "2026-10-02T01:46:29.499999+00:00",
+        "interruptions": 0,
+        "jobs": 20,
+        "max_worker_processes_observed": 4,
+        "peak_rss_single_process_bytes": 2738458624,
+        "peak_rss_total_bytes": 7126728704,
+        "retries": 0,
+        "rows_error": 2,
+        "rows_ok": 18,
+        "rss_exceeded": false,
+        "rss_limit_bytes": 12884901888,
+        "stage": "D1R",
+        "started_at": "2026-10-02T00:33:20.005951+00:00",
+        "wall_seconds": 4389.4941391944885,
+        "workers": 3
+      }
+    ],
+    "total_wall_seconds": 4389.4941391944885,
+    "workers": 3
+  },
+  "schema_version": 1,
+  "status": "INVALID",
+  "violations": [
+    "D1R seed=2100: job status 'error'",
+    "D1R seed=2100: missing field(s) ['train_input_hash', 'test_input_hash', 'train_network_feature_hash', 'test_network_feature_hash', 'train_pipeline_feature_hash', 'test_pipeline_feature_hash', 'initial_weights_sha256', 'train_rows', 'test_rows', 'warmup_rows', 'network_feature_dim', 'pipeline_feature_dim', 'weights_constant', 'nesting_ok', 'reward_computed', 'decoders']",
+    "D1R seed=2106: job status 'error'",
+    "D1R seed=2106: missing field(s) ['train_input_hash', 'test_input_hash', 'train_network_feature_hash', 'test_network_feature_hash', 'train_pipeline_feature_hash', 'test_pipeline_feature_hash', 'initial_weights_sha256', 'train_rows', 'test_rows', 'warmup_rows', 'network_feature_dim', 'pipeline_feature_dim', 'weights_constant', 'nesting_ok', 'reward_computed', 'decoders']"
+  ]
+}

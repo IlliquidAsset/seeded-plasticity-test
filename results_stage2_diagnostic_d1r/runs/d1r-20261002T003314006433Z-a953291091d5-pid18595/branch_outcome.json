@@ -1,0 +1,7 @@
+{
+  "action": "STOP. Return to implementation/spec review. No science reading. No D2-D4, no r4.",
+  "code": "STOP_D1R_INVALID",
+  "condition": "Collision-probe failure, any section 7 invariant failure, any INVALID decoder or seed, or incomplete package",
+  "status": "INVALID",
+  "table_row": 1
+}
