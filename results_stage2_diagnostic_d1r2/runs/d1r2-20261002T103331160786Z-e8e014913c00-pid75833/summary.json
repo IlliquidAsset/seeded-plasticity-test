@@ -1,0 +1,1730 @@
+{
+  "artifacts": [
+    "D1R2.events.jsonl",
+    "D1R2.progress.jsonl",
+    "branch_outcome.json",
+    "d1r2_rows.jsonl",
+    "provenance.json",
+    "summary.json"
+  ],
+  "branch": {
+    "action": "D1 is PASS by D1R2. D2-D4 require a separate run authorization. No r4 from D1R2 alone.",
+    "code": "D1R2_PASS_D2_D4_ELIGIBLE",
+    "condition": "Pipeline PASS, network_positive PASS, A PASS",
+    "table_row": 6
+  },
+  "branch_outcome": {
+    "action": "D1 is PASS by D1R2. D2-D4 require a separate run authorization. No r4 from D1R2 alone.",
+    "code": "D1R2_PASS_D2_D4_ELIGIBLE",
+    "condition": "Pipeline PASS, network_positive PASS, A PASS",
+    "table_row": 6
+  },
+  "claim_boundary": "Passing D1R2 does not pass Stage 2. D1R2 is only linear decodability under one frozen spike-only feature map, one split, and one decoder. REPRESENTATION_LIMITED is a bounded operational label: the strongest spike-only linear readout this spec permits did not clear the unchanged bar; it is not a proof that no readout could. None of D1R2's outcomes establishes general learning, continual learning, developmental progress, biological equivalence, or an r4 result, and none changes a Stage 2 gate, control, validity rule, or the Stage 1 rule.",
+  "collision_probe": {
+    "code_sha256": "cf0bb3b1adf5a9e34f48b5901e92f6e75d6a979cd91d042436f79450172693b3",
+    "counts": {
+      "legacy_records": 824,
+      "legacy_unique_entropy_tuples": 818,
+      "legacy_unique_states": 818,
+      "new_records": 120,
+      "new_unique_entropy_tuples": 120,
+      "new_unique_states": 120
+    },
+    "decision": "PASS",
+    "execution": "run_preflight",
+    "identity_state_sha256": "4d8dd8b477aa2615bc14f66ed11223d0995c10df0985919577bacc9648b6848e",
+    "legacy_only_duplicate_count": 6,
+    "legacy_only_entropy_duplicate_groups": [
+      {
+        "key": [
+          20261001,
+          7,
+          1
+        ],
+        "members": [
+          {
+            "entropy": [
+              20261001,
+              7,
+              1
+            ],
+            "name": "legacy/object/seed=7/component=1"
+          },
+          {
+            "entropy": [
+              20261001,
+              7,
+              1
+            ],
+            "name": "legacy/bootstrap/k=1"
+          }
+        ]
+      },
+      {
+        "key": [
+          20261001,
+          7,
+          2
+        ],
+        "members": [
+          {
+            "entropy": [
+              20261001,
+              7,
+              2
+            ],
+            "name": "legacy/object/seed=7/component=2"
+          },
+          {
+            "entropy": [
+              20261001,
+              7,
+              2
+            ],
+            "name": "legacy/bootstrap/k=2"
+          }
+        ]
+      },
+      {
+        "key": [
+          20261001,
+          7,
+          3
+        ],
+        "members": [
+          {
+            "entropy": [
+              20261001,
+              7,
+              3
+            ],
+            "name": "legacy/object/seed=7/component=3"
+          },
+          {
+            "entropy": [
+              20261001,
+              7,
+              3
+            ],
+            "name": "legacy/bootstrap/k=3"
+          }
+        ]
+      },
+      {
+        "key": [
+          20261001,
+          7,
+          4
+        ],
+        "members": [
+          {
+            "entropy": [
+              20261001,
+              7,
+              4
+            ],
+            "name": "legacy/object/seed=7/component=4"
+          },
+          {
+            "entropy": [
+              20261001,
+              7,
+              4
+            ],
+            "name": "legacy/bootstrap/k=4"
+          }
+        ]
+      },
+      {
+        "key": [
+          20261001,
+          7,
+          5
+        ],
+        "members": [
+          {
+            "entropy": [
+              20261001,
+              7,
+              5
+            ],
+            "name": "legacy/object/seed=7/component=5"
+          },
+          {
+            "entropy": [
+              20261001,
+              7,
+              5
+            ],
+            "name": "legacy/bootstrap/k=5"
+          }
+        ]
+      },
+      {
+        "key": [
+          20261001,
+          7,
+          6
+        ],
+        "members": [
+          {
+            "entropy": [
+              20261001,
+              7,
+              6
+            ],
+            "name": "legacy/object/seed=7/component=6"
+          },
+          {
+            "entropy": [
+              20261001,
+              7,
+              6
+            ],
+            "name": "legacy/bootstrap/k=6"
+          }
+        ]
+      }
+    ],
+    "legacy_only_state_duplicate_groups": [
+      {
+        "key": [
+          102316032,
+          1765328211,
+          3107267286,
+          1697209402,
+          3069834080,
+          1545611947,
+          3100770737,
+          818661560
+        ],
+        "members": [
+          {
+            "entropy": [
+              20261001,
+              7,
+              3
+            ],
+            "name": "legacy/object/seed=7/component=3"
+          },
+          {
+            "entropy": [
+              20261001,
+              7,
+              3
+            ],
+            "name": "legacy/bootstrap/k=3"
+          }
+        ]
+      },
+      {
+        "key": [
+          1640050113,
+          486931131,
+          2189622799,
+          3703831112,
+          531065175,
+          3219478571,
+          3995352585,
+          1281559304
+        ],
+        "members": [
+          {
+            "entropy": [
+              20261001,
+              7,
+              4
+            ],
+            "name": "legacy/object/seed=7/component=4"
+          },
+          {
+            "entropy": [
+              20261001,
+              7,
+              4
+            ],
+            "name": "legacy/bootstrap/k=4"
+          }
+        ]
+      },
+      {
+        "key": [
+          219456194,
+          2415799837,
+          3064015908,
+          1750861536,
+          4119815209,
+          3058877457,
+          3898469880,
+          3060714786
+        ],
+        "members": [
+          {
+            "entropy": [
+              20261001,
+              7,
+              2
+            ],
+            "name": "legacy/object/seed=7/component=2"
+          },
+          {
+            "entropy": [
+              20261001,
+              7,
+              2
+            ],
+            "name": "legacy/bootstrap/k=2"
+          }
+        ]
+      },
+      {
+        "key": [
+          2384187345,
+          2939998645,
+          4055310344,
+          1899177406,
+          3045954615,
+          4146159048,
+          1962295465,
+          2180353752
+        ],
+        "members": [
+          {
+            "entropy": [
+              20261001,
+              7,
+              1
+            ],
+            "name": "legacy/object/seed=7/component=1"
+          },
+          {
+            "entropy": [
+              20261001,
+              7,
+              1
+            ],
+            "name": "legacy/bootstrap/k=1"
+          }
+        ]
+      },
+      {
+        "key": [
+          4154061164,
+          2786537559,
+          3347145517,
+          3892629899,
+          1855054916,
+          3467473181,
+          2121570248,
+          1704832466
+        ],
+        "members": [
+          {
+            "entropy": [
+              20261001,
+              7,
+              6
+            ],
+            "name": "legacy/object/seed=7/component=6"
+          },
+          {
+            "entropy": [
+              20261001,
+              7,
+              6
+            ],
+            "name": "legacy/bootstrap/k=6"
+          }
+        ]
+      },
+      {
+        "key": [
+          51872086,
+          3380592064,
+          3700031785,
+          1669046571,
+          3547588338,
+          2324326901,
+          3724971173,
+          869076813
+        ],
+        "members": [
+          {
+            "entropy": [
+              20261001,
+              7,
+              5
+            ],
+            "name": "legacy/object/seed=7/component=5"
+          },
+          {
+            "entropy": [
+              20261001,
+              7,
+              5
+            ],
+            "name": "legacy/bootstrap/k=5"
+          }
+        ]
+      }
+    ],
+    "new_entropy_collision_groups": [],
+    "new_state_collision_groups": [],
+    "new_vs_legacy_entropy_collisions": [],
+    "new_vs_legacy_state_collisions": [],
+    "numpy_version": "1.26.4",
+    "output_sha256": "f52137486d8136fa17351d359bf674266af85d9c7e20c22898409645461d6597",
+    "pass": true,
+    "reproduces_spec_section_3_3": true,
+    "seed_ranges_disjoint": true,
+    "synthetic_override": false
+  },
+  "effective_parameter_mismatches": [],
+  "effective_parameters": {
+    "K": 19,
+    "block_length": 100,
+    "block_percentile": 5,
+    "block_resamples": 10000,
+    "bootstrap_entropy": "[20261001, seed, 32, 60, q]; q=1 A, q=2 network_positive",
+    "count_window_steps": 20,
+    "decoder": {
+      "C": 1.0,
+      "class_weight": null,
+      "fit_intercept": true,
+      "max_iter": 20000,
+      "penalty": "l2",
+      "solver": "lbfgs",
+      "tol": 1e-08
+    },
+    "decoders": [
+      "pipeline",
+      "network_positive",
+      "A"
+    ],
+    "dt_ms": 1.0,
+    "ebb90e74_sha256": "7e6ada6109924df0c31bc49de97082699a032549887fd8b0411c45e2902981bf",
+    "feature_map": "phiR_t = concat(count20_t, trace20_t, trace25_t, h_t, h_(t-1), ..., h_(t-19)) of hidden spikes present before x_t is integrated; 460 dims",
+    "hidden_beta_a_mv": 1.12,
+    "hidden_tau_a_ms": 200.0,
+    "labels": {
+      "A": "x_t = x[2000:]",
+      "network_positive": "x_(t-1) = x[1999:-1]",
+      "pipeline": "x_(t-1) = x[1999:-1]"
+    },
+    "layer_sizes": [
+      2,
+      20,
+      2
+    ],
+    "max_workers": 3,
+    "namespace": 32,
+    "network_feature_dim": 460,
+    "noise_p": 0.1,
+    "pipeline_feature_dim": 46,
+    "pipeline_map": "psi_t = the same operator on u_t = ONEHOT[x_(t-1)] (u_0 = 0), width 2; 46 dims",
+    "prediction_threshold": 0.5,
+    "root_entropy": 20261001,
+    "rss_limit_bytes": 12884901888,
+    "seeds": [
+      2200,
+      2201,
+      2202,
+      2203,
+      2204,
+      2205,
+      2206,
+      2207,
+      2208,
+      2209,
+      2210,
+      2211,
+      2212,
+      2213,
+      2214,
+      2215,
+      2216,
+      2217,
+      2218,
+      2219
+    ],
+    "spec_commit": "f3d52ee91b7ec87f4e665f6ce80208954c30c7a2",
+    "spec_sha256": "e5a6a5f4eb7a7adafd9255ac6504593e45be51eefbfa92ce24c63b70fafb82a2",
+    "stage2_spec_sha256": "695cfaa4a23c31d31b22891eb611ac70ec5cdfdb092bef4245fc5ad6853131cd",
+    "standardization": "training mean and population std (ddof=0); zero-variance scale 1.0",
+    "tau_m_ms": [
+      20.0,
+      20.0
+    ],
+    "test_rows": 10000,
+    "test_stream_len": 12000,
+    "thresholds": {
+      "fail_median_below": 0.55,
+      "lower_bound_reference": 0.5,
+      "pass_median_accuracy": 0.7,
+      "pass_min_lower_bounds_gt_half": 15,
+      "pipeline_pass_median_accuracy": 0.99
+    },
+    "trace20_decay": 0.951229424500714,
+    "trace25_decay": 0.9607894391523232,
+    "train_rows": 198000,
+    "train_stream_len": 200000,
+    "v_reset_mv": [
+      -70.0,
+      -70.0
+    ],
+    "v_rest_mv": [
+      -70.0,
+      -70.0
+    ],
+    "v_thresh_mv": [
+      -54.0,
+      -54.0
+    ],
+    "w1_init": "U(-10,10) mV, [20261001, seed, 32, 1] first draw",
+    "w2_O0_init": "U(0,10) mV, [20261001, seed, 32, 21]",
+    "w2_O1_init": "U(0,10) mV, [20261001, seed, 32, 1] second draw",
+    "wall_limit_seconds": 21600,
+    "warmup_rows": 2000
+  },
+  "effective_parameters_match_spec": true,
+  "network_claim": "Network positive control and A decoder: under the fixed split, the single D1R2 exact-lag spike feature map, preprocessing, and L2 logistic decoder, x_(t-1) (respectively the noisy A target x_t) was or was not linearly decodable from the hidden spikes of the frozen random r3 network.",
+  "no_oracle": "The target is used only as an offline decoder label after feature capture. It is never a network input, hidden-state label, plasticity feature, state reset, initialization signal, or internal policy or world-model component. No reward is computed and no weight changes. No LLM logic enters the network, the feature path, the decoder, or the simulator.",
+  "package_summary": {
+    "branch": "D1R2_PASS_D2_D4_ELIGIBLE",
+    "next_action": "D1 is PASS by D1R2. D2-D4 require a separate run authorization. No r4 from D1R2 alone.",
+    "not_supported": [
+      "the network can or cannot represent A at all",
+      "any nonlinear-decoder, voltage-state, trained-weight, architecture-wide, or learning-rule claim",
+      "passing Stage 2, re-scoring r2/r3, or reinterpreting the D1 results on seeds 2000..2019",
+      "general or continual learning, developmental progress, or biological equivalence",
+      "any r4 result, D2-D4 result, retuning, or post-data change to K, the map, or the decoder"
+    ],
+    "status": "PASS",
+    "supported": [
+      "Pipeline PASS: Pipeline: under the fixed split, the pipeline-control map, preprocessing, and L2 logistic decoder, x_(t-1) was or was not recovered from the input-layer spike encoding at the D1R2 timing (validity of the code path only).",
+      "Network positive control PASS: Network positive control and A decoder: under the fixed split, the single D1R2 exact-lag spike feature map, preprocessing, and L2 logistic decoder, x_(t-1) (respectively the noisy A target x_t) was or was not linearly decodable from the hidden spikes of the frozen random r3 network.",
+      "A decoder PASS: Network positive control and A decoder: under the fixed split, the single D1R2 exact-lag spike feature map, preprocessing, and L2 logistic decoder, x_(t-1) (respectively the noisy A target x_t) was or was not linearly decodable from the hidden spikes of the frozen random r3 network."
+    ],
+    "table_row": 6
+  },
+  "per_seed": {
+    "2200": {
+      "coefficients_sha256": {
+        "A": "e382512f4c039b6459af59e004b4ad7c45867583f41a4bd43e78089fe7dcf4a1",
+        "network_positive": "b730ae6959f7d22ab385b3089239e4b9e89016c3a2d9982ce4c26105ff3f3019",
+        "pipeline": "5950888aaac239979da9a042186fa1467c4874cc16065123d6e9ac01f3bcd975"
+      },
+      "converged": {
+        "A": true,
+        "network_positive": true,
+        "pipeline": true
+      },
+      "n_iter": {
+        "A": [
+          1623
+        ],
+        "network_positive": [
+          1594
+        ],
+        "pipeline": [
+          28
+        ]
+      },
+      "nesting_ok": true,
+      "normalization_sha256": {
+        "A": "8fa79b23ebf963980047e737396e78a64b52353248245ed404818a35b5ea610b",
+        "network_positive": "8fa79b23ebf963980047e737396e78a64b52353248245ed404818a35b5ea610b",
+        "pipeline": "6b0d9d1ef86042befa73887cb2374bd5b3fe2caed6e281ddd3c946b60dd81579"
+      }
+    },
+    "2201": {
+      "coefficients_sha256": {
+        "A": "45b2b4b6329c109144adcc68943ccf49508972c9034e55c041ff57bf9d0de5f4",
+        "network_positive": "c57d04106df005424641deebf28360e399ccba78f124fc35c7a9bd5b72a9487b",
+        "pipeline": "baeb42ac44bf38b2a8c83bc73b7a5fb5df2ca6ee8f9e639c05f51893fc5a4421"
+      },
+      "converged": {
+        "A": true,
+        "network_positive": true,
+        "pipeline": true
+      },
+      "n_iter": {
+        "A": [
+          1706
+        ],
+        "network_positive": [
+          1739
+        ],
+        "pipeline": [
+          27
+        ]
+      },
+      "nesting_ok": true,
+      "normalization_sha256": {
+        "A": "de2847350352f2d5d63ce9bfff1ab0a95f4add6bfce6cdba49245fb5097dab69",
+        "network_positive": "de2847350352f2d5d63ce9bfff1ab0a95f4add6bfce6cdba49245fb5097dab69",
+        "pipeline": "26a68495849509bfe7c5dfb3a9392d360f254773cfd8a9279b680f9cf6f74a90"
+      }
+    },
+    "2202": {
+      "coefficients_sha256": {
+        "A": "e37999c61f03c78c12fd34ae7c360d05e19e67e08369c37d24b6edad48e3dd68",
+        "network_positive": "2467bf5f3320eb8ff372bd99c4cb0eb8b29c9c023390d808fe8225c4a543c38e",
+        "pipeline": "b058ca9820b9ddeaeb53df4c3e4b4abb5cd6c682d9475042c3009ffba011c301"
+      },
+      "converged": {
+        "A": true,
+        "network_positive": true,
+        "pipeline": true
+      },
+      "n_iter": {
+        "A": [
+          1933
+        ],
+        "network_positive": [
+          1640
+        ],
+        "pipeline": [
+          26
+        ]
+      },
+      "nesting_ok": true,
+      "normalization_sha256": {
+        "A": "bba91daca9a926eb8298d1ab4db275fa4bb5130dd676b08f9dfdd50caefccfd3",
+        "network_positive": "bba91daca9a926eb8298d1ab4db275fa4bb5130dd676b08f9dfdd50caefccfd3",
+        "pipeline": "6ef5a377f946a8552527352ec8cd42cc1da03e97432d484b8d04d11b52cc94f0"
+      }
+    },
+    "2203": {
+      "coefficients_sha256": {
+        "A": "d4f2bb20cc2911e5b1bb5080124a5653f6db14b70ff806bdfa08ea363faa704f",
+        "network_positive": "327fab2617aec18a280bda0d67355212ec06ec74c64f7a8982fef3d20b92aaa3",
+        "pipeline": "ea2b8d6a6b70fe7fb10e924b28e7a15d17d8efb636c676024cc5f1521e8f9d8c"
+      },
+      "converged": {
+        "A": true,
+        "network_positive": true,
+        "pipeline": true
+      },
+      "n_iter": {
+        "A": [
+          1287
+        ],
+        "network_positive": [
+          1240
+        ],
+        "pipeline": [
+          28
+        ]
+      },
+      "nesting_ok": true,
+      "normalization_sha256": {
+        "A": "68bce69210517e1b1df47f1078684e43130cd555c988612475c1fc891406a1e4",
+        "network_positive": "68bce69210517e1b1df47f1078684e43130cd555c988612475c1fc891406a1e4",
+        "pipeline": "6ddb34fce504be8b86afd1db51f9dd4ab6d0362beea937c401a2db500b03c910"
+      }
+    },
+    "2204": {
+      "coefficients_sha256": {
+        "A": "6d64f47178e65d48e8011b8a7612d42eeb8756a60dd3c314a78e14c78c518a45",
+        "network_positive": "105ddf61d299de75d2ece5708e0a90f762fd79739d33f172792d2d6c3d695542",
+        "pipeline": "03bcb2f6bcd75286dfde32dc197a61d65ddcaf3620e19bad945513b988b219a1"
+      },
+      "converged": {
+        "A": true,
+        "network_positive": true,
+        "pipeline": true
+      },
+      "n_iter": {
+        "A": [
+          1638
+        ],
+        "network_positive": [
+          1652
+        ],
+        "pipeline": [
+          27
+        ]
+      },
+      "nesting_ok": true,
+      "normalization_sha256": {
+        "A": "05ddc5a487f6f06ea455543cfd4b39d292a277067e01e43141bccae519cc6c44",
+        "network_positive": "05ddc5a487f6f06ea455543cfd4b39d292a277067e01e43141bccae519cc6c44",
+        "pipeline": "aff43bc258254b1215a9d8638fab1f667385cbbfcc395e12a532d7ff0edb585b"
+      }
+    },
+    "2205": {
+      "coefficients_sha256": {
+        "A": "9f3185478273cc3c969525406068bca5a5dfe0ccd2bb0e6660aa1cd566349eb0",
+        "network_positive": "7359f7d1e09ee64baba7c4a4dd8fcd08af3aa220bdfaeacddec051477c1fa01e",
+        "pipeline": "50b3dae59f649a314e58df3822f5c8e01d540852f545ed882c37b42e1d4a42a1"
+      },
+      "converged": {
+        "A": true,
+        "network_positive": true,
+        "pipeline": true
+      },
+      "n_iter": {
+        "A": [
+          1310
+        ],
+        "network_positive": [
+          1379
+        ],
+        "pipeline": [
+          27
+        ]
+      },
+      "nesting_ok": true,
+      "normalization_sha256": {
+        "A": "1c2616e9b73e0bf37f1790eb71723f10f785b65174cbd7fc449dc41e3c5635a7",
+        "network_positive": "1c2616e9b73e0bf37f1790eb71723f10f785b65174cbd7fc449dc41e3c5635a7",
+        "pipeline": "d8b6dc532c1760deec21b5c67c0012236c8dd6adb29274267662180fbadb6f6e"
+      }
+    },
+    "2206": {
+      "coefficients_sha256": {
+        "A": "1611b522a1d580cf3e149f21da17454dad968a37da1e741b01d3c2f3303eddcc",
+        "network_positive": "19b8abbd77aaf6ceb57bb3eb93eccbd314008a0d2dfc049373c0565fca2f898e",
+        "pipeline": "d006bf7e8eaef5ca4ed5d64496efafdeb1abd70f7056c1efd51754fefc4b9f1f"
+      },
+      "converged": {
+        "A": true,
+        "network_positive": true,
+        "pipeline": true
+      },
+      "n_iter": {
+        "A": [
+          1746
+        ],
+        "network_positive": [
+          1369
+        ],
+        "pipeline": [
+          27
+        ]
+      },
+      "nesting_ok": true,
+      "normalization_sha256": {
+        "A": "b013c36263abcc7365c2a3a39ed9537b01058232697500e2165e66e9f0ed7834",
+        "network_positive": "b013c36263abcc7365c2a3a39ed9537b01058232697500e2165e66e9f0ed7834",
+        "pipeline": "b4068ada53e916fc2c931b09853f7921eed922e31e76dd04d3751b859657e5fa"
+      }
+    },
+    "2207": {
+      "coefficients_sha256": {
+        "A": "3e90099cc8636cb93122348ac1bb0a25c0e0971d94dd5e9407986309eccf5e5b",
+        "network_positive": "08636732e2954c339d3dcd789c6a4a158bd996c9813dfd695ba6d346e3cec795",
+        "pipeline": "d0d337e90da0d86c81dc2508f2a1bc7ccc29f5d614f6dc517c7b261041867437"
+      },
+      "converged": {
+        "A": true,
+        "network_positive": true,
+        "pipeline": true
+      },
+      "n_iter": {
+        "A": [
+          1621
+        ],
+        "network_positive": [
+          1393
+        ],
+        "pipeline": [
+          28
+        ]
+      },
+      "nesting_ok": true,
+      "normalization_sha256": {
+        "A": "bd5ef83dce241d306606ee7039292be14dc3f4111bd42ffd94b8f405105d68d4",
+        "network_positive": "bd5ef83dce241d306606ee7039292be14dc3f4111bd42ffd94b8f405105d68d4",
+        "pipeline": "ad5e80834ab6f8558e44b79bc08eed5b52cfb2d31f802cea71f75dc235e065c1"
+      }
+    },
+    "2208": {
+      "coefficients_sha256": {
+        "A": "4dd6882e952bb2ea8cd1d1446a260eacca8c6b57d7bb7385cfaa1612868de691",
+        "network_positive": "d693c4f438d2cb98790f38c88e034a4597730daa3327562138388ebe0ed75443",
+        "pipeline": "601d1c674fc9e941bc3407e3bf8e8836e4c568cf2edf1d397fd236db8153d89e"
+      },
+      "converged": {
+        "A": true,
+        "network_positive": true,
+        "pipeline": true
+      },
+      "n_iter": {
+        "A": [
+          2026
+        ],
+        "network_positive": [
+          1773
+        ],
+        "pipeline": [
+          27
+        ]
+      },
+      "nesting_ok": true,
+      "normalization_sha256": {
+        "A": "1c4a07be99692cccba962bc61d0bc8cfac2faf075b4b7f606156aa4cf1d0746a",
+        "network_positive": "1c4a07be99692cccba962bc61d0bc8cfac2faf075b4b7f606156aa4cf1d0746a",
+        "pipeline": "b8afbed8035d25981f5930f4f76987a90ed38bfa86287cf071c50024ffadcce5"
+      }
+    },
+    "2209": {
+      "coefficients_sha256": {
+        "A": "ba38eefce12b1bfa2a0956b7431a5c9947362e225bbc81cde66801d0dca81680",
+        "network_positive": "b5083c1d2891b1055551cdab0d520c816e565d34c786df2bf0af9c92f66c3dca",
+        "pipeline": "6a25c9f68dd2708f52ec00ae72677f2bbebe0dd425238fa475f22167e2703a77"
+      },
+      "converged": {
+        "A": true,
+        "network_positive": true,
+        "pipeline": true
+      },
+      "n_iter": {
+        "A": [
+          1603
+        ],
+        "network_positive": [
+          1442
+        ],
+        "pipeline": [
+          26
+        ]
+      },
+      "nesting_ok": true,
+      "normalization_sha256": {
+        "A": "b04710a0ea5b25d00e73c881c4c27412ca5045f0fe7bb864255bfeeb8545bc60",
+        "network_positive": "b04710a0ea5b25d00e73c881c4c27412ca5045f0fe7bb864255bfeeb8545bc60",
+        "pipeline": "c9ec247ede8288049b4f4860a97aa668b2133c38bc1bc64590a4823bf389ca22"
+      }
+    },
+    "2210": {
+      "coefficients_sha256": {
+        "A": "d83edf827d0fc74da5891b21801036832c5093b3ac0e21b981c65efa0ecf25c1",
+        "network_positive": "fffe35a68a57904bf0edc893a19d26e2842b5eca828bd0908a1122ad58da9271",
+        "pipeline": "f2d09f43c097b621284ee7b0c52fb09ac08efe3e3ec62a48ed86c6c120a71741"
+      },
+      "converged": {
+        "A": true,
+        "network_positive": true,
+        "pipeline": true
+      },
+      "n_iter": {
+        "A": [
+          1897
+        ],
+        "network_positive": [
+          1818
+        ],
+        "pipeline": [
+          28
+        ]
+      },
+      "nesting_ok": true,
+      "normalization_sha256": {
+        "A": "99029cc118fba8bf604849ef9a3e470df091a23ed304f07985c31872b5740350",
+        "network_positive": "99029cc118fba8bf604849ef9a3e470df091a23ed304f07985c31872b5740350",
+        "pipeline": "ee0891d7be73d663e1123ac7f1324ab970b0718aa9913d742912b840eefdd4ef"
+      }
+    },
+    "2211": {
+      "coefficients_sha256": {
+        "A": "b9de1804bae320fde5c46f66ca34d35ff85b4783e30bab918ee4dafde5456666",
+        "network_positive": "9b0091ac13f59de5f181b09d077574fb11e62933dd86bfefad8ec5caf2f431aa",
+        "pipeline": "db4d70ea43f3543798118cbe5caa92f27a13916f61c65ee579687761ec209a99"
+      },
+      "converged": {
+        "A": true,
+        "network_positive": true,
+        "pipeline": true
+      },
+      "n_iter": {
+        "A": [
+          1605
+        ],
+        "network_positive": [
+          1548
+        ],
+        "pipeline": [
+          28
+        ]
+      },
+      "nesting_ok": true,
+      "normalization_sha256": {
+        "A": "50b36d7f9d81100361f93901848c520e413e987718d2175fe791760b224f0fd5",
+        "network_positive": "50b36d7f9d81100361f93901848c520e413e987718d2175fe791760b224f0fd5",
+        "pipeline": "82599448b415a6a92ebb12937f10b57fca754e25dce033391f8e440b3b4be2ae"
+      }
+    },
+    "2212": {
+      "coefficients_sha256": {
+        "A": "fe68b6f8c4f4436a288d58637a0b8ca3b0f9731055dba2f395fb9599641a2e2d",
+        "network_positive": "119e257f5113eb772d8e2a631c5337bb62cb8b6ffb6fb3a4939ff2a08f1710fc",
+        "pipeline": "8b7f06399b7556d73507142089d7cc42606d8b3bdc8ae589330c3c04a749ce33"
+      },
+      "converged": {
+        "A": true,
+        "network_positive": true,
+        "pipeline": true
+      },
+      "n_iter": {
+        "A": [
+          1698
+        ],
+        "network_positive": [
+          1481
+        ],
+        "pipeline": [
+          28
+        ]
+      },
+      "nesting_ok": true,
+      "normalization_sha256": {
+        "A": "43bf0d026172ca2356c3ccb5c27909007b3178319ae0c3c2f4d4e706ee2a9b9d",
+        "network_positive": "43bf0d026172ca2356c3ccb5c27909007b3178319ae0c3c2f4d4e706ee2a9b9d",
+        "pipeline": "152a15e838d486893019d2490cc86300e6b97a82b34920823da6778eca15a8c4"
+      }
+    },
+    "2213": {
+      "coefficients_sha256": {
+        "A": "c5be30ab7f2df4d8844f5e80b2fbc2793d2f75e9083087e8e8c729f19c203584",
+        "network_positive": "b6c5d81bdc05b08fdb0177043095590c53afd1e7b9e6d5483f53758cb7618aad",
+        "pipeline": "43ba2ae8700ca27ec5dfe3217023ce9b3ccff601419245f6a578ddb9180a6f03"
+      },
+      "converged": {
+        "A": true,
+        "network_positive": true,
+        "pipeline": true
+      },
+      "n_iter": {
+        "A": [
+          2037
+        ],
+        "network_positive": [
+          1770
+        ],
+        "pipeline": [
+          26
+        ]
+      },
+      "nesting_ok": true,
+      "normalization_sha256": {
+        "A": "b3e975a8c7dca79c209f82d328fe9ea53bf6cb1c8ad1385e79a15ddcb2c773b9",
+        "network_positive": "b3e975a8c7dca79c209f82d328fe9ea53bf6cb1c8ad1385e79a15ddcb2c773b9",
+        "pipeline": "3fce437ec0bae61fe18f75bca22988437ee576c99628ff7a64136d2fc6dd1bb9"
+      }
+    },
+    "2214": {
+      "coefficients_sha256": {
+        "A": "833072d735fa760a8b5c92b4c2430c3fbabdc269d14301b187cf5f8b141bac13",
+        "network_positive": "f3ddfac327b3a586a0cf29199c9ce0710b3a1ec192f6baad58a0950f01a5d0bd",
+        "pipeline": "57105a4842e954fd8a440f407fa5c953f271e2b3e4b1291be1951cd9649b21bb"
+      },
+      "converged": {
+        "A": true,
+        "network_positive": true,
+        "pipeline": true
+      },
+      "n_iter": {
+        "A": [
+          1871
+        ],
+        "network_positive": [
+          1836
+        ],
+        "pipeline": [
+          27
+        ]
+      },
+      "nesting_ok": true,
+      "normalization_sha256": {
+        "A": "5bf8600852d89309db0af4b82b3f87ec339844487bfc70a3a9e0f9a3698ae92e",
+        "network_positive": "5bf8600852d89309db0af4b82b3f87ec339844487bfc70a3a9e0f9a3698ae92e",
+        "pipeline": "6fa98e8ee506b1ccc4a9bd063c1d91453df5f301de8042d74419b4de19bef043"
+      }
+    },
+    "2215": {
+      "coefficients_sha256": {
+        "A": "023a6d08913141ed255f8de01b9cc9a2208d1e2f386b55163eb49e689214bdf5",
+        "network_positive": "aaa08ee6de5885916eedf5413f1d4fdb9be579f7ca3b6c2467d2447c5202a1ce",
+        "pipeline": "c5c3c1cd754e5f80e2b0826b515d3b484a93a57e0ce1751a4fb164bb52784e3f"
+      },
+      "converged": {
+        "A": true,
+        "network_positive": true,
+        "pipeline": true
+      },
+      "n_iter": {
+        "A": [
+          2416
+        ],
+        "network_positive": [
+          1896
+        ],
+        "pipeline": [
+          27
+        ]
+      },
+      "nesting_ok": true,
+      "normalization_sha256": {
+        "A": "19d6db4131372337213df5b5edf7351b808fe7da08d4128850f083f6c0a89db6",
+        "network_positive": "19d6db4131372337213df5b5edf7351b808fe7da08d4128850f083f6c0a89db6",
+        "pipeline": "da77bd16163adc5f6cb1712c79a68955b1c46d5e4f7b483e84d3c7ea824ee0d6"
+      }
+    },
+    "2216": {
+      "coefficients_sha256": {
+        "A": "498d16fb3bde58d055ee97a4bd6d25f8f944a916c57a840eccf450596faace92",
+        "network_positive": "194079cb42d7712de3eedd57b006a203a64679c1c734cbd5142f99e6de44dd7d",
+        "pipeline": "277786203a5d93203b8605f2bc92ab57b2a1ef475aa7c234ef6421fb978886c3"
+      },
+      "converged": {
+        "A": true,
+        "network_positive": true,
+        "pipeline": true
+      },
+      "n_iter": {
+        "A": [
+          1996
+        ],
+        "network_positive": [
+          1603
+        ],
+        "pipeline": [
+          28
+        ]
+      },
+      "nesting_ok": true,
+      "normalization_sha256": {
+        "A": "e707caf91da3922a10ffb046f2a1e14b96436b7b4349a81462064078b8bf11a7",
+        "network_positive": "e707caf91da3922a10ffb046f2a1e14b96436b7b4349a81462064078b8bf11a7",
+        "pipeline": "0e48e073d987757a09fb4b533eda35148a222dbec674eaf279ea8fd7e0a4d0aa"
+      }
+    },
+    "2217": {
+      "coefficients_sha256": {
+        "A": "8c93f8be8cd4dcb19349205c7015d31f7c2628e167ab4a210bf0d1980044c270",
+        "network_positive": "45368893ae719a1c4cd328736aa6b2bd4c858da32e9063f9b496291bb89b69e2",
+        "pipeline": "1c9fee7677c676c018650dfc3ce4aff7e1eca26e2e00628fbd128aef5e42b571"
+      },
+      "converged": {
+        "A": true,
+        "network_positive": true,
+        "pipeline": true
+      },
+      "n_iter": {
+        "A": [
+          2150
+        ],
+        "network_positive": [
+          1705
+        ],
+        "pipeline": [
+          27
+        ]
+      },
+      "nesting_ok": true,
+      "normalization_sha256": {
+        "A": "ddb3b8c7b009adc1ff30aabb796571356e5a3c0afa39fccb580cf325df260364",
+        "network_positive": "ddb3b8c7b009adc1ff30aabb796571356e5a3c0afa39fccb580cf325df260364",
+        "pipeline": "d97ce69db354566de0e15a8e9b56c70ecd921b87193d77f7fbeb4f1cc3bc332d"
+      }
+    },
+    "2218": {
+      "coefficients_sha256": {
+        "A": "d2a4ab53ad753fa97820530fe5f339d1abf1112367f51894863f21dcdab58991",
+        "network_positive": "cfcd537770ee8f09cf05aafc0814185b1e9bd5a4108bf00ea8601b0986544cb1",
+        "pipeline": "d77c530431e200e33633feb52601df3631c78aaa1401f7300b0ddcbe2809805d"
+      },
+      "converged": {
+        "A": true,
+        "network_positive": true,
+        "pipeline": true
+      },
+      "n_iter": {
+        "A": [
+          1539
+        ],
+        "network_positive": [
+          1153
+        ],
+        "pipeline": [
+          27
+        ]
+      },
+      "nesting_ok": true,
+      "normalization_sha256": {
+        "A": "15aff855a3d3fc58ce5ce98622c340b5a96f6d4b940bae0250e076098a514038",
+        "network_positive": "15aff855a3d3fc58ce5ce98622c340b5a96f6d4b940bae0250e076098a514038",
+        "pipeline": "ceb52d63528d46bbd40de79ce29d7cafae2f1fc685168d23a31e0a6c7f57ac20"
+      }
+    },
+    "2219": {
+      "coefficients_sha256": {
+        "A": "950a74f3fc1d999319bcc9f1d5bbf0753e5df5cac6d1e5cec8e227f3595525f2",
+        "network_positive": "d774aee861d90701f74d7de7b2e57ece746fe66cab246355f83b64c8ce8b66f1",
+        "pipeline": "51b79a870b499fd45c07c1e21692c9bf7567ff503e48c7f363341203ad48a305"
+      },
+      "converged": {
+        "A": true,
+        "network_positive": true,
+        "pipeline": true
+      },
+      "n_iter": {
+        "A": [
+          2034
+        ],
+        "network_positive": [
+          1651
+        ],
+        "pipeline": [
+          27
+        ]
+      },
+      "nesting_ok": true,
+      "normalization_sha256": {
+        "A": "970c085e78a5d62763a6f96e970d27ba85d3c24ed7f2b5a2cb8797b9011b44b2",
+        "network_positive": "970c085e78a5d62763a6f96e970d27ba85d3c24ed7f2b5a2cb8797b9011b44b2",
+        "pipeline": "e298e8e7f167faaaf3667ae133db09304a2fd6ec8cc7e3758acd0a4921d7bb59"
+      }
+    }
+  },
+  "pipeline_claim": "Pipeline: under the fixed split, the pipeline-control map, preprocessing, and L2 logistic decoder, x_(t-1) was or was not recovered from the input-layer spike encoding at the D1R2 timing (validity of the code path only).",
+  "provenance": {
+    "approval": {
+      "d1r2_spec_commit": "f3d52ee91b7ec87f4e665f6ce80208954c30c7a2",
+      "d1r2_spec_sha256": "e5a6a5f4eb7a7adafd9255ac6504593e45be51eefbfa92ce24c63b70fafb82a2",
+      "d1r_spec_sha256": "c1f03efefd203f65b0409793e1adc848ff22a3522d8692d634918efd0870a743",
+      "decision": "APPROVE",
+      "ebb90e74_sha256": "7e6ada6109924df0c31bc49de97082699a032549887fd8b0411c45e2902981bf",
+      "implementation_commit": "e8e014913c002639bcd1c453e397d2f5f5e9c07c",
+      "materialized_at": "2026-10-02",
+      "materialized_by": "ethan (transcription only of Nora t_8863b155 completion summary plus the t_5a2798c4 run-authorization card id)",
+      "nora_verdict_verbatim": "APPROVE. Candidate e8e014913c002639bcd1c453e397d2f5f5e9c07c is the verified remote head, satisfies frozen spec f3d52ee, and closes both prior warning-classification findings. Independent execution produced 418 passing tests, the two focused regression tests passed, the collision probe reproduced section 3.3, and the committed shakedown is limited to fixture seed 4242. This approves implementation only and does not authorize a D1R2 run.",
+      "review_card": "t_8863b155",
+      "review_lens": "execution",
+      "review_round": 3,
+      "reviewer": "nora",
+      "run_authorization_card": "t_5a2798c4",
+      "run_authorization_source": "Kanban card t_5a2798c4 (project-aib), the separate run authorization required by D1R2 spec f3d52ee section 8 step 2, under Kendrick decision t_61f7cf65 ('Option 1, diagnose first'), spec approval t_aafbc69b with Amanda ruling t_bbc93d9c. Nora's t_8863b155 verdict approves implementation only; run authority comes from t_5a2798c4, not from Nora.",
+      "run_authorized": true,
+      "stage2_spec_sha256": "695cfaa4a23c31d31b22891eb611ac70ec5cdfdb092bef4245fc5ad6853131cd"
+    },
+    "argv": [
+      "/Users/aib-agent/miniforge3/envs/aib310/bin/python",
+      "run_stage2_diagnostic_d1r2.py",
+      "--run-d1r2",
+      "--approval-file",
+      "/Users/kendrick/.hermes/kanban/boards/project-aib/workspaces/t_5a2798c4/approval-nora-e8e0149-run-t_5a2798c4.json",
+      "--workers",
+      "3",
+      "--tests",
+      "aib310 pytest -q -p no:cacheprovider: 418 passed in 494.52s at e8e0149 before launch; step1 shakedown seed 4242 PASS committed at e8e0149 (t_8863b155)"
+    ],
+    "argv_display": "/Users/aib-agent/miniforge3/envs/aib310/bin/python run_stage2_diagnostic_d1r2.py --run-d1r2 --approval-file /Users/kendrick/.hermes/kanban/boards/project-aib/workspaces/t_5a2798c4/approval-nora-e8e0149-run-t_5a2798c4.json --workers 3 --tests 'aib310 pytest -q -p no:cacheprovider: 418 passed in 494.52s at e8e0149 before launch; step1 shakedown seed 4242 PASS committed at e8e0149 (t_8863b155)'",
+    "branch": "v0.3.0-calibrated",
+    "code_commit": "e8e014913c002639bcd1c453e397d2f5f5e9c07c",
+    "code_commit_equals_upstream": true,
+    "collision_probe": {
+      "code_sha256": "cf0bb3b1adf5a9e34f48b5901e92f6e75d6a979cd91d042436f79450172693b3",
+      "counts": {
+        "legacy_records": 824,
+        "legacy_unique_entropy_tuples": 818,
+        "legacy_unique_states": 818,
+        "new_records": 120,
+        "new_unique_entropy_tuples": 120,
+        "new_unique_states": 120
+      },
+      "decision": "PASS",
+      "execution": "run_preflight",
+      "identity_state_sha256": "4d8dd8b477aa2615bc14f66ed11223d0995c10df0985919577bacc9648b6848e",
+      "legacy_only_duplicate_count": 6,
+      "legacy_only_entropy_duplicate_groups": [
+        {
+          "key": [
+            20261001,
+            7,
+            1
+          ],
+          "members": [
+            {
+              "entropy": [
+                20261001,
+                7,
+                1
+              ],
+              "name": "legacy/object/seed=7/component=1"
+            },
+            {
+              "entropy": [
+                20261001,
+                7,
+                1
+              ],
+              "name": "legacy/bootstrap/k=1"
+            }
+          ]
+        },
+        {
+          "key": [
+            20261001,
+            7,
+            2
+          ],
+          "members": [
+            {
+              "entropy": [
+                20261001,
+                7,
+                2
+              ],
+              "name": "legacy/object/seed=7/component=2"
+            },
+            {
+              "entropy": [
+                20261001,
+                7,
+                2
+              ],
+              "name": "legacy/bootstrap/k=2"
+            }
+          ]
+        },
+        {
+          "key": [
+            20261001,
+            7,
+            3
+          ],
+          "members": [
+            {
+              "entropy": [
+                20261001,
+                7,
+                3
+              ],
+              "name": "legacy/object/seed=7/component=3"
+            },
+            {
+              "entropy": [
+                20261001,
+                7,
+                3
+              ],
+              "name": "legacy/bootstrap/k=3"
+            }
+          ]
+        },
+        {
+          "key": [
+            20261001,
+            7,
+            4
+          ],
+          "members": [
+            {
+              "entropy": [
+                20261001,
+                7,
+                4
+              ],
+              "name": "legacy/object/seed=7/component=4"
+            },
+            {
+              "entropy": [
+                20261001,
+                7,
+                4
+              ],
+              "name": "legacy/bootstrap/k=4"
+            }
+          ]
+        },
+        {
+          "key": [
+            20261001,
+            7,
+            5
+          ],
+          "members": [
+            {
+              "entropy": [
+                20261001,
+                7,
+                5
+              ],
+              "name": "legacy/object/seed=7/component=5"
+            },
+            {
+              "entropy": [
+                20261001,
+                7,
+                5
+              ],
+              "name": "legacy/bootstrap/k=5"
+            }
+          ]
+        },
+        {
+          "key": [
+            20261001,
+            7,
+            6
+          ],
+          "members": [
+            {
+              "entropy": [
+                20261001,
+                7,
+                6
+              ],
+              "name": "legacy/object/seed=7/component=6"
+            },
+            {
+              "entropy": [
+                20261001,
+                7,
+                6
+              ],
+              "name": "legacy/bootstrap/k=6"
+            }
+          ]
+        }
+      ],
+      "legacy_only_state_duplicate_groups": [
+        {
+          "key": [
+            102316032,
+            1765328211,
+            3107267286,
+            1697209402,
+            3069834080,
+            1545611947,
+            3100770737,
+            818661560
+          ],
+          "members": [
+            {
+              "entropy": [
+                20261001,
+                7,
+                3
+              ],
+              "name": "legacy/object/seed=7/component=3"
+            },
+            {
+              "entropy": [
+                20261001,
+                7,
+                3
+              ],
+              "name": "legacy/bootstrap/k=3"
+            }
+          ]
+        },
+        {
+          "key": [
+            1640050113,
+            486931131,
+            2189622799,
+            3703831112,
+            531065175,
+            3219478571,
+            3995352585,
+            1281559304
+          ],
+          "members": [
+            {
+              "entropy": [
+                20261001,
+                7,
+                4
+              ],
+              "name": "legacy/object/seed=7/component=4"
+            },
+            {
+              "entropy": [
+                20261001,
+                7,
+                4
+              ],
+              "name": "legacy/bootstrap/k=4"
+            }
+          ]
+        },
+        {
+          "key": [
+            219456194,
+            2415799837,
+            3064015908,
+            1750861536,
+            4119815209,
+            3058877457,
+            3898469880,
+            3060714786
+          ],
+          "members": [
+            {
+              "entropy": [
+                20261001,
+                7,
+                2
+              ],
+              "name": "legacy/object/seed=7/component=2"
+            },
+            {
+              "entropy": [
+                20261001,
+                7,
+                2
+              ],
+              "name": "legacy/bootstrap/k=2"
+            }
+          ]
+        },
+        {
+          "key": [
+            2384187345,
+            2939998645,
+            4055310344,
+            1899177406,
+            3045954615,
+            4146159048,
+            1962295465,
+            2180353752
+          ],
+          "members": [
+            {
+              "entropy": [
+                20261001,
+                7,
+                1
+              ],
+              "name": "legacy/object/seed=7/component=1"
+            },
+            {
+              "entropy": [
+                20261001,
+                7,
+                1
+              ],
+              "name": "legacy/bootstrap/k=1"
+            }
+          ]
+        },
+        {
+          "key": [
+            4154061164,
+            2786537559,
+            3347145517,
+            3892629899,
+            1855054916,
+            3467473181,
+            2121570248,
+            1704832466
+          ],
+          "members": [
+            {
+              "entropy": [
+                20261001,
+                7,
+                6
+              ],
+              "name": "legacy/object/seed=7/component=6"
+            },
+            {
+              "entropy": [
+                20261001,
+                7,
+                6
+              ],
+              "name": "legacy/bootstrap/k=6"
+            }
+          ]
+        },
+        {
+          "key": [
+            51872086,
+            3380592064,
+            3700031785,
+            1669046571,
+            3547588338,
+            2324326901,
+            3724971173,
+            869076813
+          ],
+          "members": [
+            {
+              "entropy": [
+                20261001,
+                7,
+                5
+              ],
+              "name": "legacy/object/seed=7/component=5"
+            },
+            {
+              "entropy": [
+                20261001,
+                7,
+                5
+              ],
+              "name": "legacy/bootstrap/k=5"
+            }
+          ]
+        }
+      ],
+      "new_entropy_collision_groups": [],
+      "new_state_collision_groups": [],
+      "new_vs_legacy_entropy_collisions": [],
+      "new_vs_legacy_state_collisions": [],
+      "numpy_version": "1.26.4",
+      "output_sha256": "f52137486d8136fa17351d359bf674266af85d9c7e20c22898409645461d6597",
+      "pass": true,
+      "reproduces_spec_section_3_3": true,
+      "seed_ranges_disjoint": true,
+      "synthetic_override": false
+    },
+    "d1r2_spec_commit": "f3d52ee91b7ec87f4e665f6ce80208954c30c7a2",
+    "d1r2_spec_sha256_at_run": "e5a6a5f4eb7a7adafd9255ac6504593e45be51eefbfa92ce24c63b70fafb82a2",
+    "d1r2_spec_sha256_frozen": "e5a6a5f4eb7a7adafd9255ac6504593e45be51eefbfa92ce24c63b70fafb82a2",
+    "d1r2_spec_unchanged": true,
+    "ebb90e74_sha256_at_run": "7e6ada6109924df0c31bc49de97082699a032549887fd8b0411c45e2902981bf",
+    "ebb90e74_sha256_frozen": "7e6ada6109924df0c31bc49de97082699a032549887fd8b0411c45e2902981bf",
+    "ebb90e74_unchanged": true,
+    "effective_parameter_mismatches": [],
+    "effective_parameters": {
+      "K": 19,
+      "block_length": 100,
+      "block_percentile": 5,
+      "block_resamples": 10000,
+      "bootstrap_entropy": "[20261001, seed, 32, 60, q]; q=1 A, q=2 network_positive",
+      "count_window_steps": 20,
+      "decoder": {
+        "C": 1.0,
+        "class_weight": null,
+        "fit_intercept": true,
+        "max_iter": 20000,
+        "penalty": "l2",
+        "solver": "lbfgs",
+        "tol": 1e-08
+      },
+      "decoders": [
+        "pipeline",
+        "network_positive",
+        "A"
+      ],
+      "dt_ms": 1.0,
+      "ebb90e74_sha256": "7e6ada6109924df0c31bc49de97082699a032549887fd8b0411c45e2902981bf",
+      "feature_map": "phiR_t = concat(count20_t, trace20_t, trace25_t, h_t, h_(t-1), ..., h_(t-19)) of hidden spikes present before x_t is integrated; 460 dims",
+      "hidden_beta_a_mv": 1.12,
+      "hidden_tau_a_ms": 200.0,
+      "labels": {
+        "A": "x_t = x[2000:]",
+        "network_positive": "x_(t-1) = x[1999:-1]",
+        "pipeline": "x_(t-1) = x[1999:-1]"
+      },
+      "layer_sizes": [
+        2,
+        20,
+        2
+      ],
+      "max_workers": 3,
+      "namespace": 32,
+      "network_feature_dim": 460,
+      "noise_p": 0.1,
+      "pipeline_feature_dim": 46,
+      "pipeline_map": "psi_t = the same operator on u_t = ONEHOT[x_(t-1)] (u_0 = 0), width 2; 46 dims",
+      "prediction_threshold": 0.5,
+      "root_entropy": 20261001,
+      "rss_limit_bytes": 12884901888,
+      "seeds": [
+        2200,
+        2201,
+        2202,
+        2203,
+        2204,
+        2205,
+        2206,
+        2207,
+        2208,
+        2209,
+        2210,
+        2211,
+        2212,
+        2213,
+        2214,
+        2215,
+        2216,
+        2217,
+        2218,
+        2219
+      ],
+      "spec_commit": "f3d52ee91b7ec87f4e665f6ce80208954c30c7a2",
+      "spec_sha256": "e5a6a5f4eb7a7adafd9255ac6504593e45be51eefbfa92ce24c63b70fafb82a2",
+      "stage2_spec_sha256": "695cfaa4a23c31d31b22891eb611ac70ec5cdfdb092bef4245fc5ad6853131cd",
+      "standardization": "training mean and population std (ddof=0); zero-variance scale 1.0",
+      "tau_m_ms": [
+        20.0,
+        20.0
+      ],
+      "test_rows": 10000,
+      "test_stream_len": 12000,
+      "thresholds": {
+        "fail_median_below": 0.55,
+        "lower_bound_reference": 0.5,
+        "pass_median_accuracy": 0.7,
+        "pass_min_lower_bounds_gt_half": 15,
+        "pipeline_pass_median_accuracy": 0.99
+      },
+      "trace20_decay": 0.951229424500714,
+      "trace25_decay": 0.9607894391523232,
+      "train_rows": 198000,
+      "train_stream_len": 200000,
+      "v_reset_mv": [
+        -70.0,
+        -70.0
+      ],
+      "v_rest_mv": [
+        -70.0,
+        -70.0
+      ],
+      "v_thresh_mv": [
+        -54.0,
+        -54.0
+      ],
+      "w1_init": "U(-10,10) mV, [20261001, seed, 32, 1] first draw",
+      "w2_O0_init": "U(0,10) mV, [20261001, seed, 32, 21]",
+      "w2_O1_init": "U(0,10) mV, [20261001, seed, 32, 1] second draw",
+      "wall_limit_seconds": 21600,
+      "warmup_rows": 2000
+    },
+    "effective_parameters_match_spec": true,
+    "environment": {
+      "CONDA_DEFAULT_ENV": null,
+      "CONDA_PREFIX": null,
+      "MKL_NUM_THREADS": "1",
+      "OMP_NUM_THREADS": "1",
+      "OPENBLAS_NUM_THREADS": "1",
+      "PYTHONHASHSEED": "0",
+      "VIRTUAL_ENV": null
+    },
+    "host": {
+      "cpu_count": 6,
+      "hostname": "Kendricks-Mac-mini.local",
+      "machine": "x86_64",
+      "platform": "macOS-15.7.4-x86_64-i386-64bit",
+      "processor": "i386"
+    },
+    "maintained_tests": "aib310 pytest -q -p no:cacheprovider: 418 passed in 494.52s at e8e0149 before launch; step1 shakedown seed 4242 PASS committed at e8e0149 (t_8863b155)",
+    "mode": "d1r2",
+    "numpy": "1.26.4",
+    "output_dir": "/Users/kendrick/Projects/pure-snn-learning/results_stage2_diagnostic_d1r2/runs/d1r2-20261002T103331160786Z-e8e014913c00-pid75833",
+    "psutil": "7.2.2",
+    "python": "3.10.20 | packaged by conda-forge | (main, Mar  5 2026, 16:59:46) [Clang 19.1.7 ]",
+    "schema_version": 1,
+    "scientific_files": [
+      "snn/core.py",
+      "snn/stage2.py",
+      "snn/stage2_r3.py",
+      "snn/stage2_diagnostic.py",
+      "snn/stage2_diagnostic_stats.py",
+      "snn/stage2_diagnostic_d1r.py",
+      "snn/stage2_diagnostic_d1r2.py",
+      "run_stage2.py",
+      "run_stage2_diagnostic.py",
+      "run_stage2_diagnostic_d1r.py",
+      "run_stage2_diagnostic_d1r2.py",
+      "tools/stage2_diagnostic_ss_probe.py",
+      "tools/stage2_diagnostic_d1r_ss_probe.py",
+      "tools/stage2_diagnostic_d1r2_ss_probe.py",
+      "tests/test_stage2_diagnostic_d1r.py",
+      "tests/test_stage2_diagnostic_d1r2.py",
+      "docs/STAGE2_SPEC.md",
+      "docs/STAGE2_DIAGNOSTIC_SPEC.md",
+      "docs/STAGE2_DIAGNOSTIC_D1R_SPEC.md",
+      "docs/STAGE2_DIAGNOSTIC_D1R2_SPEC.md",
+      "docs/STAGE2_DIAGNOSTIC_D1R_IMPLEMENTATION_NOTES.md",
+      "docs/STAGE2_DIAGNOSTIC_D1R2_IMPLEMENTATION_NOTES.md"
+    ],
+    "scientific_files_clean": true,
+    "scientific_files_status": "",
+    "seeds": [
+      2200,
+      2201,
+      2202,
+      2203,
+      2204,
+      2205,
+      2206,
+      2207,
+      2208,
+      2209,
+      2210,
+      2211,
+      2212,
+      2213,
+      2214,
+      2215,
+      2216,
+      2217,
+      2218,
+      2219
+    ],
+    "sklearn": "1.7.2",
+    "stage2_spec_sha256_at_run": "695cfaa4a23c31d31b22891eb611ac70ec5cdfdb092bef4245fc5ad6853131cd",
+    "stage2_spec_sha256_frozen": "695cfaa4a23c31d31b22891eb611ac70ec5cdfdb092bef4245fc5ad6853131cd",
+    "stage2_spec_unchanged": true,
+    "torch": "2.2.2",
+    "upstream_tracking_ref_sha": "e8e014913c002639bcd1c453e397d2f5f5e9c07c",
+    "workers": 3,
+    "written_at": "2026-10-02T10:33:36.170717+00:00"
+  },
+  "readouts": {
+    "A": {
+      "decision_bearing": true,
+      "lower_bounds_gt_half": 20,
+      "median_accuracy": 0.7461,
+      "status": "PASS"
+    },
+    "network_positive": {
+      "lower_bounds_gt_half": 20,
+      "median_accuracy": 0.8422000000000001,
+      "status": "PASS"
+    },
+    "pipeline": {
+      "median_accuracy": 1.0,
+      "status": "PASS"
+    }
+  },
+  "run_metadata": {
+    "incomplete_reason": null,
+    "interruptions": 0,
+    "peak_rss_single_process_bytes": 2763599872,
+    "peak_rss_total_bytes": 7143841792,
+    "retries": 0,
+    "stages": [
+      {
+        "finished_at": "2026-10-02T11:52:28.453361+00:00",
+        "interruptions": 0,
+        "jobs": 20,
+        "max_worker_processes_observed": 4,
+        "peak_rss_single_process_bytes": 2763599872,
+        "peak_rss_total_bytes": 7143841792,
+        "retries": 0,
+        "rows_error": 0,
+        "rows_ok": 20,
+        "rss_exceeded": false,
+        "rss_limit_bytes": 12884901888,
+        "stage": "D1R2",
+        "started_at": "2026-10-02T10:33:39.603414+00:00",
+        "wall_seconds": 4728.850027084351,
+        "workers": 3
+      }
+    ],
+    "total_wall_seconds": 4728.850027084351,
+    "workers": 3
+  },
+  "schema_version": 1,
+  "status": "PASS",
+  "violations": []
+}

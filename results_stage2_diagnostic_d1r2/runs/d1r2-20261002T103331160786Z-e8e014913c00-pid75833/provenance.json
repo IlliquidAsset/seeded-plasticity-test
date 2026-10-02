@@ -1,0 +1,589 @@
+{
+  "approval": {
+    "d1r2_spec_commit": "f3d52ee91b7ec87f4e665f6ce80208954c30c7a2",
+    "d1r2_spec_sha256": "e5a6a5f4eb7a7adafd9255ac6504593e45be51eefbfa92ce24c63b70fafb82a2",
+    "d1r_spec_sha256": "c1f03efefd203f65b0409793e1adc848ff22a3522d8692d634918efd0870a743",
+    "decision": "APPROVE",
+    "ebb90e74_sha256": "7e6ada6109924df0c31bc49de97082699a032549887fd8b0411c45e2902981bf",
+    "implementation_commit": "e8e014913c002639bcd1c453e397d2f5f5e9c07c",
+    "materialized_at": "2026-10-02",
+    "materialized_by": "ethan (transcription only of Nora t_8863b155 completion summary plus the t_5a2798c4 run-authorization card id)",
+    "nora_verdict_verbatim": "APPROVE. Candidate e8e014913c002639bcd1c453e397d2f5f5e9c07c is the verified remote head, satisfies frozen spec f3d52ee, and closes both prior warning-classification findings. Independent execution produced 418 passing tests, the two focused regression tests passed, the collision probe reproduced section 3.3, and the committed shakedown is limited to fixture seed 4242. This approves implementation only and does not authorize a D1R2 run.",
+    "review_card": "t_8863b155",
+    "review_lens": "execution",
+    "review_round": 3,
+    "reviewer": "nora",
+    "run_authorization_card": "t_5a2798c4",
+    "run_authorization_source": "Kanban card t_5a2798c4 (project-aib), the separate run authorization required by D1R2 spec f3d52ee section 8 step 2, under Kendrick decision t_61f7cf65 ('Option 1, diagnose first'), spec approval t_aafbc69b with Amanda ruling t_bbc93d9c. Nora's t_8863b155 verdict approves implementation only; run authority comes from t_5a2798c4, not from Nora.",
+    "run_authorized": true,
+    "stage2_spec_sha256": "695cfaa4a23c31d31b22891eb611ac70ec5cdfdb092bef4245fc5ad6853131cd"
+  },
+  "argv": [
+    "/Users/aib-agent/miniforge3/envs/aib310/bin/python",
+    "run_stage2_diagnostic_d1r2.py",
+    "--run-d1r2",
+    "--approval-file",
+    "/Users/kendrick/.hermes/kanban/boards/project-aib/workspaces/t_5a2798c4/approval-nora-e8e0149-run-t_5a2798c4.json",
+    "--workers",
+    "3",
+    "--tests",
+    "aib310 pytest -q -p no:cacheprovider: 418 passed in 494.52s at e8e0149 before launch; step1 shakedown seed 4242 PASS committed at e8e0149 (t_8863b155)"
+  ],
+  "argv_display": "/Users/aib-agent/miniforge3/envs/aib310/bin/python run_stage2_diagnostic_d1r2.py --run-d1r2 --approval-file /Users/kendrick/.hermes/kanban/boards/project-aib/workspaces/t_5a2798c4/approval-nora-e8e0149-run-t_5a2798c4.json --workers 3 --tests 'aib310 pytest -q -p no:cacheprovider: 418 passed in 494.52s at e8e0149 before launch; step1 shakedown seed 4242 PASS committed at e8e0149 (t_8863b155)'",
+  "branch": "v0.3.0-calibrated",
+  "code_commit": "e8e014913c002639bcd1c453e397d2f5f5e9c07c",
+  "code_commit_equals_upstream": true,
+  "collision_probe": {
+    "code_sha256": "cf0bb3b1adf5a9e34f48b5901e92f6e75d6a979cd91d042436f79450172693b3",
+    "counts": {
+      "legacy_records": 824,
+      "legacy_unique_entropy_tuples": 818,
+      "legacy_unique_states": 818,
+      "new_records": 120,
+      "new_unique_entropy_tuples": 120,
+      "new_unique_states": 120
+    },
+    "decision": "PASS",
+    "execution": "run_preflight",
+    "identity_state_sha256": "4d8dd8b477aa2615bc14f66ed11223d0995c10df0985919577bacc9648b6848e",
+    "legacy_only_duplicate_count": 6,
+    "legacy_only_entropy_duplicate_groups": [
+      {
+        "key": [
+          20261001,
+          7,
+          1
+        ],
+        "members": [
+          {
+            "entropy": [
+              20261001,
+              7,
+              1
+            ],
+            "name": "legacy/object/seed=7/component=1"
+          },
+          {
+            "entropy": [
+              20261001,
+              7,
+              1
+            ],
+            "name": "legacy/bootstrap/k=1"
+          }
+        ]
+      },
+      {
+        "key": [
+          20261001,
+          7,
+          2
+        ],
+        "members": [
+          {
+            "entropy": [
+              20261001,
+              7,
+              2
+            ],
+            "name": "legacy/object/seed=7/component=2"
+          },
+          {
+            "entropy": [
+              20261001,
+              7,
+              2
+            ],
+            "name": "legacy/bootstrap/k=2"
+          }
+        ]
+      },
+      {
+        "key": [
+          20261001,
+          7,
+          3
+        ],
+        "members": [
+          {
+            "entropy": [
+              20261001,
+              7,
+              3
+            ],
+            "name": "legacy/object/seed=7/component=3"
+          },
+          {
+            "entropy": [
+              20261001,
+              7,
+              3
+            ],
+            "name": "legacy/bootstrap/k=3"
+          }
+        ]
+      },
+      {
+        "key": [
+          20261001,
+          7,
+          4
+        ],
+        "members": [
+          {
+            "entropy": [
+              20261001,
+              7,
+              4
+            ],
+            "name": "legacy/object/seed=7/component=4"
+          },
+          {
+            "entropy": [
+              20261001,
+              7,
+              4
+            ],
+            "name": "legacy/bootstrap/k=4"
+          }
+        ]
+      },
+      {
+        "key": [
+          20261001,
+          7,
+          5
+        ],
+        "members": [
+          {
+            "entropy": [
+              20261001,
+              7,
+              5
+            ],
+            "name": "legacy/object/seed=7/component=5"
+          },
+          {
+            "entropy": [
+              20261001,
+              7,
+              5
+            ],
+            "name": "legacy/bootstrap/k=5"
+          }
+        ]
+      },
+      {
+        "key": [
+          20261001,
+          7,
+          6
+        ],
+        "members": [
+          {
+            "entropy": [
+              20261001,
+              7,
+              6
+            ],
+            "name": "legacy/object/seed=7/component=6"
+          },
+          {
+            "entropy": [
+              20261001,
+              7,
+              6
+            ],
+            "name": "legacy/bootstrap/k=6"
+          }
+        ]
+      }
+    ],
+    "legacy_only_state_duplicate_groups": [
+      {
+        "key": [
+          102316032,
+          1765328211,
+          3107267286,
+          1697209402,
+          3069834080,
+          1545611947,
+          3100770737,
+          818661560
+        ],
+        "members": [
+          {
+            "entropy": [
+              20261001,
+              7,
+              3
+            ],
+            "name": "legacy/object/seed=7/component=3"
+          },
+          {
+            "entropy": [
+              20261001,
+              7,
+              3
+            ],
+            "name": "legacy/bootstrap/k=3"
+          }
+        ]
+      },
+      {
+        "key": [
+          1640050113,
+          486931131,
+          2189622799,
+          3703831112,
+          531065175,
+          3219478571,
+          3995352585,
+          1281559304
+        ],
+        "members": [
+          {
+            "entropy": [
+              20261001,
+              7,
+              4
+            ],
+            "name": "legacy/object/seed=7/component=4"
+          },
+          {
+            "entropy": [
+              20261001,
+              7,
+              4
+            ],
+            "name": "legacy/bootstrap/k=4"
+          }
+        ]
+      },
+      {
+        "key": [
+          219456194,
+          2415799837,
+          3064015908,
+          1750861536,
+          4119815209,
+          3058877457,
+          3898469880,
+          3060714786
+        ],
+        "members": [
+          {
+            "entropy": [
+              20261001,
+              7,
+              2
+            ],
+            "name": "legacy/object/seed=7/component=2"
+          },
+          {
+            "entropy": [
+              20261001,
+              7,
+              2
+            ],
+            "name": "legacy/bootstrap/k=2"
+          }
+        ]
+      },
+      {
+        "key": [
+          2384187345,
+          2939998645,
+          4055310344,
+          1899177406,
+          3045954615,
+          4146159048,
+          1962295465,
+          2180353752
+        ],
+        "members": [
+          {
+            "entropy": [
+              20261001,
+              7,
+              1
+            ],
+            "name": "legacy/object/seed=7/component=1"
+          },
+          {
+            "entropy": [
+              20261001,
+              7,
+              1
+            ],
+            "name": "legacy/bootstrap/k=1"
+          }
+        ]
+      },
+      {
+        "key": [
+          4154061164,
+          2786537559,
+          3347145517,
+          3892629899,
+          1855054916,
+          3467473181,
+          2121570248,
+          1704832466
+        ],
+        "members": [
+          {
+            "entropy": [
+              20261001,
+              7,
+              6
+            ],
+            "name": "legacy/object/seed=7/component=6"
+          },
+          {
+            "entropy": [
+              20261001,
+              7,
+              6
+            ],
+            "name": "legacy/bootstrap/k=6"
+          }
+        ]
+      },
+      {
+        "key": [
+          51872086,
+          3380592064,
+          3700031785,
+          1669046571,
+          3547588338,
+          2324326901,
+          3724971173,
+          869076813
+        ],
+        "members": [
+          {
+            "entropy": [
+              20261001,
+              7,
+              5
+            ],
+            "name": "legacy/object/seed=7/component=5"
+          },
+          {
+            "entropy": [
+              20261001,
+              7,
+              5
+            ],
+            "name": "legacy/bootstrap/k=5"
+          }
+        ]
+      }
+    ],
+    "new_entropy_collision_groups": [],
+    "new_state_collision_groups": [],
+    "new_vs_legacy_entropy_collisions": [],
+    "new_vs_legacy_state_collisions": [],
+    "numpy_version": "1.26.4",
+    "output_sha256": "f52137486d8136fa17351d359bf674266af85d9c7e20c22898409645461d6597",
+    "pass": true,
+    "reproduces_spec_section_3_3": true,
+    "seed_ranges_disjoint": true,
+    "synthetic_override": false
+  },
+  "d1r2_spec_commit": "f3d52ee91b7ec87f4e665f6ce80208954c30c7a2",
+  "d1r2_spec_sha256_at_run": "e5a6a5f4eb7a7adafd9255ac6504593e45be51eefbfa92ce24c63b70fafb82a2",
+  "d1r2_spec_sha256_frozen": "e5a6a5f4eb7a7adafd9255ac6504593e45be51eefbfa92ce24c63b70fafb82a2",
+  "d1r2_spec_unchanged": true,
+  "ebb90e74_sha256_at_run": "7e6ada6109924df0c31bc49de97082699a032549887fd8b0411c45e2902981bf",
+  "ebb90e74_sha256_frozen": "7e6ada6109924df0c31bc49de97082699a032549887fd8b0411c45e2902981bf",
+  "ebb90e74_unchanged": true,
+  "effective_parameter_mismatches": [],
+  "effective_parameters": {
+    "K": 19,
+    "block_length": 100,
+    "block_percentile": 5,
+    "block_resamples": 10000,
+    "bootstrap_entropy": "[20261001, seed, 32, 60, q]; q=1 A, q=2 network_positive",
+    "count_window_steps": 20,
+    "decoder": {
+      "C": 1.0,
+      "class_weight": null,
+      "fit_intercept": true,
+      "max_iter": 20000,
+      "penalty": "l2",
+      "solver": "lbfgs",
+      "tol": 1e-08
+    },
+    "decoders": [
+      "pipeline",
+      "network_positive",
+      "A"
+    ],
+    "dt_ms": 1.0,
+    "ebb90e74_sha256": "7e6ada6109924df0c31bc49de97082699a032549887fd8b0411c45e2902981bf",
+    "feature_map": "phiR_t = concat(count20_t, trace20_t, trace25_t, h_t, h_(t-1), ..., h_(t-19)) of hidden spikes present before x_t is integrated; 460 dims",
+    "hidden_beta_a_mv": 1.12,
+    "hidden_tau_a_ms": 200.0,
+    "labels": {
+      "A": "x_t = x[2000:]",
+      "network_positive": "x_(t-1) = x[1999:-1]",
+      "pipeline": "x_(t-1) = x[1999:-1]"
+    },
+    "layer_sizes": [
+      2,
+      20,
+      2
+    ],
+    "max_workers": 3,
+    "namespace": 32,
+    "network_feature_dim": 460,
+    "noise_p": 0.1,
+    "pipeline_feature_dim": 46,
+    "pipeline_map": "psi_t = the same operator on u_t = ONEHOT[x_(t-1)] (u_0 = 0), width 2; 46 dims",
+    "prediction_threshold": 0.5,
+    "root_entropy": 20261001,
+    "rss_limit_bytes": 12884901888,
+    "seeds": [
+      2200,
+      2201,
+      2202,
+      2203,
+      2204,
+      2205,
+      2206,
+      2207,
+      2208,
+      2209,
+      2210,
+      2211,
+      2212,
+      2213,
+      2214,
+      2215,
+      2216,
+      2217,
+      2218,
+      2219
+    ],
+    "spec_commit": "f3d52ee91b7ec87f4e665f6ce80208954c30c7a2",
+    "spec_sha256": "e5a6a5f4eb7a7adafd9255ac6504593e45be51eefbfa92ce24c63b70fafb82a2",
+    "stage2_spec_sha256": "695cfaa4a23c31d31b22891eb611ac70ec5cdfdb092bef4245fc5ad6853131cd",
+    "standardization": "training mean and population std (ddof=0); zero-variance scale 1.0",
+    "tau_m_ms": [
+      20.0,
+      20.0
+    ],
+    "test_rows": 10000,
+    "test_stream_len": 12000,
+    "thresholds": {
+      "fail_median_below": 0.55,
+      "lower_bound_reference": 0.5,
+      "pass_median_accuracy": 0.7,
+      "pass_min_lower_bounds_gt_half": 15,
+      "pipeline_pass_median_accuracy": 0.99
+    },
+    "trace20_decay": 0.951229424500714,
+    "trace25_decay": 0.9607894391523232,
+    "train_rows": 198000,
+    "train_stream_len": 200000,
+    "v_reset_mv": [
+      -70.0,
+      -70.0
+    ],
+    "v_rest_mv": [
+      -70.0,
+      -70.0
+    ],
+    "v_thresh_mv": [
+      -54.0,
+      -54.0
+    ],
+    "w1_init": "U(-10,10) mV, [20261001, seed, 32, 1] first draw",
+    "w2_O0_init": "U(0,10) mV, [20261001, seed, 32, 21]",
+    "w2_O1_init": "U(0,10) mV, [20261001, seed, 32, 1] second draw",
+    "wall_limit_seconds": 21600,
+    "warmup_rows": 2000
+  },
+  "effective_parameters_match_spec": true,
+  "environment": {
+    "CONDA_DEFAULT_ENV": null,
+    "CONDA_PREFIX": null,
+    "MKL_NUM_THREADS": "1",
+    "OMP_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": "1",
+    "PYTHONHASHSEED": "0",
+    "VIRTUAL_ENV": null
+  },
+  "host": {
+    "cpu_count": 6,
+    "hostname": "Kendricks-Mac-mini.local",
+    "machine": "x86_64",
+    "platform": "macOS-15.7.4-x86_64-i386-64bit",
+    "processor": "i386"
+  },
+  "maintained_tests": "aib310 pytest -q -p no:cacheprovider: 418 passed in 494.52s at e8e0149 before launch; step1 shakedown seed 4242 PASS committed at e8e0149 (t_8863b155)",
+  "mode": "d1r2",
+  "numpy": "1.26.4",
+  "output_dir": "/Users/kendrick/Projects/pure-snn-learning/results_stage2_diagnostic_d1r2/runs/d1r2-20261002T103331160786Z-e8e014913c00-pid75833",
+  "psutil": "7.2.2",
+  "python": "3.10.20 | packaged by conda-forge | (main, Mar  5 2026, 16:59:46) [Clang 19.1.7 ]",
+  "schema_version": 1,
+  "scientific_files": [
+    "snn/core.py",
+    "snn/stage2.py",
+    "snn/stage2_r3.py",
+    "snn/stage2_diagnostic.py",
+    "snn/stage2_diagnostic_stats.py",
+    "snn/stage2_diagnostic_d1r.py",
+    "snn/stage2_diagnostic_d1r2.py",
+    "run_stage2.py",
+    "run_stage2_diagnostic.py",
+    "run_stage2_diagnostic_d1r.py",
+    "run_stage2_diagnostic_d1r2.py",
+    "tools/stage2_diagnostic_ss_probe.py",
+    "tools/stage2_diagnostic_d1r_ss_probe.py",
+    "tools/stage2_diagnostic_d1r2_ss_probe.py",
+    "tests/test_stage2_diagnostic_d1r.py",
+    "tests/test_stage2_diagnostic_d1r2.py",
+    "docs/STAGE2_SPEC.md",
+    "docs/STAGE2_DIAGNOSTIC_SPEC.md",
+    "docs/STAGE2_DIAGNOSTIC_D1R_SPEC.md",
+    "docs/STAGE2_DIAGNOSTIC_D1R2_SPEC.md",
+    "docs/STAGE2_DIAGNOSTIC_D1R_IMPLEMENTATION_NOTES.md",
+    "docs/STAGE2_DIAGNOSTIC_D1R2_IMPLEMENTATION_NOTES.md"
+  ],
+  "scientific_files_clean": true,
+  "scientific_files_status": "",
+  "seeds": [
+    2200,
+    2201,
+    2202,
+    2203,
+    2204,
+    2205,
+    2206,
+    2207,
+    2208,
+    2209,
+    2210,
+    2211,
+    2212,
+    2213,
+    2214,
+    2215,
+    2216,
+    2217,
+    2218,
+    2219
+  ],
+  "sklearn": "1.7.2",
+  "stage2_spec_sha256_at_run": "695cfaa4a23c31d31b22891eb611ac70ec5cdfdb092bef4245fc5ad6853131cd",
+  "stage2_spec_sha256_frozen": "695cfaa4a23c31d31b22891eb611ac70ec5cdfdb092bef4245fc5ad6853131cd",
+  "stage2_spec_unchanged": true,
+  "torch": "2.2.2",
+  "upstream_tracking_ref_sha": "e8e014913c002639bcd1c453e397d2f5f5e9c07c",
+  "workers": 3,
+  "written_at": "2026-10-02T10:33:36.170717+00:00"
+}

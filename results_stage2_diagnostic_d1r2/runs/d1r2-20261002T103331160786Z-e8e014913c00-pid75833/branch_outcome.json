@@ -1,0 +1,7 @@
+{
+  "action": "D1 is PASS by D1R2. D2-D4 require a separate run authorization. No r4 from D1R2 alone.",
+  "code": "D1R2_PASS_D2_D4_ELIGIBLE",
+  "condition": "Pipeline PASS, network_positive PASS, A PASS",
+  "status": "PASS",
+  "table_row": 6
+}
